@@ -19,3 +19,10 @@ global using JetBrains.Annotations;
 // Модель
 global using gmafffff.training.hotel.domain.Model;
 global using gmafffff.training.hotel.domain.Services.Repositories;
+global using gmafffff.training.hotel.domain.Services.Mappers;
+
+// Конфигурация
+global using gmafffff.training.hotel.infrastructure.data.Configs;
+
+// Утилиты
+global using gmafffff.training.hotel.infrastructure.data.Utils;
