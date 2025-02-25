@@ -1,4 +1,7 @@
-﻿namespace gmafffff.training.hotel.infrastructure.data.Repositories;
+﻿using gmafffff.starterKit.Db;
+using gmafffff.training.hotel.domain.Dto.PropertyManagement;
+
+namespace gmafffff.training.hotel.infrastructure.data.Repositories;
 
 public class HotelBlocksRepository :
     RepositoryEfCore<HotelBlock<int, Guid>, int>,
@@ -10,7 +13,7 @@ public class HotelBlocksRepository :
 
     public HotelBlocksRepository(DbContext context, IPropertyManagementMapper propertyManagementMapper) : base(
         context,
-        static hotel => hotel.Include(h => h.Tariffs).Include(h => h.Rooms)) {
+        autoInclude: static hotel => hotel.Include(h => h.Tariffs).Include(h => h.Rooms)) {
         PropertyManagementMapper = propertyManagementMapper;
     }
 
@@ -24,11 +27,18 @@ public class HotelBlocksRepository :
         return await GetRoom(predicate).CountAsync();
     }
 
+    public async Task<IImmutableList<RoomDto>> GetRoomsAsync(Expression<Func<Room<Guid>, bool>> predicate) {
+        ArgumentNullException.ThrowIfNull(PropertyManagementMapper);
+
+        return await RunQuery(GetRoom(predicate)
+            .Select(PropertyManagementMapper.RoomToRoomDto)).ConfigureAwait(false);
+    }
+
     protected override void DefineQuery() {
         base.DefineQuery();
 
         LoadWithRoomFilter = predicate
-            => QueryBuilder(query: Entities,
+            => QueryBuilder(Entities,
                 spec: h => h.Rooms.AsQueryable().Any(predicate),
                 include: h => h
                     .Include(h => h.Rooms.AsQueryable().Where(predicate))
@@ -37,8 +47,8 @@ public class HotelBlocksRepository :
 
         GetRoom = predicate
             => QueryBuilder<Room<Guid>, int>(
-                query: Context.Set<Room<Guid>>(),
-                spec: predicate,
+                Context.Set<Room<Guid>>(),
+                predicate,
                 options: QueryTune.ChangeTrackingDisable
             );
     }

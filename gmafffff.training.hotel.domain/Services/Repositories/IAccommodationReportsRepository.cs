@@ -1,3 +1,5 @@
+using gmafffff.starterKit.Domain;
+
 namespace gmafffff.training.hotel.domain.Services.Repositories;
 
 public interface IAccommodationReportsRepository<TPersonId> : IRepository<AccommodationReport<TPersonId>, int>

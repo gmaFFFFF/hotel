@@ -1,4 +1,11 @@
-﻿namespace gmafffff.training.hotel.infrastructure.data.Repositories;
+﻿using System.Collections.Immutable;
+using System.Linq.Expressions;
+using gmafffff.starterKit.Domain;
+using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
+
+namespace gmafffff.starterKit.Db;
 
 public class RepositoryEfCore<T, TId> : IRepository<T, TId>
     where T : Entity<TId>
@@ -8,13 +15,13 @@ public class RepositoryEfCore<T, TId> : IRepository<T, TId>
     /// <summary>
     ///     Определяет немедленно загружаемые подчиненные сущности
     /// </summary>
-    public Func<IQueryable<T>, IIncludableQueryable<T, object>>? AutoInclude { get; set; }
+    protected Func<IQueryable<T>, IIncludableQueryable<T, object>>? AutoInclude { get; set; }
 
     protected readonly DbContext Context;
     protected readonly DbSet<T> Entities;
 
 
-    public RepositoryEfCore(DbContext dbContext) : this(dbContext, null) { }
+    public RepositoryEfCore(DbContext dbContext) : this(dbContext, autoInclude: null) { }
 
     public RepositoryEfCore(DbContext dbContext,
         Func<IQueryable<T>, IIncludableQueryable<T, object>>? autoInclude = null) {
@@ -104,7 +111,7 @@ public class RepositoryEfCore<T, TId> : IRepository<T, TId>
 
     public async Task<IImmutableList<T>> LoadAsync(IEnumerable<TId> ids,
         CancellationToken cancel = default) {
-        return await LoadAsync(e => ids.Contains(e.Id), cancel).ConfigureAwait(false);
+        return await LoadAsync(spec: e => ids.Contains(e.Id), cancel).ConfigureAwait(false);
     }
 
     public async Task<IImmutableList<T>> LoadAsync(CancellationToken cancel = default,
@@ -154,11 +161,11 @@ public class RepositoryEfCore<T, TId> : IRepository<T, TId>
     ///     Формирует запрос для загрузки сущностей с центрального (базового) склада
     /// </summary>
     /// <param name="query">запрос к центральному (базовому) складу</param>
-    /// <param name="spec">условие фильтрации</param>
-    /// <param name="include">выбрать немедленно загружаемые связанные сущности</param>
-    /// <param name="sortOrder">сортировать результат по</param>
-    /// <param name="pager">параметры постраничной загрузки</param>
-    /// <param name="options">не отслеживать изменения найденных сущностей</param>
+    /// <param name="spec">Условие фильтрации</param>
+    /// <param name="include">Выбрать немедленно загружаемые связанные сущности</param>
+    /// <param name="sortOrder">Сортировать результат по</param>
+    /// <param name="pager">Параметры постраничной загрузки</param>
+    /// <param name="options">Не отслеживать изменения найденных сущностей</param>
     /// <returns><see cref="IQueryable{T}" />></returns>
     /// <remarks>Источник: https://github.com/arch/UnitOfWork/blob/master/src/UnitOfWork/Repository.cs</remarks>
     [Pure]
@@ -179,11 +186,11 @@ public class RepositoryEfCore<T, TId> : IRepository<T, TId>
     /// <typeparam name="TEntity">Тип сущности <see cref="Entity{TId}" /></typeparam>
     /// <typeparam name="TEntityId">Тип идентификатора сущности</typeparam>
     /// <param name="query">запрос к центральному (базовому) складу</param>
-    /// <param name="spec">условие фильтрации</param>
-    /// <param name="include">выбрать немедленно загружаемые связанные сущности</param>
-    /// <param name="sortOrder">сортировать результат по</param>
-    /// <param name="pager">параметры постраничной загрузки</param>
-    /// <param name="options">не отслеживать изменения найденных сущностей</param>
+    /// <param name="spec">Условие фильтрации</param>
+    /// <param name="include">Выбрать немедленно загружаемые связанные сущности</param>
+    /// <param name="sortOrder">Сортировать результат по</param>
+    /// <param name="pager">Параметры постраничной загрузки</param>
+    /// <param name="options">Не отслеживать изменения найденных сущностей</param>
     /// <returns><see cref="IQueryable{T}" />></returns>
     /// <remarks>Источник: https://github.com/arch/UnitOfWork/blob/master/src/UnitOfWork/Repository.cs</remarks>
     [Pure]
@@ -230,7 +237,7 @@ public class RepositoryEfCore<T, TId> : IRepository<T, TId>
     ///     Отправляет запрос в центральный (базовый) склад
     /// </summary>
     /// <param name="query">запрос</param>
-    /// <param name="cancel">токен отмены</param>
+    /// <param name="cancel">Токен отмены</param>
     /// <returns></returns>
     protected async Task<IImmutableList<TOut>> RunQuery<TOut>(IQueryable<TOut> query,
         CancellationToken cancel = default) {

@@ -1,7 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using JetBrains.Annotations;
 
-namespace gmafffff.training.hotel.domain.Model;
+namespace gmafffff.starterKit.Domain;
 
+/// <summary>
+///     Сущность, предназначенная для длительного хранения.
+///     Переопределяет семантику сравнения на основе значения идентификатора
+/// </summary>
+/// <typeparam name="TId"></typeparam>
 public abstract class Entity<TId>
     where TId : struct, IEquatable<TId> {
     protected Entity(TId id) : this() {
@@ -30,7 +36,7 @@ public abstract class Entity<TId>
     [Pure]
     public virtual bool IsFromRepository() {
         return Id switch {
-            // EF Core устанавливает значение int / long < 0 при добавлении сущности в dbcontext
+            // EF Core устанавливает значение int / long < 0 при добавлении сущности в DbContext
             (long or int) and <= 0 => false,
             Guid guid when guid == Guid.Empty => false,
             _ => !Id.Equals(default)
@@ -50,7 +56,7 @@ public abstract class Entity<TId>
     /// <summary>
     ///     Рассчитывает хэш-код
     /// </summary>
-    /// <param name="entity">Сущность, для который производятся вычисления </param>
+    /// <param name="entity">Сущность, для которой производятся вычисления </param>
     /// <returns></returns>
     [Pure]
     public static int CalcHashCode<TEntity>(TEntity entity)
@@ -73,7 +79,7 @@ public abstract class Entity<TId>
         if (other is null) return false;
         if (ReferenceEquals(this, other)) return true;
         if (other.GetType() != GetType()) return false;
-        return IsFromRepository() && other.IsFromRepository() && Id!.Equals(other.Id);
+        return IsFromRepository() && other.IsFromRepository() && Id.Equals(other.Id);
     }
 
     [Pure]
@@ -83,7 +89,7 @@ public abstract class Entity<TId>
 
     [Pure]
     public static bool operator ==(Entity<TId>? lhs, Entity<TId>? rhs) {
-        return lhs?.Equals(rhs) ?? Equals(rhs, null);
+        return lhs?.Equals(rhs) ?? Equals(rhs, objB: null);
     }
 
     [Pure]

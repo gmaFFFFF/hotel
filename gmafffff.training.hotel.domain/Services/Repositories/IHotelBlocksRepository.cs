@@ -1,4 +1,6 @@
 ﻿using System.Collections.Immutable;
+using gmafffff.starterKit.Domain;
+using gmafffff.training.hotel.domain.Dto.PropertyManagement;
 
 namespace gmafffff.training.hotel.domain.Services.Repositories;
 
@@ -20,6 +22,12 @@ public interface IHotelBlocksRepository<TId, TPersonId> : IRepository<HotelBlock
     /// <param name="predicate">условия отбора номеров</param>
     /// <returns></returns>
     Task<int> CountRoomByAsync(Expression<Func<Room<TPersonId>, bool>> predicate);
+
+    /// <summary>
+    ///     Возвращает DTO номеров в отеле
+    /// </summary>
+    /// <param name="predicate">фильтр номеров</param>
+    Task<IImmutableList<RoomDto>> GetRoomsAsync(Expression<Func<Room<TPersonId>, bool>> predicate);
 
     #endregion
 }

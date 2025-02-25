@@ -1,4 +1,6 @@
-﻿namespace gmafffff.training.hotel.domain.Model;
+﻿using gmafffff.starterKit.Domain;
+
+namespace gmafffff.training.hotel.domain.Model;
 
 /// <summary>
 ///     Блок (здание, корпус) гостиницы

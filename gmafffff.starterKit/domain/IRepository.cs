@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
+using System.Linq.Expressions;
 
-namespace gmafffff.training.hotel.domain.Services.Repositories;
+namespace gmafffff.starterKit.Domain;
 
 /// <summary>
 ///     Кладовая (оперативный склад) для специализированного хранения сущностей типа <typeparamref name="T" />
@@ -45,8 +46,8 @@ public interface IRepository<T, in TId> : IDisposable
     ///     Ищет единственную сущность, по идентификатору <paramref name="id" /> в кладовой и выдает её.
     ///     Отсутствующую сущность предварительно запрашивает из центрального (базисного) склада и принимает её на учёт
     /// </summary>
-    /// <param name="id">идентификатор сущности</param>
-    /// <returns>найденная сущность или null, если она не найдена в кладовой и центральном (базисном) складе</returns>
+    /// <param name="id">Идентификатор сущности</param>
+    /// <returns>Найденная сущность или null, если она не найдена в кладовой и центральном (базисном) складе</returns>
     T? Find(TId id);
 
 
@@ -72,9 +73,9 @@ public interface IRepository<T, in TId> : IDisposable
     ///     Асинхронно ищет единственную сущность, по идентификатору <paramref name="id" /> в кладовой и выдает её.
     ///     Отсутствующую сущность предварительно запрашивает из центрального (базисного) склада и принимает её на учёт
     /// </summary>
-    /// <param name="id">идентификатор сущности</param>
+    /// <param name="id">Идентификатор сущности</param>
     /// <param name="cancel"><see cref="CancellationToken" /> отмены операции</param>
-    /// <returns>найденная сущность или null, если она не найдена в кладовой и центральном (базисном) складе</returns>
+    /// <returns>Найденная сущность или null, если она не найдена в кладовой и центральном (базисном) складе</returns>
     Task<T?> FindAsync(TId id, CancellationToken cancel = default);
 
 
@@ -82,7 +83,7 @@ public interface IRepository<T, in TId> : IDisposable
     ///     Принимает на учёт сущности, соответствующие спецификации <paramref name="spec" />,
     ///     из центрального (базисного) склада и выдаёт их
     /// </summary>
-    /// <param name="spec">особенности, которым должны соответствовать отпускаемые сущности, в форме предиката</param>
+    /// <param name="spec">Особенности, которым должны соответствовать отпускаемые сущности, в форме предиката</param>
     /// <remarks>Если спецификация <paramref name="spec" /> не задана (null), то вернёт пустой список</remarks>
     /// <returns><see cref="IImmutableList{T}" /> принятых на учёт сущностей</returns>
     IImmutableList<T> Load(Expression<Func<T, bool>>? spec = null);
@@ -107,8 +108,8 @@ public interface IRepository<T, in TId> : IDisposable
     ///     Принимает на учёт сущность, с определённым <paramref name="id" />,
     ///     из центрального (базисного) склада и выдаёт её
     /// </summary>
-    /// <param name="id">идентификатор сущности</param>
-    /// <returns>принятая на учёт сущность или null, если она не найдена в центральном (базисном) складе</returns>
+    /// <param name="id">Идентификатор сущности</param>
+    /// <returns>Принятая на учёт сущность или null, если она не найдена в центральном (базисном) складе</returns>
     T? Load(TId id);
 
 
@@ -116,7 +117,7 @@ public interface IRepository<T, in TId> : IDisposable
     ///     Асинхронно принимает на учёт сущности, соответствующие спецификации <paramref name="spec" />,
     ///     из центрального (базисного) склада и выдаёт их
     /// </summary>
-    /// <param name="spec">особенности, которым должны соответствовать отпускаемые сущности, в форме предиката</param>
+    /// <param name="spec">Особенности, которым должны соответствовать отпускаемые сущности, в форме предиката</param>
     /// <remarks>Если спецификация <paramref name="spec" /> не задана (null), то вернёт пустой список</remarks>
     /// <param name="cancel"><see cref="CancellationToken" /> отмены операции</param>
     /// <returns><see cref="IImmutableList{T}" /> принятых на учёт сущностей</returns>
@@ -145,24 +146,24 @@ public interface IRepository<T, in TId> : IDisposable
     ///     Принимает на учёт сущность, с определённым <paramref name="id" />,
     ///     из центрального (базисного) склада и выдаёт её
     /// </summary>
-    /// <param name="id">идентификатор сущности</param>
+    /// <param name="id">Идентификатор сущности</param>
     /// <param name="cancel"><see cref="CancellationToken" /> отмены операции</param>
-    /// <returns>принятая на учёт сущность или null, если она не найдена в центральном (базисном) складе</returns>
+    /// <returns>Принятая на учёт сущность или null, если она не найдена в центральном (базисном) складе</returns>
     Task<T?> LoadAsync(TId id, CancellationToken cancel = default);
 
     /// <summary>
     ///     Ищет единственную сущность, по идентификатору <paramref name="id" /> в кладовой и выдает её.
     ///     Отсутствующую сущность предварительно запрашивает из центрального (базисного) склада и принимает её на учёт
     /// </summary>
-    /// <param name="id">идентификатор сущности</param>
-    /// <returns>найденная сущность или null, если она не найдена в кладовой и центральном (базисном) складе</returns>
+    /// <param name="id">Идентификатор сущности</param>
+    /// <returns>Найденная сущность или null, если она не найдена в кладовой и центральном (базисном) складе</returns>
     T? this[TId id] { get; }
 
     /// <summary>
     ///     Принимает на учёт сущности, соответствующие спецификации <paramref name="spec" />,
     ///     из центрального (базисного) склада и выдаёт их
     /// </summary>
-    /// <param name="spec">особенности, которым должны соответствовать отпускаемые сущности, в форме предиката</param>
+    /// <param name="spec">Особенности, которым должны соответствовать отпускаемые сущности, в форме предиката</param>
     /// <remarks>Если спецификация <paramref name="spec" /> не задана (null), то вернёт пустой список</remarks>
     /// <returns><see cref="IImmutableList{T}" /> принятых на учёт сущностей</returns>
     IImmutableList<T> this[Expression<Func<T, bool>>? spec] { get; }
@@ -172,7 +173,7 @@ public interface IRepository<T, in TId> : IDisposable
     ///     Асинхронно принимает на учёт господствующие сущности, соответствующие спецификации <paramref name="spec" />,
     ///     из центрального (базисного) склада и выдаёт их. Подчинённые сущности не загружаются
     /// </summary>
-    /// <param name="spec">особенности, которым должны соответствовать отпускаемые сущности, в форме предиката</param>
+    /// <param name="spec">Особенности, которым должны соответствовать отпускаемые сущности, в форме предиката</param>
     /// <remarks>Если спецификация <paramref name="spec" /> не задана (null), то вернёт пустой список</remarks>
     /// <param name="cancel"><see cref="CancellationToken" /> отмены операции</param>
     /// <returns><see cref="IImmutableList{T}" /> принятых на учёт сущностей</returns>
@@ -187,25 +188,25 @@ public interface IRepository<T, in TId> : IDisposable
     /// <summary>
     ///     Планирует постановку сущности на учёт в центральном (базовом) складе
     /// </summary>
-    /// <param name="entity">добавляемая сущность</param>
+    /// <param name="entity">Добавляемая сущность</param>
     void Add(T entity);
 
     /// <summary>
     ///     Планирует постановку сущностей на учёт в центральном (базовом) складе
     /// </summary>
-    /// <param name="entities">добавляемые сущности</param>
+    /// <param name="entities">Добавляемые сущности</param>
     void Add(IEnumerable<T> entities);
 
     /// <summary>
     ///     Планирует постановку составной части сущности на учёт в центральном (базовом) складе
     /// </summary>
-    /// <param name="entity">добавляемая сущность</param>
+    /// <param name="entity">Добавляемая сущность</param>
     void Add(object entity);
 
     /// <summary>
     ///     Планирует постановку составных частей сущностей на учёт в центральном (базовом) складе
     /// </summary>
-    /// <param name="entities">добавляемые сущности</param>
+    /// <param name="entities">Добавляемые сущности</param>
     void Add(IEnumerable<object> entities);
 
     #endregion
@@ -216,31 +217,31 @@ public interface IRepository<T, in TId> : IDisposable
     /// <summary>
     ///     Планирует снятие сущности с учёта в центральном (базовом) складе
     /// </summary>
-    /// <param name="entity">удаляемая сущность</param>
+    /// <param name="entity">Удаляемая сущность</param>
     void Delete(T entity);
 
     /// <summary>
     ///     Планирует снятие сущностей с учёта в центральном (базовом) складе
     /// </summary>
-    /// <param name="entities">удаляемые сущности</param>
+    /// <param name="entities">Удаляемые сущности</param>
     void Delete(IEnumerable<T> entities);
 
     /// <summary>
     ///     Планирует снятие сущности с учёта в центральном (базовом) складе по идентификатору
     /// </summary>
-    /// <param name="id">идентификатор удаляемой сущности</param>
+    /// <param name="id">Идентификатор удаляемой сущности</param>
     void Delete(TId id);
 
     /// <summary>
     ///     Планирует снятие сущностей с учёта в центральном (базовом) складе по идентификаторам
     /// </summary>
-    /// <param name="ids">список идентификаторов удаляемых сущностей</param>
+    /// <param name="ids">Список идентификаторов удаляемых сущностей</param>
     void Delete(IEnumerable<TId> ids);
 
     /// <summary>
     ///     Планирует снятие составной части сущности с учёта в центральном (базовом) складе
     /// </summary>
-    /// <param name="entity">удаляемая сущность</param>
+    /// <param name="entity">Удаляемая сущность</param>
     void Delete<TChild, TChildId>(TChild entity)
         where TChild : Entity<TChildId>
         where TChildId : struct, IEquatable<TChildId>;
@@ -248,7 +249,7 @@ public interface IRepository<T, in TId> : IDisposable
     /// <summary>
     ///     Планирует снятие составных частей сущностей с учёта в центральном (базовом) складе
     /// </summary>
-    /// <param name="entities">удаляемые сущности</param>
+    /// <param name="entities">Удаляемые сущности</param>
     void Delete<TChild, TChildId>(IEnumerable<TChild> entities)
         where TChild : Entity<TChildId>
         where TChildId : struct, IEquatable<TChildId>;
@@ -256,7 +257,7 @@ public interface IRepository<T, in TId> : IDisposable
     /// <summary>
     ///     Планирует снятие составной части сущности с учёта в центральном (базовом) складе по идентификатору
     /// </summary>
-    /// <param name="entityId">идентификатор удаляемой сущности</param>
+    /// <param name="entityId">Идентификатор удаляемой сущности</param>
     void Delete<TChild, TChildId>(TChildId entityId)
         where TChild : Entity<TChildId>
         where TChildId : struct, IEquatable<TChildId>;
@@ -264,7 +265,7 @@ public interface IRepository<T, in TId> : IDisposable
     /// <summary>
     ///     Планирует снятие составной части сущности с учёта в центральном (базовом) складе по идентификаторам
     /// </summary>
-    /// <param name="entityIds">список идентификаторов удаляемых сущностей</param>
+    /// <param name="entityIds">Список идентификаторов удаляемых сущностей</param>
     void Delete<TChild, TChildId>(IEnumerable<TChildId> entityIds)
         where TChild : Entity<TChildId>
         where TChildId : struct, IEquatable<TChildId>;
@@ -273,7 +274,7 @@ public interface IRepository<T, in TId> : IDisposable
     /// <summary>
     ///     Немедленно снимает сущности с учёта в центральном (базовом) складе по спецификации
     /// </summary>
-    /// <param name="spec">спецификация удаляемых сущностей в форме предиката</param>
+    /// <param name="spec">Спецификация удаляемых сущностей в форме предиката</param>
     /// <remarks>Если спецификация <paramref name="spec" /> не задана (null), то ничего не удалит</remarks>
     /// <returns>Общее число снятых с учёта сущностей</returns>
     int DeleteBulk(Expression<Func<T, bool>>? spec);
@@ -281,7 +282,7 @@ public interface IRepository<T, in TId> : IDisposable
     /// <summary>
     ///     Асинхронно немедленно снимает сущности с учёта в центральном (базовом) складе по спецификации
     /// </summary>
-    /// <param name="spec">спецификация удаляемых сущностей в форме предиката</param>
+    /// <param name="spec">Спецификация удаляемых сущностей в форме предиката</param>
     /// <param name="cancel"><see cref="CancellationToken" /> отмены операции</param>
     /// <remarks>Если спецификация <paramref name="spec" /> не задана (null), то ничего не удалит</remarks>
     /// <returns>Общее число снятых с учёта сущностей</returns>
@@ -295,13 +296,13 @@ public interface IRepository<T, in TId> : IDisposable
     /// <summary>
     ///     Заменить все свойства сущности
     /// </summary>
-    /// <param name="entity">обновленная сущность</param>
+    /// <param name="entity">Обновленная сущность</param>
     void Update(T entity);
 
     /// <summary>
     ///     Заменить все свойства подчинённой сущности
     /// </summary>
-    /// <param name="entity">обновленная сущность</param>
+    /// <param name="entity">Обновленная сущность</param>
     void Update(object entity);
 
     #endregion
@@ -323,7 +324,7 @@ public interface IRepository<T, in TId> : IDisposable
     ///     Подсчитывает количество сущностей в центральном (базовом) складе,
     ///     соответствующих <paramref name="spec" />
     /// </summary>
-    /// <param name="spec">спецификация включаемых в подсчет сущностей</param>
+    /// <param name="spec">Спецификация включаемых в подсчет сущностей</param>
     /// <remarks>Если спецификация <paramref name="spec" /> не задана (null), то вернёт 0</remarks>
     /// <returns>Число сущностей, соответствующих спецификации <paramref name="spec" /></returns>
     int CountBy(Expression<Func<T, bool>>? spec = null);
@@ -332,7 +333,8 @@ public interface IRepository<T, in TId> : IDisposable
     ///     Асинхронно подсчитывает количество сущностей в центральном (базовом) складе,
     ///     соответствующих <paramref name="spec" />
     /// </summary>
-    /// <param name="spec">спецификация включаемых в подсчет сущностей</param>
+    /// <param name="spec">Спецификация включаемых в подсчет сущностей</param>
+    /// <param name="cancel">Токен отмены</param>
     /// <remarks>Если спецификация <paramref name="spec" /> не задана (null), то вернёт 0</remarks>
     /// <returns>Число сущностей, соответствующих спецификации <paramref name="spec" /></returns>
     Task<int> CountByAsync(Expression<Func<T, bool>>? spec = null,
