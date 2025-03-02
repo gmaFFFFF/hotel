@@ -1,4 +1,4 @@
-﻿namespace gmafffff.training.hotel.domain.tests.FakeModel.AutoFixture;
+﻿namespace gmafffff.training.hotel.sampleModel.FakeModel.AutoFixture;
 
 public class RoomDetailsGenerator : ISpecimenBuilder {
     private readonly IEnumerator<int> _intEnumerator = Enumerable.Range(start: 1, int.MaxValue).GetEnumerator();

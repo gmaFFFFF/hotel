@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace gmafffff.training.hotel.domain.tests.FakeModel.AutoFixture;
+namespace gmafffff.training.hotel.sampleModel.FakeModel.AutoFixture;
 
 public class HotelBlockNameGenerator : ISpecimenBuilder {
     private readonly ElementsBuilder<string> _hotelBlockNameGen;

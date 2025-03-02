@@ -24,11 +24,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="Xunit"/>
-    </ItemGroup>
-
-    <ItemGroup>
         <ProjectReference Include="..\gmafffff.training.hotel.domain\gmafffff.training.hotel.domain.csproj"/>
+        <ProjectReference Include="..\gmafffff.training.hotel.sampleModel\gmafffff.training.hotel.sampleModel.csproj" />
     </ItemGroup>
 
 </Project>

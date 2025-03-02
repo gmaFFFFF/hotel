@@ -1,4 +1,6 @@
-namespace gmafffff.training.hotel.domain.tests.FakeModel.AutoFixture;
+using AutoFixture.Xunit2;
+
+namespace gmafffff.training.hotel.sampleModel.FakeModel.AutoFixture;
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 public class HotelInlineAutodataAttribute : InlineAutoDataAttribute {

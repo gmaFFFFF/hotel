@@ -1,4 +1,4 @@
-﻿namespace gmafffff.training.hotel.domain.tests.FakeModel.AutoFixture;
+﻿namespace gmafffff.training.hotel.sampleModel.FakeModel.AutoFixture;
 
 public class TariffGenerator : ISpecimenBuilder {
     /// <summary>Тарифная сетка</summary>

@@ -1,9 +1,9 @@
 ﻿using System.Reflection;
 
-namespace gmafffff.training.hotel.domain.tests.FakeModel.AutoFixture;
+namespace gmafffff.training.hotel.sampleModel.FakeModel.AutoFixture;
 
 /// <summary>
-///     Генерирует ФИО для <see cref="PersonFullName" />
+///     Генерирует ФИО для <see cref="gmafffff.training.hotel.domain.Model.PersonFullName" />
 /// </summary>
 public class PersonFullNameGenerator : ISpecimenBuilder {
     private readonly ElementsBuilder<string> _firstNameGen;

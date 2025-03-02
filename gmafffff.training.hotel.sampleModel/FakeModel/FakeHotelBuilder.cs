@@ -1,4 +1,6 @@
-namespace gmafffff.training.hotel.domain.tests.FakeModel;
+using gmafffff.training.hotel.sampleModel.FakeModel.AutoFixture;
+
+namespace gmafffff.training.hotel.sampleModel.FakeModel;
 
 public class FakeHotelBuilder {
     private readonly IFixture _fixture = new Fixture().Customize(new FakeHotelCustomization());

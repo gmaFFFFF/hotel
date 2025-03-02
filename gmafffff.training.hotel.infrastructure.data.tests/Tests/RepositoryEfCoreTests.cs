@@ -1,4 +1,4 @@
-using gmafffff.training.hotel.domain.tests.FakeModel.AutoFixture;
+using gmafffff.training.hotel.sampleModel.FakeModel.AutoFixture;
 
 namespace gmafffff.training.hotel.infrastructure.data.tests.Tests;
 

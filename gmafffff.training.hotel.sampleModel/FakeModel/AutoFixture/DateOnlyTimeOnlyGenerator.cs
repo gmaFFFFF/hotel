@@ -1,4 +1,4 @@
-﻿namespace gmafffff.training.hotel.domain.tests.FakeModel.AutoFixture;
+﻿namespace gmafffff.training.hotel.sampleModel.FakeModel.AutoFixture;
 
 public class DateOnlyTimeOnlyGenerator : ISpecimenBuilder {
     public object Create(object request, ISpecimenContext context) {

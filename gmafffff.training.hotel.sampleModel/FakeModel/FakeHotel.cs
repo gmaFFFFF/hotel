@@ -1,4 +1,4 @@
-namespace gmafffff.training.hotel.domain.tests.FakeModel;
+namespace gmafffff.training.hotel.sampleModel.FakeModel;
 
 public record FakeHotel(
     HotelBlock<int, Guid> Hotel,

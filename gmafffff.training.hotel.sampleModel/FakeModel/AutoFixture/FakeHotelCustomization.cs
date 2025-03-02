@@ -1,4 +1,4 @@
-namespace gmafffff.training.hotel.domain.tests.FakeModel.AutoFixture;
+namespace gmafffff.training.hotel.sampleModel.FakeModel.AutoFixture;
 
 public class FakeHotelCustomization : ICustomization {
     public static ushort RoomsCount = 21;
