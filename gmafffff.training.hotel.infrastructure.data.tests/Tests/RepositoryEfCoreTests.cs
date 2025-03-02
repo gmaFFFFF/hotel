@@ -1,3 +1,4 @@
+using gmafffff.training.hotel.SampleModel.FakeDb;
 using gmafffff.training.hotel.sampleModel.FakeModel.AutoFixture;
 
 namespace gmafffff.training.hotel.infrastructure.data.tests.Tests;

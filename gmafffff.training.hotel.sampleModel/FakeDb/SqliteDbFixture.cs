@@ -1,6 +1,9 @@
+using gmafffff.training.hotel.infrastructure.data.Sessions;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace gmafffff.training.hotel.infrastructure.data.tests.Fixtures;
+namespace gmafffff.training.hotel.SampleModel.FakeDb;
 
 public class SqliteDbFixture : IDisposable {
     private readonly SqliteConnection _connection;
@@ -27,7 +30,7 @@ public class SqliteDbFixture : IDisposable {
     public Action<string> LogAction {
         get => _logAction;
         set {
-            _logAction = value;
+            _logAction = value ?? (_ => { });
             _options = SetOptions();
         }
     }

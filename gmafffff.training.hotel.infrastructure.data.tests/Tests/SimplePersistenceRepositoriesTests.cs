@@ -1,4 +1,6 @@
-﻿namespace gmafffff.training.hotel.infrastructure.data.tests.Tests;
+﻿using gmafffff.training.hotel.SampleModel.FakeDb;
+
+namespace gmafffff.training.hotel.infrastructure.data.tests.Tests;
 
 public class SimplePersistenceRepositoriesTests : IClassFixture<SqliteDbFixture> {
     private readonly FakeHotel _fakeHotel = new FakeHotelBuilder().Build();
