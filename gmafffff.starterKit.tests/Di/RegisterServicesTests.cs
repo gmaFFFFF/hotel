@@ -85,7 +85,7 @@ public class RegisterServicesTests {
     }
 
     /// <summary>
-    ///     Регистрирует кладовые
+    ///     Регистрирует кладовые и фабрики
     /// </summary>
     [Fact]
     public void RegisterRepository() {
@@ -96,12 +96,17 @@ public class RegisterServicesTests {
         provider.AddRepositories(typeof(RegisterServicesTests).Assembly);
 
         // Assert
-        provider.Received(1);
+        provider.Received(2);
 
         provider.Received().Add(Arg.Is<ServiceDescriptor>(descriptor =>
             descriptor.ServiceType == typeof(ITestRepository) &&
             descriptor.ImplementationType == typeof(TestRepository) &&
             descriptor.Lifetime == ServiceLifetime.Scoped));
+
+        provider.Received().Add(Arg.Is<ServiceDescriptor>(descriptor =>
+            descriptor.ServiceType == typeof(ITestRepositoryFactory) &&
+            descriptor.ImplementationType == typeof(TestRepositoryFactory) &&
+            descriptor.Lifetime == ServiceLifetime.Singleton));
     }
 
     /// <summary>
@@ -122,6 +127,27 @@ public class RegisterServicesTests {
             descriptor.ServiceType.IsGenericType &&
             descriptor.ServiceType.GetGenericTypeDefinition() == typeof(IBusinessCommandHandler<,>) &&
             descriptor.ImplementationType == typeof(TestBusinessCommandDbHandler) &&
+            descriptor.Lifetime == ServiceLifetime.Transient));
+    }
+
+    /// <summary>
+    ///     Регистрирует обработчики запросов
+    /// </summary>
+    [Fact]
+    public void RegisterQueryHandler() {
+        // Arrange
+        var provider = Substitute.For<IServiceCollection>();
+
+        // Act
+        provider.AddQueryHandlers(typeof(TestQueryHandler).Assembly);
+
+        // Assert
+        provider.Received(1);
+
+        provider.Received().Add(Arg.Is<ServiceDescriptor>(descriptor =>
+            descriptor.ServiceType.IsGenericType &&
+            descriptor.ServiceType.GetGenericTypeDefinition() == typeof(IQueryHandler<,>) &&
+            descriptor.ImplementationType == typeof(TestQueryHandler) &&
             descriptor.Lifetime == ServiceLifetime.Transient));
     }
 }

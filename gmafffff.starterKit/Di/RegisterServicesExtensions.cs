@@ -20,6 +20,7 @@ public static class RegisterServicesExtensions {
         typeof(IEntityMapperDuplex<,,>),
         typeof(IEntityMapperForwardExpression<,,>),
         typeof(IRepository<,>),
+        typeof(IRepositoryFactory<,,>),
         typeof(IDisposable),
         typeof(IAsyncDisposable),
     ];
@@ -45,26 +46,40 @@ public static class RegisterServicesExtensions {
     }
 
     /// <summary>
-    ///     Регистрирует в сервисе внедрения зависимостей репозитории,
-    ///     реализующие интерфейс <see cref="IRepository{T,TId}" />
+    ///     Регистрирует в сервисе внедрения зависимостей оперативные склады,
+    ///     реализующие интерфейс <see cref="IRepository{T,TId}" />,
+    ///     а также фабрики, реализующие интерфейс <see cref="IRepositoryFactory{TRepo, TEntity, TId}"/>
     /// </summary>
     /// <param name="this">Описание служб</param>
     /// <param name="assemblies">Сборки для поиска. Если аргумент опущен, то поиск по всем сборкам домена приложения</param>
     /// <returns></returns>
     public static IServiceCollection AddRepositories(this IServiceCollection @this, params Assembly[] assemblies) {
-        return @this.Scan(scan => {
-            var selector = assemblies.Length == 0
-                ? scan.FromApplicationDependencies()
-                : scan.FromAssemblies(assemblies);
+        return @this
+            .Scan(scan => {
+                var selector = assemblies.Length == 0
+                    ? scan.FromApplicationDependencies()
+                    : scan.FromAssemblies(assemblies);
 
-            selector
-                .AddClasses(@class => @class.AssignableTo(typeof(IRepository<,>)))
-                .AsImplementedInterfaces(predicate: @interface =>
-                    @interface.IsGenericType
-                        ? !_ignoreInterfaces.Contains(@interface.GetGenericTypeDefinition())
-                        : !_ignoreInterfaces.Contains(@interface))
-                .WithScopedLifetime();
-        });
+                selector
+                    .AddClasses(@class => @class.AssignableTo(typeof(IRepository<,>)))
+                    .AsImplementedInterfaces(predicate: @interface =>
+                        @interface.IsGenericType
+                            ? !_ignoreInterfaces.Contains(@interface.GetGenericTypeDefinition())
+                            : !_ignoreInterfaces.Contains(@interface))
+                    .WithScopedLifetime();
+            })
+            .Scan(scan => {
+                var selector = assemblies.Length == 0
+                    ? scan.FromApplicationDependencies()
+                    : scan.FromAssemblies(assemblies);
+                selector
+                    .AddClasses(@class => @class.AssignableTo(typeof(IRepositoryFactory<,,>)))
+                    .AsImplementedInterfaces(predicate: @interface =>
+                        @interface.IsGenericType
+                            ? !_ignoreInterfaces.Contains(@interface.GetGenericTypeDefinition())
+                            : !_ignoreInterfaces.Contains(@interface))
+                    .WithSingletonLifetime();
+            });
     }
 
     /// <summary>
@@ -83,6 +98,30 @@ public static class RegisterServicesExtensions {
 
             selector
                 .AddClasses(@class => @class.AssignableTo(typeof(BusinessCommandDbHandler<,,>)))
+                .AsImplementedInterfaces(predicate: @interface =>
+                    @interface.IsGenericType
+                        ? !_ignoreInterfaces.Contains(@interface.GetGenericTypeDefinition())
+                        : !_ignoreInterfaces.Contains(@interface))
+                .WithTransientLifetime();
+        });
+    }
+
+    /// <summary>
+    ///     Регистрирует в сервисе внедрения зависимостей обработчики запросов,
+    ///     реализующие класс <see cref="IQueryHandler{TQuery,TResult}" />
+    /// </summary>
+    /// <param name="this">Описание служб</param>
+    /// <param name="assemblies">Сборки для поиска. Если аргумент опущен, то поиск по всем сборкам домена приложения</param>
+    /// <returns></returns>
+    public static IServiceCollection AddQueryHandlers(this IServiceCollection @this,
+        params Assembly[] assemblies) {
+        return @this.Scan(scan => {
+            var selector = assemblies.Length == 0
+                ? scan.FromApplicationDependencies()
+                : scan.FromAssemblies(assemblies);
+
+            selector
+                .AddClasses(@class => @class.AssignableTo(typeof(IQueryHandler<,>)))
                 .AsImplementedInterfaces(predicate: @interface =>
                     @interface.IsGenericType
                         ? !_ignoreInterfaces.Contains(@interface.GetGenericTypeDefinition())
