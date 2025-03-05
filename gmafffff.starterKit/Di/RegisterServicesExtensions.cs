@@ -155,6 +155,22 @@ public static class RegisterServicesExtensions {
     }
 
     /// <summary>
+    ///     Регистрирует в сервисе внедрения зависимостей преобразователи,
+    ///     реализующие интерфейс <see cref="IEntityMapper{TMainEntity,TId,TDto}" />,
+    ///     а также находит конфигурации mapster и регистрирует их в глобальной конфигурации
+    /// </summary>
+    /// <param name="this">Описание служб</param>
+    /// <param name="assemblies">Сборки для поиска. Если аргумент опущен, то поиск по всем сборкам домена приложения</param>
+    /// <remarks>
+    /// Комбинация методов <see cref="AddEntityMappers(IServiceCollection, Assembly[])"/>
+    /// и <see cref="RegisterMapsterConfigs(Assembly[])"/>
+    /// </remarks>
+    public static IServiceCollection AddEntityMappersWithConfig(this IServiceCollection @this, params Assembly[] assemblies) {
+        RegisterMapsterConfigs(assemblies);
+        return @this.AddEntityMappers(assemblies);
+    }
+
+    /// <summary>
     /// Находит конфигурации mapster и регистрирует их в глобальной конфигурации
     /// <see cref="TypeAdapterConfig.GlobalSettings"/>
     /// </summary>
