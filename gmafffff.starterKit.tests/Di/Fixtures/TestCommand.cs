@@ -2,4 +2,4 @@
 
 namespace gmafffff.starterKit.tests.Di.Fixtures;
 
-public record TestCommand: BusinessCommand;
+public record TestCommand : BusinessCommand;

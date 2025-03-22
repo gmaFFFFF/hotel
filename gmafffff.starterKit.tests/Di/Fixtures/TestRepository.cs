@@ -4,7 +4,7 @@ using gmafffff.starterKit.Domain;
 
 namespace gmafffff.starterKit.tests.Di.Fixtures;
 
-public class TestRepository: ITestRepository {
+public class TestRepository : ITestRepository {
     public void Dispose() {
         throw new NotImplementedException();
     }
@@ -57,7 +57,8 @@ public class TestRepository: ITestRepository {
         throw new NotImplementedException();
     }
 
-    public async Task<IImmutableList<TestEntity>> LoadAsync(Expression<Func<TestEntity, bool>>? spec = null, CancellationToken cancel = default) {
+    public async Task<IImmutableList<TestEntity>> LoadAsync(Expression<Func<TestEntity, bool>>? spec = null,
+        CancellationToken cancel = default) {
         throw new NotImplementedException();
     }
 
@@ -83,7 +84,8 @@ public class TestRepository: ITestRepository {
         set => throw new NotImplementedException();
     }
 
-    public async Task<IImmutableList<TestEntity>> LoadOnlyRootAsync(Expression<Func<TestEntity, bool>>? spec = null, CancellationToken cancel = default) {
+    public async Task<IImmutableList<TestEntity>> LoadOnlyRootAsync(Expression<Func<TestEntity, bool>>? spec = null,
+        CancellationToken cancel = default) {
         throw new NotImplementedException();
     }
 
@@ -119,19 +121,23 @@ public class TestRepository: ITestRepository {
         throw new NotImplementedException();
     }
 
-    public void Delete<TChild, TChildId>(TChild entity) where TChild : Entity<TChildId> where TChildId : struct, IEquatable<TChildId> {
+    public void Delete<TChild, TChildId>(TChild entity) where TChild : Entity<TChildId>
+        where TChildId : struct, IEquatable<TChildId> {
         throw new NotImplementedException();
     }
 
-    public void Delete<TChild, TChildId>(IEnumerable<TChild> entities) where TChild : Entity<TChildId> where TChildId : struct, IEquatable<TChildId> {
+    public void Delete<TChild, TChildId>(IEnumerable<TChild> entities) where TChild : Entity<TChildId>
+        where TChildId : struct, IEquatable<TChildId> {
         throw new NotImplementedException();
     }
 
-    public void Delete<TChild, TChildId>(TChildId entityId) where TChild : Entity<TChildId> where TChildId : struct, IEquatable<TChildId> {
+    public void Delete<TChild, TChildId>(TChildId entityId) where TChild : Entity<TChildId>
+        where TChildId : struct, IEquatable<TChildId> {
         throw new NotImplementedException();
     }
 
-    public void Delete<TChild, TChildId>(IEnumerable<TChildId> entityIds) where TChild : Entity<TChildId> where TChildId : struct, IEquatable<TChildId> {
+    public void Delete<TChild, TChildId>(IEnumerable<TChildId> entityIds) where TChild : Entity<TChildId>
+        where TChildId : struct, IEquatable<TChildId> {
         throw new NotImplementedException();
     }
 
@@ -139,7 +145,8 @@ public class TestRepository: ITestRepository {
         throw new NotImplementedException();
     }
 
-    public async Task<int> DeleteBulkAsync(Expression<Func<TestEntity, bool>>? spec, CancellationToken cancel = default) {
+    public async Task<int> DeleteBulkAsync(Expression<Func<TestEntity, bool>>? spec,
+        CancellationToken cancel = default) {
         throw new NotImplementedException();
     }
 
@@ -163,7 +170,8 @@ public class TestRepository: ITestRepository {
         throw new NotImplementedException();
     }
 
-    public async Task<int> CountByAsync(Expression<Func<TestEntity, bool>>? spec = null, CancellationToken cancel = default) {
+    public async Task<int> CountByAsync(Expression<Func<TestEntity, bool>>? spec = null,
+        CancellationToken cancel = default) {
         throw new NotImplementedException();
     }
 

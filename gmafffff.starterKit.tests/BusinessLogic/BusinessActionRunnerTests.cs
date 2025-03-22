@@ -142,10 +142,10 @@ public class BusinessActionRunnerTests {
         result.IfFail(e =>
             e.Code.Should().Be((int)Convert.ChangeType(_failRule1.ErrorCode, _failRule1.ErrorCode.GetTypeCode())));
         _validator.Received().IsValid(Arg.Any<BusinessActionCommand>());
-        _successRule1.Received().IsSatisfiedAsync(_validCommand, Arg.Any<CancellationToken>());
-        _successRule2.Received().IsSatisfiedAsync(_validCommand, Arg.Any<CancellationToken>());
-        _failRule1.Received().IsSatisfiedAsync(_validCommand, Arg.Any<CancellationToken>());
-        _failRule2.DidNotReceiveWithAnyArgs()
+        await _successRule1.Received().IsSatisfiedAsync(_validCommand, Arg.Any<CancellationToken>());
+        await _successRule2.Received().IsSatisfiedAsync(_validCommand, Arg.Any<CancellationToken>());
+        await _failRule1.Received().IsSatisfiedAsync(_validCommand, Arg.Any<CancellationToken>());
+        await _failRule2.DidNotReceiveWithAnyArgs()
             .IsSatisfiedAsync(Arg.Any<BusinessActionCommand>(), Arg.Any<CancellationToken>());
     }
 
@@ -179,10 +179,10 @@ public class BusinessActionRunnerTests {
                 e.IsExceptional && e.Exception.Map(exc => exc.Message == nameof(_exceptionRule2)).IfNone(false))
         );
         _validator.Received().IsValid(Arg.Any<BusinessActionCommand>());
-        _successRule1.Received().IsSatisfiedAsync(_validCommand, Arg.Any<CancellationToken>());
-        _successRule2.Received().IsSatisfiedAsync(_validCommand, Arg.Any<CancellationToken>());
-        _failRule1.Received().IsSatisfiedAsync(_validCommand, Arg.Any<CancellationToken>());
-        _failRule2.Received().IsSatisfiedAsync(_validCommand, Arg.Any<CancellationToken>());
+        await _successRule1.Received().IsSatisfiedAsync(_validCommand, Arg.Any<CancellationToken>());
+        await _successRule2.Received().IsSatisfiedAsync(_validCommand, Arg.Any<CancellationToken>());
+        await _failRule1.Received().IsSatisfiedAsync(_validCommand, Arg.Any<CancellationToken>());
+        await _failRule2.Received().IsSatisfiedAsync(_validCommand, Arg.Any<CancellationToken>());
     }
 
     /// <summary>
@@ -200,8 +200,8 @@ public class BusinessActionRunnerTests {
         // Assert
         result.IsSucc.Should().BeTrue();
         _validator.Received().IsValid(Arg.Any<BusinessActionCommand>());
-        _successRule1.Received().IsSatisfiedAsync(_validCommand, Arg.Any<CancellationToken>());
-        _successRule2.Received().IsSatisfiedAsync(_validCommand, Arg.Any<CancellationToken>());
-        _handler.Received().ExecuteAsync(Arg.Any<BusinessActionCommand>(), Arg.Any<CancellationToken>());
+        await _successRule1.Received().IsSatisfiedAsync(_validCommand, Arg.Any<CancellationToken>());
+        await _successRule2.Received().IsSatisfiedAsync(_validCommand, Arg.Any<CancellationToken>());
+        await _handler.Received().ExecuteAsync(Arg.Any<BusinessActionCommand>(), Arg.Any<CancellationToken>());
     }
 }

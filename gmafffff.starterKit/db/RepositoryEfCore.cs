@@ -151,8 +151,8 @@ public class RepositoryEfCore<T, TId> : IRepository<T, TId>
     ///     Метод должен быть переопределён в производных классах с обязательным вызовом метода базового класса
     /// </remarks>
     protected virtual void DefineQuery() {
-        LoadAll = QueryBuilder(query: Entities, include: AutoInclude);
-        GetAll = QueryBuilder(query: LoadAll, options: QueryTune.ChangeTrackingDisable);
+        LoadAll = QueryBuilder(Entities, include: AutoInclude);
+        GetAll = QueryBuilder(LoadAll, options: QueryTune.ChangeTrackingDisable);
     }
 
     #endregion
@@ -431,14 +431,14 @@ public class RepositoryEfCore<T, TId> : IRepository<T, TId>
     public int CountBy(Expression<Func<T, bool>>? spec = null) {
         return spec is null
             ? 0
-            : QueryBuilder(query: Entities, spec: spec).Count();
+            : QueryBuilder(Entities, spec).Count();
     }
 
     public async Task<int> CountByAsync(Expression<Func<T, bool>>? spec = null,
         CancellationToken cancel = default) {
         return spec is null
             ? 0
-            : await QueryBuilder(query: Entities, spec: spec).CountAsync(cancel).ConfigureAwait(false);
+            : await QueryBuilder(Entities, spec).CountAsync(cancel).ConfigureAwait(false);
     }
 
     #endregion

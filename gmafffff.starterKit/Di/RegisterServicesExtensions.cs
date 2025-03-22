@@ -11,9 +11,9 @@ namespace gmafffff.starterKit.Di;
 
 public static class RegisterServicesExtensions {
     /// <summary>
-    /// Служебные интерфейсы, которые не требуется регистрировать
+    ///     Служебные интерфейсы, которые не требуется регистрировать
     /// </summary>
-    private static Type[] _ignoreInterfaces = [
+    private static readonly Type[] _ignoreInterfaces = [
         typeof(IEntityMapper<,,>),
         typeof(IEntityMapperForward<,,>),
         typeof(IEntityMapperBackward<,,>),
@@ -22,7 +22,7 @@ public static class RegisterServicesExtensions {
         typeof(IRepository<,>),
         typeof(IRepositoryFactory<,,>),
         typeof(IDisposable),
-        typeof(IAsyncDisposable),
+        typeof(IAsyncDisposable)
     ];
 
     /// <summary>
@@ -48,7 +48,7 @@ public static class RegisterServicesExtensions {
     /// <summary>
     ///     Регистрирует в сервисе внедрения зависимостей оперативные склады,
     ///     реализующие интерфейс <see cref="IRepository{T,TId}" />,
-    ///     а также фабрики, реализующие интерфейс <see cref="IRepositoryFactory{TRepo, TEntity, TId}"/>
+    ///     а также фабрики, реализующие интерфейс <see cref="IRepositoryFactory{TRepo, TEntity, TId}" />
     /// </summary>
     /// <param name="this">Описание служб</param>
     /// <param name="assemblies">Сборки для поиска. Если аргумент опущен, то поиск по всем сборкам домена приложения</param>
@@ -162,17 +162,18 @@ public static class RegisterServicesExtensions {
     /// <param name="this">Описание служб</param>
     /// <param name="assemblies">Сборки для поиска. Если аргумент опущен, то поиск по всем сборкам домена приложения</param>
     /// <remarks>
-    /// Комбинация методов <see cref="AddEntityMappers(IServiceCollection, Assembly[])"/>
-    /// и <see cref="RegisterMapsterConfigs(Assembly[])"/>
+    ///     Комбинация методов <see cref="AddEntityMappers(IServiceCollection, Assembly[])" />
+    ///     и <see cref="RegisterMapsterConfigs(Assembly[])" />
     /// </remarks>
-    public static IServiceCollection AddEntityMappersWithConfig(this IServiceCollection @this, params Assembly[] assemblies) {
+    public static IServiceCollection AddEntityMappersWithConfig(this IServiceCollection @this,
+        params Assembly[] assemblies) {
         RegisterMapsterConfigs(assemblies);
         return @this.AddEntityMappers(assemblies);
     }
 
     /// <summary>
-    /// Находит конфигурации mapster и регистрирует их в глобальной конфигурации
-    /// <see cref="TypeAdapterConfig.GlobalSettings"/>
+    ///     Находит конфигурации mapster и регистрирует их в глобальной конфигурации
+    ///     <see cref="TypeAdapterConfig.GlobalSettings" />
     /// </summary>
     public static void RegisterMapsterConfigs(params Assembly[] assemblies) {
         var assembliesToScan = assemblies.Length > 0

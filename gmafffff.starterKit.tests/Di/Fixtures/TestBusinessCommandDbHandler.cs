@@ -2,7 +2,7 @@
 
 namespace gmafffff.starterKit.tests.Di.Fixtures;
 
-public class TestBusinessCommandDbHandler: BusinessCommandDbHandler<TestCommand,TestEvent,int> {
+public class TestBusinessCommandDbHandler : BusinessCommandDbHandler<TestCommand, TestEvent, int> {
     protected override Task<Fin<Unit>> RunActionAsync(CancellationToken cancel = default) {
         throw new NotImplementedException();
     }

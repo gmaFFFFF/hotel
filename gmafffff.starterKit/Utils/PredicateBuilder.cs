@@ -1,4 +1,6 @@
-﻿namespace gmafffff.training.hotel.infrastructure.data.Utils;
+﻿using System.Linq.Expressions;
+
+namespace gmafffff.starterKit.Utils;
 
 /// <summary>
 ///     Динамическая композиция предикатов
