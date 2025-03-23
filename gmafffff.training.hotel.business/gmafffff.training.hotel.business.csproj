@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\gmafffff.training.hotel.domain\gmafffff.training.hotel.domain.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.0"/>
+        <PackageReference Include="LanguageExt.Core" Version="5.0.0-beta-46"/>
+        <PackageReference Include="Light.GuardClauses" Version="12.0.0"/>
+    </ItemGroup>
+
+</Project>

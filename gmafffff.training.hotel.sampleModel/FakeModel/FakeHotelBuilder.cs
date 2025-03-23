@@ -30,7 +30,7 @@ public class FakeHotelBuilder {
     /// <summary>
     ///     Фейковый отель
     /// </summary>
-    private HotelBlock<int, Guid> _hotel;
+    private HotelBlock<int, Guid> _hotel = null!;
 
     /// <summary>
     ///     Начало моделирования

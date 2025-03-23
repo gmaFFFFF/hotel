@@ -17,7 +17,7 @@ public class SimplePersistenceRepositoriesTests : IClassFixture<SqliteDbFixture>
     }
 
     private async Task ClearDb() {
-        await new PersonsRepository(_sqliteDbFixture.CreateDbContext()).DeleteBulkAsync(_ => true);
+        await new PersonsRepository(_sqliteDbFixture.CreateDbContext(), null!).DeleteBulkAsync(_ => true);
         await new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext()).DeleteBulkAsync(_ => true);
         await new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!).DeleteBulkAsync(_ => true);
     }
@@ -45,8 +45,8 @@ public class SimplePersistenceRepositoriesTests : IClassFixture<SqliteDbFixture>
     [Fact]
     public async Task CanSavePersons() {
         // Arrange
-        using var repoInit = new PersonsRepository(_sqliteDbFixture.CreateDbContext());
-        using var repoTest = new PersonsRepository(_sqliteDbFixture.CreateDbContext());
+        using var repoInit = new PersonsRepository(_sqliteDbFixture.CreateDbContext(), null!);
+        using var repoTest = new PersonsRepository(_sqliteDbFixture.CreateDbContext(), null!);
         IImmutableList<Person<Guid>>? saved = null;
 
         repoInit.Add(_fakeHotel.Persons);

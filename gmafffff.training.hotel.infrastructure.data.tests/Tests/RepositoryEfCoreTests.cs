@@ -18,7 +18,7 @@ public class RepositoryEfCoreTests : IClassFixture<SqliteDbFixture> {
     }
 
     private async Task ClearDb() {
-        await new PersonsRepository(_sqliteDbFixture.CreateDbContext()).DeleteBulkAsync(_ => true);
+        await new PersonsRepository(_sqliteDbFixture.CreateDbContext(), null!).DeleteBulkAsync(_ => true);
         await new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext()).DeleteBulkAsync(_ => true);
         await new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!).DeleteBulkAsync(_ => true);
     }
@@ -154,8 +154,8 @@ public class RepositoryEfCoreTests : IClassFixture<SqliteDbFixture> {
     [HotelAutodata]
     public async Task CanAddEntities(Person<Guid> person, IEnumerable<Person<Guid>> persons) {
         // Arrange
-        using var repoInit = new PersonsRepository(_sqliteDbFixture.CreateDbContext());
-        using var repoTest = new PersonsRepository(_sqliteDbFixture.CreateDbContext());
+        using var repoInit = new PersonsRepository(_sqliteDbFixture.CreateDbContext(), null!);
+        using var repoTest = new PersonsRepository(_sqliteDbFixture.CreateDbContext(), null!);
 
         // Act
         repoInit.Add(person);
@@ -223,9 +223,9 @@ public class RepositoryEfCoreTests : IClassFixture<SqliteDbFixture> {
     [HotelAutodata]
     public async Task CanDeleteEntitiesById(Person<Guid> person, IEnumerable<Person<Guid>> persons) {
         // Arrange
-        using var repoInit = new PersonsRepository(_sqliteDbFixture.CreateDbContext());
-        using var repoDelete = new PersonsRepository(_sqliteDbFixture.CreateDbContext());
-        using var repoTest = new PersonsRepository(_sqliteDbFixture.CreateDbContext());
+        using var repoInit = new PersonsRepository(_sqliteDbFixture.CreateDbContext(), null!);
+        using var repoDelete = new PersonsRepository(_sqliteDbFixture.CreateDbContext(), null!);
+        using var repoTest = new PersonsRepository(_sqliteDbFixture.CreateDbContext(), null!);
 
         // Act
         repoInit.Add(person);
@@ -250,9 +250,9 @@ public class RepositoryEfCoreTests : IClassFixture<SqliteDbFixture> {
     [HotelAutodata]
     public async Task CanUpdateEntity(Person<Guid> person, Person<Guid> personUpdate) {
         // Arrange
-        using var repoInit = new PersonsRepository(_sqliteDbFixture.CreateDbContext());
-        using var repoMod = new PersonsRepository(_sqliteDbFixture.CreateDbContext());
-        using var repoTest = new PersonsRepository(_sqliteDbFixture.CreateDbContext());
+        using var repoInit = new PersonsRepository(_sqliteDbFixture.CreateDbContext(), null!);
+        using var repoMod = new PersonsRepository(_sqliteDbFixture.CreateDbContext(), null!);
+        using var repoTest = new PersonsRepository(_sqliteDbFixture.CreateDbContext(), null!);
 
         repoInit.Add(person);
         await repoInit.SaveChangesAsync();

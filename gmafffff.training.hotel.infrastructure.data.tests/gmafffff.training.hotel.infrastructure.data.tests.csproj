@@ -25,7 +25,8 @@
 
     <ItemGroup>
         <ProjectReference Include="..\gmafffff.training.hotel.infrastructure.data\gmafffff.training.hotel.infrastructure.data.csproj"/>
-        <ProjectReference Include="..\gmafffff.training.hotel.sampleModel\gmafffff.training.hotel.sampleModel.csproj" />
+        <ProjectReference Include="..\gmafffff.training.hotel.infrastructure.mapper\gmafffff.training.hotel.infrastructure.mapper.csproj"/>
+        <ProjectReference Include="..\gmafffff.training.hotel.sampleModel\gmafffff.training.hotel.sampleModel.csproj"/>
     </ItemGroup>
 
 </Project>

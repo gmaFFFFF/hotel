@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\gmafffff.training.hotel.domain\gmafffff.training.hotel.domain.csproj"/>
+    </ItemGroup>
+
+
+    <ItemGroup>
+        <PackageReference Include="Mapster" Version="7.4.2-pre02"/>
+    </ItemGroup>
+
+
+    <Target Name="Mapster" AfterTargets="AfterBuild">
+        <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet tool restore"/>
+        <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet mapster model --assembly &quot;$(TargetDir)$(ProjectName).dll&quot; --baseNamespace gmafffff.training.hotel.infrastructure.mapper"/>
+        <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet mapster extension --assembly &quot;$(TargetDir)$(ProjectName).dll&quot; --baseNamespace gmafffff.training.hotel.infrastructure.mapper --output ./Mappers/"/>
+        <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet mapster mapper --assembly &quot;$(TargetDir)$(ProjectName).dll&quot; --baseNamespace gmafffff.training.hotel.infrastructure.mapper --output ./Mappers/"/>
+    </Target>
+
+    <ItemGroup>
+        <Generated Include="**\*.g.cs"/>
+    </ItemGroup>
+    <Target Name="CleanGenerated" BeforeTargets="Clean">
+        <Delete Files="@(Generated)"/>
+    </Target>
+
+
+</Project>

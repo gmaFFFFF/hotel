@@ -13,21 +13,27 @@ public interface IHotelBlocksRepository<TId, TPersonId> : IRepository<HotelBlock
     ///     Фильтрует гостиничные номера в агрегате
     /// </summary>
     /// <param name="predicate"></param>
+    /// <param name="cancel"></param>
     Task<IImmutableList<HotelBlock<int, Guid>>> LoadWithRoomFilterAsync(
-        Expression<Func<Room<TPersonId>, bool>> predicate);
+        Expression<Func<Room<TPersonId>, bool>> predicate, CancellationToken cancel = default);
 
     /// <summary>
     ///     Возвращает количество номеров, соответствующих <paramref name="predicate" />
     /// </summary>
     /// <param name="predicate">условия отбора номеров</param>
+    /// <param name="cancel"></param>
     /// <returns></returns>
-    Task<int> CountRoomByAsync(Expression<Func<Room<TPersonId>, bool>> predicate);
+    Task<int> CountRoomByAsync(Expression<Func<Room<TPersonId>, bool>> predicate, CancellationToken cancel = default);
 
     /// <summary>
     ///     Возвращает DTO номеров в отеле
     /// </summary>
     /// <param name="predicate">фильтр номеров</param>
-    Task<IImmutableList<RoomDto>> GetRoomsAsync(Expression<Func<Room<TPersonId>, bool>> predicate);
+    /// <param name="pager">страничная выдача</param>
+    /// <param name="cancel"></param>
+    Task<IImmutableList<RoomDto>> GetRoomsAsync(Expression<Func<Room<TPersonId>, bool>> predicate,
+        (uint pageNum, uint pageSize)? pager = null,
+        CancellationToken cancel = default);
 
     #endregion
 }

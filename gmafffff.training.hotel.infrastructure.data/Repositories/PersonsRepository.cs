@@ -1,7 +1,17 @@
 ﻿using gmafffff.starterKit.Db;
+using gmafffff.training.hotel.domain.Dto.PersonManagement;
+using gmafffff.training.hotel.infrastructure.data.Sessions;
 
 namespace gmafffff.training.hotel.infrastructure.data.Repositories;
 
-public class PersonsRepository(DbContext context) :
+public class PersonsRepository(HotelDbContext context, IPersonManagementMapper managementMapper) :
     RepositoryEfCore<Person<Guid>, Guid>(context),
-    IPersonsRepository<Guid> { }
+    IPersonsRepository<Guid> {
+    public async Task<IImmutableList<PersonDto>> GetPersonsAsync(Expression<Func<Person<Guid>, bool>> predicate,
+        (uint pageNum, uint pageSize)? pager = null,
+        CancellationToken cancel = default) {
+        var query = QueryBuilder(GetAll.Where(predicate), pager: pager);
+        return await RunQuery(query.Select(managementMapper.EntityToDto), cancel)
+            .ConfigureAwait(false);
+    }
+}
