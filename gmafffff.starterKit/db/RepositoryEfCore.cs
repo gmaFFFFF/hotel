@@ -29,6 +29,9 @@ public class RepositoryEfCore<T, TId> : IRepository<T, TId>
         Entities = dbContext.Set<T>();
         AutoInclude = autoInclude;
 
+        
+        LoadAll = QueryBuilder(Entities, include: AutoInclude);
+        GetAll = QueryBuilder(LoadAll, options: QueryTune.ChangeTrackingDisable);
         // ReSharper disable once VirtualMemberCallInConstructor
         DefineQuery();
     }
@@ -150,10 +153,7 @@ public class RepositoryEfCore<T, TId> : IRepository<T, TId>
     /// <remarks>
     ///     Метод должен быть переопределён в производных классах с обязательным вызовом метода базового класса
     /// </remarks>
-    protected virtual void DefineQuery() {
-        LoadAll = QueryBuilder(Entities, include: AutoInclude);
-        GetAll = QueryBuilder(LoadAll, options: QueryTune.ChangeTrackingDisable);
-    }
+    protected virtual void DefineQuery() { }
 
     #endregion
 

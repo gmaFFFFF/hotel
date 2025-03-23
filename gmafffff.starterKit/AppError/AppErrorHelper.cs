@@ -34,7 +34,8 @@ public class AppErrorHelper {
     /// <summary>
     ///     Хранит локализованные сообщения об ошибках для каждого перечисления кодов ошибок
     /// </summary>
-    public static IReadOnlyDictionary<Type, Dictionary<string, Dictionary<Enum, string>>> Messages { get; private set; }
+    public static IReadOnlyDictionary<Type, Dictionary<string, Dictionary<Enum, string>>>
+        Messages { get; private set; } = null!;
 
     /// <summary>
     ///     Сканирует сборки в поисках сообщений об ошибках
@@ -65,7 +66,8 @@ public class AppErrorHelper {
             .Select(kv => {
                 var holder = Activator.CreateInstance(kv.holderType);
                 var prop = kv.holderType.GetProperty(nameof(IErrorMessage<Enum>.Messages));
-                var value = (IDictionary)prop.GetValue(holder);
+                Debug.Assert(prop != null, nameof(prop) + " != null");
+                var value = (IDictionary)prop.GetValue(holder)!;
                 var outerKeys = value.Keys.Cast<string>();
                 var outerValues = value.Values.Cast<IDictionary>()
                     .Select(inner => {

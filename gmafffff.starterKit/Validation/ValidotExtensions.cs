@@ -49,9 +49,10 @@ public static class ValidotExtensions {
             .Select(code => code.Replace(PrefixAppInnerCode, ""))
             .Select(Base64Decode)
             .Select(AppErrorHelper.String2ErrorCode)
-            .OfType<Enum>();
+            .OfType<Enum>()
+            .ToArray();
 
-        return errorCodes.Count() == 1
+        return errorCodes.Length == 1
             ? AppErrorHelper.NewError(errorCodes.Single())
             : AppErrorHelper.NewError(errorCodes);
     }

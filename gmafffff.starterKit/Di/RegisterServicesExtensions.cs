@@ -13,7 +13,7 @@ public static class RegisterServicesExtensions {
     /// <summary>
     ///     Служебные интерфейсы, которые не требуется регистрировать
     /// </summary>
-    private static readonly Type[] _ignoreInterfaces = [
+    private static readonly Type[] IgnoreInterfaces = [
         typeof(IEntityMapper<,,>),
         typeof(IEntityMapperForward<,,>),
         typeof(IEntityMapperBackward<,,>),
@@ -64,8 +64,8 @@ public static class RegisterServicesExtensions {
                     .AddClasses(@class => @class.AssignableTo(typeof(IRepository<,>)))
                     .AsImplementedInterfaces(predicate: @interface =>
                         @interface.IsGenericType
-                            ? !_ignoreInterfaces.Contains(@interface.GetGenericTypeDefinition())
-                            : !_ignoreInterfaces.Contains(@interface))
+                            ? !IgnoreInterfaces.Contains(@interface.GetGenericTypeDefinition())
+                            : !IgnoreInterfaces.Contains(@interface))
                     .WithScopedLifetime();
             })
             .Scan(scan => {
@@ -76,8 +76,8 @@ public static class RegisterServicesExtensions {
                     .AddClasses(@class => @class.AssignableTo(typeof(IRepositoryFactory<,,>)))
                     .AsImplementedInterfaces(predicate: @interface =>
                         @interface.IsGenericType
-                            ? !_ignoreInterfaces.Contains(@interface.GetGenericTypeDefinition())
-                            : !_ignoreInterfaces.Contains(@interface))
+                            ? !IgnoreInterfaces.Contains(@interface.GetGenericTypeDefinition())
+                            : !IgnoreInterfaces.Contains(@interface))
                     .WithSingletonLifetime();
             });
     }
@@ -100,8 +100,8 @@ public static class RegisterServicesExtensions {
                 .AddClasses(@class => @class.AssignableTo(typeof(BusinessCommandDbHandler<,,>)))
                 .AsImplementedInterfaces(predicate: @interface =>
                     @interface.IsGenericType
-                        ? !_ignoreInterfaces.Contains(@interface.GetGenericTypeDefinition())
-                        : !_ignoreInterfaces.Contains(@interface))
+                        ? !IgnoreInterfaces.Contains(@interface.GetGenericTypeDefinition())
+                        : !IgnoreInterfaces.Contains(@interface))
                 .WithTransientLifetime();
         });
     }
@@ -124,8 +124,8 @@ public static class RegisterServicesExtensions {
                 .AddClasses(@class => @class.AssignableTo(typeof(IQueryHandler<,>)))
                 .AsImplementedInterfaces(predicate: @interface =>
                     @interface.IsGenericType
-                        ? !_ignoreInterfaces.Contains(@interface.GetGenericTypeDefinition())
-                        : !_ignoreInterfaces.Contains(@interface))
+                        ? !IgnoreInterfaces.Contains(@interface.GetGenericTypeDefinition())
+                        : !IgnoreInterfaces.Contains(@interface))
                 .WithTransientLifetime();
         });
     }
@@ -148,8 +148,8 @@ public static class RegisterServicesExtensions {
                 .UsingRegistrationStrategy(RegistrationStrategy.Skip)
                 .AsSelfWithInterfaces(predicate: @interface =>
                     @interface.IsGenericType
-                        ? !_ignoreInterfaces.Contains(@interface.GetGenericTypeDefinition())
-                        : !_ignoreInterfaces.Contains(@interface))
+                        ? !IgnoreInterfaces.Contains(@interface.GetGenericTypeDefinition())
+                        : !IgnoreInterfaces.Contains(@interface))
                 .WithSingletonLifetime();
         });
     }

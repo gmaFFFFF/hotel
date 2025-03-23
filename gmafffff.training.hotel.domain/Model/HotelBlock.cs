@@ -57,7 +57,7 @@ public class HotelBlock<TId, TPersonId> : Entity<TId>
 
         var report = new AccommodationReport<TPersonId> {
             RoomDetails = room.RoomDetails,
-            TariffDetails = room.Visit.TariffDetails with { },
+            TariffDetails = room.Visit!.TariffDetails with { },
             Visitors = room.Visit.Visitors,
             ArrivalDate = room.Visit.ArrivalDate,
             DepartureDate = departureDate ?? DateOnly.FromDateTime(DateTime.Today)
