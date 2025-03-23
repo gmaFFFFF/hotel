@@ -1,0 +1,76 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gmafffff.training.hotel.domain", "gmafffff.training.hotel.domain\gmafffff.training.hotel.domain.csproj", "{00E0809B-41E1-482E-A74F-32347464C5DE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gmafffff.training.hotel.domain.tests", "gmafffff.training.hotel.domain.tests\gmafffff.training.hotel.domain.tests.csproj", "{5703F2E0-C93E-4102-B602-971B8D9EC1BA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gmafffff.training.hotel.infrastructure.data", "gmafffff.training.hotel.infrastructure.data\gmafffff.training.hotel.infrastructure.data.csproj", "{64762E68-B55B-48F7-B0D7-2CC6D9E3FACD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gmafffff.training.hotel.infrastructure.data.tests", "gmafffff.training.hotel.infrastructure.data.tests\gmafffff.training.hotel.infrastructure.data.tests.csproj", "{FE211C35-61EA-4090-9451-4E54BFFB01B3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gmafffff.training.hotel.infrastructure.mapper", "gmafffff.training.hotel.infrastructure.mapper\gmafffff.training.hotel.infrastructure.mapper.csproj", "{67C65239-E8FF-4C58-B2A6-6D46BC3006DB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gmafffff.training.hotel.business", "gmafffff.training.hotel.business\gmafffff.training.hotel.business.csproj", "{88F8A9CE-E499-4C84-A6D3-838E2F2A8FB7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gmafffff.training.hotel.business.tests", "gmafffff.training.hotel.business.tests\gmafffff.training.hotel.business.tests.csproj", "{3B6C9271-70A2-4AEE-BBB9-3239E327A960}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gmafffff.starterKit", "gmafffff.starterKit\gmafffff.starterKit.csproj", "{4301E690-21CF-4F99-9A38-DD50AA8C1A07}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gmafffff.starterKit.tests", "gmafffff.starterKit.tests\gmafffff.starterKit.tests.csproj", "{AB9B1BE6-72BE-4DFE-9784-10EB737A7034}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gmafffff.training.hotel.sampleModel", "gmafffff.training.hotel.sampleModel\gmafffff.training.hotel.sampleModel.csproj", "{DF1E2FF5-7187-4C02-A633-75692F90DBA0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{00E0809B-41E1-482E-A74F-32347464C5DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00E0809B-41E1-482E-A74F-32347464C5DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00E0809B-41E1-482E-A74F-32347464C5DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00E0809B-41E1-482E-A74F-32347464C5DE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5703F2E0-C93E-4102-B602-971B8D9EC1BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5703F2E0-C93E-4102-B602-971B8D9EC1BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5703F2E0-C93E-4102-B602-971B8D9EC1BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5703F2E0-C93E-4102-B602-971B8D9EC1BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{64762E68-B55B-48F7-B0D7-2CC6D9E3FACD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{64762E68-B55B-48F7-B0D7-2CC6D9E3FACD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{64762E68-B55B-48F7-B0D7-2CC6D9E3FACD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{64762E68-B55B-48F7-B0D7-2CC6D9E3FACD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FE211C35-61EA-4090-9451-4E54BFFB01B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE211C35-61EA-4090-9451-4E54BFFB01B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FE211C35-61EA-4090-9451-4E54BFFB01B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE211C35-61EA-4090-9451-4E54BFFB01B3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{67C65239-E8FF-4C58-B2A6-6D46BC3006DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67C65239-E8FF-4C58-B2A6-6D46BC3006DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67C65239-E8FF-4C58-B2A6-6D46BC3006DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67C65239-E8FF-4C58-B2A6-6D46BC3006DB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{88F8A9CE-E499-4C84-A6D3-838E2F2A8FB7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{88F8A9CE-E499-4C84-A6D3-838E2F2A8FB7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{88F8A9CE-E499-4C84-A6D3-838E2F2A8FB7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{88F8A9CE-E499-4C84-A6D3-838E2F2A8FB7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3B6C9271-70A2-4AEE-BBB9-3239E327A960}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B6C9271-70A2-4AEE-BBB9-3239E327A960}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B6C9271-70A2-4AEE-BBB9-3239E327A960}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B6C9271-70A2-4AEE-BBB9-3239E327A960}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4301E690-21CF-4F99-9A38-DD50AA8C1A07}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4301E690-21CF-4F99-9A38-DD50AA8C1A07}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4301E690-21CF-4F99-9A38-DD50AA8C1A07}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4301E690-21CF-4F99-9A38-DD50AA8C1A07}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AB9B1BE6-72BE-4DFE-9784-10EB737A7034}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AB9B1BE6-72BE-4DFE-9784-10EB737A7034}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AB9B1BE6-72BE-4DFE-9784-10EB737A7034}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AB9B1BE6-72BE-4DFE-9784-10EB737A7034}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF1E2FF5-7187-4C02-A633-75692F90DBA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF1E2FF5-7187-4C02-A633-75692F90DBA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF1E2FF5-7187-4C02-A633-75692F90DBA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF1E2FF5-7187-4C02-A633-75692F90DBA0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
