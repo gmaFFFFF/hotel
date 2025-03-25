@@ -7,11 +7,11 @@ namespace gmafffff.training.hotel.infrastructure.data.Repositories;
 public class PersonsRepository(HotelDbContext context, IPersonManagementMapper managementMapper) :
     RepositoryEfCore<Person<Guid>, Guid>(context),
     IPersonsRepository<Guid> {
-    public async Task<IImmutableList<PersonDto>> GetPersonsAsync(Expression<Func<Person<Guid>, bool>> predicate,
+    public async Task<IList<PersonDto>> GetPersonsAsync(Expression<Func<Person<Guid>, bool>> predicate,
         (uint pageNum, uint pageSize)? pager = null,
         CancellationToken cancel = default) {
         var query = QueryBuilder(GetAll.Where(predicate), pager: pager);
-        return await RunQuery(query.Select(managementMapper.EntityToDto), cancel)
+        return await RunQueryAsync(query.Select(managementMapper.EntityToDto), cancel)
             .ConfigureAwait(false);
     }
 }

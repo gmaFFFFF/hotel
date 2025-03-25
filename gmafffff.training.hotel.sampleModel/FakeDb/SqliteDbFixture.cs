@@ -9,7 +9,8 @@ public class SqliteDbFixture : IDisposable {
     private readonly SqliteConnection _connection;
 
     private readonly Lazy<StreamWriter> _logStream = new(() =>
-        new StreamWriter(Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "ef_core.log"),
+        new StreamWriter(Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
+                $"{typeof(SqliteDbFixture).Assembly.GetName().Name}.log"),
             append: true));
 
     private Action<string> _logAction = _ => { };

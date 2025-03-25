@@ -29,9 +29,11 @@ public interface IHotelBlocksRepository<TId, TPersonId> : IRepository<HotelBlock
     ///     Возвращает DTO номеров в отеле
     /// </summary>
     /// <param name="predicate">фильтр номеров</param>
+    /// <param name="sortOrder">порядок сортировки</param>
     /// <param name="pager">страничная выдача</param>
     /// <param name="cancel"></param>
-    Task<IImmutableList<RoomDto>> GetRoomsAsync(Expression<Func<Room<TPersonId>, bool>> predicate,
+    Task<IList<RoomDto>> GetRoomsAsync(Expression<Func<Room<TPersonId>, bool>> predicate,
+        Func<IQueryable<RoomDto>, IOrderedQueryable<RoomDto>>? sortOrder = null,
         (uint pageNum, uint pageSize)? pager = null,
         CancellationToken cancel = default);
 

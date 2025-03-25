@@ -23,7 +23,7 @@ public class HotelBlocksRepository :
 
     public async Task<IImmutableList<HotelBlock<int, Guid>>> LoadWithRoomFilterAsync(
         Expression<Func<Room<Guid>, bool>> predicate, CancellationToken cancel = default) {
-        return await RunQuery(LoadWithRoomFilter(predicate), cancel).ConfigureAwait(false);
+        return [.. await RunQueryAsync(LoadWithRoomFilter(predicate), cancel).ConfigureAwait(false)];
     }
 
     public async Task<int> CountRoomByAsync(Expression<Func<Room<Guid>, bool>> predicate,
@@ -31,13 +31,15 @@ public class HotelBlocksRepository :
         return await GetRoom(predicate).CountAsync(cancellationToken: cancel);
     }
 
-    public async Task<IImmutableList<RoomDto>> GetRoomsAsync(Expression<Func<Room<Guid>, bool>> predicate,
+    public async Task<IList<RoomDto>> GetRoomsAsync(Expression<Func<Room<Guid>, bool>> predicate,
+        Func<IQueryable<RoomDto>, IOrderedQueryable<RoomDto>>? sortOrder = null,
         (uint pageNum, uint pageSize)? pager = null,
         CancellationToken cancel = default) {
         ArgumentNullException.ThrowIfNull(PropertyManagementMapper);
-        var query = QueryBuilder<Room<Guid>, int>(GetRoom(predicate), pager: pager);
-        return await RunQuery(query.Select(PropertyManagementMapper.EntityToDto), cancel)
-            .ConfigureAwait(false);
+        var query = QueryBuilder(
+            GetRoom(predicate).Select(PropertyManagementMapper.EntityToDto),
+            sortOrder: sortOrder, pager: pager);
+        return await RunQueryAsync(query, cancel).ConfigureAwait(false);
     }
 
     protected override void DefineQuery() {

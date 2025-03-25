@@ -27,11 +27,11 @@ public class SimplePersistenceRepositoriesTests : IClassFixture<SqliteDbFixture>
         // Arrange
         using var repoInit = new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!);
         using var repoTest = new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!);
-        IImmutableList<HotelBlock<int, Guid>>? saved = null;
+        IList<HotelBlock<int, Guid>>? saved = null;
 
         repoInit.Add(_fakeHotel.Hotel);
         var writeAct = async () => await repoInit.SaveChangesAsync();
-        var readAct = async () => saved = await repoTest.GetAllDetachAsync();
+        var readAct = async () => saved = await repoTest.GetAsync();
 
         // Act & Assert       
         using var _ = new AssertionScope();
@@ -47,11 +47,11 @@ public class SimplePersistenceRepositoriesTests : IClassFixture<SqliteDbFixture>
         // Arrange
         using var repoInit = new PersonsRepository(_sqliteDbFixture.CreateDbContext(), null!);
         using var repoTest = new PersonsRepository(_sqliteDbFixture.CreateDbContext(), null!);
-        IImmutableList<Person<Guid>>? saved = null;
+        IList<Person<Guid>>? saved = null;
 
         repoInit.Add(_fakeHotel.Persons);
         var writeAct = async () => await repoInit.SaveChangesAsync();
-        var readAct = async () => saved = await repoTest.GetAllDetachAsync();
+        var readAct = async () => saved = await repoTest.GetAsync();
 
         // Act & Assert       
         using var _ = new AssertionScope();
@@ -70,11 +70,11 @@ public class SimplePersistenceRepositoriesTests : IClassFixture<SqliteDbFixture>
         // Arrange
         using var repoInit = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
         using var repoTest = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
-        IImmutableList<AccommodationReport<Guid>>? saved = null;
+        IList<AccommodationReport<Guid>>? saved = null;
 
         repoInit.Add(_fakeHotel.Reports);
         var writeAct = async () => await repoInit.SaveChangesAsync();
-        var readAct = async () => saved = await repoTest.GetAllDetachAsync();
+        var readAct = async () => saved = await repoTest.GetAsync();
 
         // Act & Assert       
         using var _ = new AssertionScope();

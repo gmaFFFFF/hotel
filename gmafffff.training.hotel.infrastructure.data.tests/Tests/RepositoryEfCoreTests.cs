@@ -38,15 +38,15 @@ public class RepositoryEfCoreTests : IClassFixture<SqliteDbFixture> {
         await repoInit.SaveChangesAsync();
 
         // Act 
-        var reportAttach = (await repoEditAttach.LoadAllAsync())[0];
+        var reportAttach = (await repoEditAttach.LoadAsync(_ => true))[0];
         reportAttach.Visitors.Add(default);
         await repoEditAttach.SaveChangesAsync();
 
-        var reportDetach = (await repoEditDetach.GetAllDetachAsync()).Single(x => x.Id == reportAttach.Id);
+        var reportDetach = (await repoEditDetach.GetAsync(x => x.Id == reportAttach.Id)).Single();
         reportDetach.Visitors.Clear();
         await repoEditDetach.SaveChangesAsync();
 
-        var reportResult = (await repoTest.GetAllDetachAsync()).Single(x => x.Id == reportAttach.Id);
+        var reportResult = (await repoTest.GetAsync(x => x.Id == reportAttach.Id)).Single();
 
         // Assert
         using var _ = new AssertionScope();
@@ -89,8 +89,6 @@ public class RepositoryEfCoreTests : IClassFixture<SqliteDbFixture> {
         using var repoInit = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
         using var repoTest1 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
         using var repoTest2 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
-        using var repoTest3 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
-        using var repoTest4 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
 
         repoInit.Add(_fakeHotel.Reports);
         await repoInit.SaveChangesAsync();
@@ -138,8 +136,8 @@ public class RepositoryEfCoreTests : IClassFixture<SqliteDbFixture> {
         // Act 
         var testReport1 = repoTest1.Load(testReportId);
         var testReport2 = await repoTest2.LoadAsync(testReportId);
-        var found = repoTest1.Load(lostReportsIds);
-        var foundAsync = await repoTest2.LoadAsync(lostReportsIds);
+        var found = repoTest3.Load(lostReportsIds);
+        var foundAsync = await repoTest4.LoadAsync(lostReportsIds);
 
         // Assert
         using var _ = new AssertionScope();
@@ -162,7 +160,7 @@ public class RepositoryEfCoreTests : IClassFixture<SqliteDbFixture> {
         repoInit.Add(persons);
         await repoInit.SaveChangesAsync();
 
-        var saved = (await repoTest.GetAllDetachAsync()).Select(p => p.FullName);
+        var saved = await repoTest.GetAsync(p => p.FullName);
         var excepted = persons.Append(person).Select(p => p.FullName);
 
         // Assert
@@ -189,7 +187,7 @@ public class RepositoryEfCoreTests : IClassFixture<SqliteDbFixture> {
         repoDel.Delete<Room<Guid>, int>(rooms);
         await repoDel.SaveChangesAsync();
 
-        var saved = await repoTest.LoadAsync(hotel.Id);
+        var saved = await repoTest.GetAsync(hotel.Id);
         // Assert
         saved.Rooms.Should().BeEmpty();
     }
@@ -214,7 +212,7 @@ public class RepositoryEfCoreTests : IClassFixture<SqliteDbFixture> {
         repoDel.Delete<Room<Guid>, int>(rooms.Select(r => r.Id));
         await repoDel.SaveChangesAsync();
 
-        var saved = await repoTest.LoadAsync(hotel.Id);
+        var saved = await repoTest.GetAsync(hotel.Id);
         // Assert
         saved.Rooms.Should().BeEmpty();
     }
@@ -234,11 +232,11 @@ public class RepositoryEfCoreTests : IClassFixture<SqliteDbFixture> {
 
         repoDelete.Delete(person.Id);
         await repoDelete.SaveChangesAsync();
-        var firstDelete = (await repoTest.GetAllDetachAsync()).Select(p => p.FullName);
+        var firstDelete = await repoTest.GetAsync(p => p.FullName);
 
         repoDelete.Delete(persons.Select(p => p.Id));
         await repoDelete.SaveChangesAsync();
-        var lastDelete = await repoTest.GetAllDetachAsync();
+        var lastDelete = await repoTest.GetAsync();
 
         // Assert
         using var _ = new AssertionScope();
@@ -262,9 +260,152 @@ public class RepositoryEfCoreTests : IClassFixture<SqliteDbFixture> {
         repoMod.Update(personUpdate);
         await repoMod.SaveChangesAsync();
 
-        var personSave = await repoMod.LoadAsync(person.Id);
+        var personSave = await repoMod.GetAsync(person.Id);
 
         // Assert
         personSave.FullName.Should().Be(personUpdate.FullName);
+    }
+
+
+    /// <summary>
+    ///     Можно выгружать сущности из БД
+    /// </summary>
+    [Fact]
+    public async Task CanGetEntities() {
+        // Arrange
+        using var repoInit = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
+        using var repoTest1 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
+        using var repoTest2 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
+
+        repoInit.Add(_fakeHotel.Reports);
+        await repoInit.SaveChangesAsync();
+
+        var lostReports = _fakeHotel.Reports.Take(new Random().Next(minValue: 1, _fakeHotel.Reports.Count));
+        var lostReportsIds = lostReports.Select(r => r.Id).ToArray();
+        var testReportId = lostReportsIds[new Random().Next(minValue: 0, lostReportsIds.Length)];
+
+
+        // Act 
+        var found1 = await repoTest2.GetAsync(testReportId);
+        var founds = await repoTest1.GetAsync(lostReportsIds,
+            sortOrder: e => e.OrderByDescending(r => r.ArrivalDate).ThenBy(r => r.Id),
+            (0, 100));
+
+        // Assert
+        using var _ = new AssertionScope();
+        found1.Should().Be(lostReports.Single(r => r.Id == testReportId));
+        founds.Should().BeEquivalentTo(lostReports
+            .OrderByDescending(r => r.ArrivalDate).ThenBy(r => r.Id)
+            .Take(100));
+    }
+
+    /// <summary>
+    ///     Можно выгружать сущности из БД
+    /// </summary>
+    [Fact]
+    public async Task CanGetEntitiesWithProjection() {
+        // Arrange
+        using var repoInit = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
+        using var repoTest1 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
+        using var repoTest2 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
+
+        repoInit.Add(_fakeHotel.Reports);
+        await repoInit.SaveChangesAsync();
+
+        var lostReports = _fakeHotel.Reports.Take(new Random().Next(minValue: 1, _fakeHotel.Reports.Count));
+        var lostReportsIds = lostReports.Select(r => r.Id).ToArray();
+        var testReportId = lostReportsIds[new Random().Next(minValue: 0, lostReportsIds.Length)];
+
+
+        // Act 
+        var found1 = await repoTest1.GetAsync(testReportId,
+            entityToDto: r => new { ReportId = r.Id, day = r.ArrivalDate.DayOfYear });
+        var founds = await repoTest2.GetAsync(lostReportsIds,
+            entityToDto: r => new { ReportId = r.Id, visit = r.Visitors, day = r.ArrivalDate.DayOfYear },
+            sortOrder: e => e.OrderByDescending(r => r.day).ThenBy(r => r.ReportId),
+            (0, 100));
+
+        // Assert
+        using var _ = new AssertionScope();
+        found1.Should().Be(lostReports
+            .Select(r => new { ReportId = r.Id, day = r.ArrivalDate.DayOfYear })
+            .Single(r => r.ReportId == testReportId));
+        founds.Should().BeEquivalentTo(lostReports
+            .Select(r => new { ReportId = r.Id, visit = r.Visitors, day = r.ArrivalDate.DayOfYear })
+            .OrderByDescending(r => r.day).ThenBy(r => r.ReportId)
+            .Take(100));
+    }
+
+    /// <summary>
+    ///     Можно выгружать сущности из БД постранично
+    /// </summary>
+    [Fact]
+    public async Task CanGetEntitiesByPage() {
+        // Arrange
+        using var repoInit = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
+        using var repoTest1 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
+        using var repoTest2 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
+        using var repoTest3 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
+        using var repoTest4 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
+
+        repoInit.Add(_fakeHotel.Reports);
+        await repoInit.SaveChangesAsync();
+
+        var lostReports = _fakeHotel.Reports.Take(new Random().Next(minValue: 1, _fakeHotel.Reports.Count));
+        var lostReportsIds = lostReports.Select(r => r.Id).ToArray();
+
+        Func<IQueryable<AccommodationReport<Guid>>, IOrderedQueryable<AccommodationReport<Guid>>>? sort = sort =>
+            sort
+                .OrderBy(r => r.RoomDetails.Number)
+                .ThenBy(r => r.Id);
+
+        (uint pageNum, uint pageSize) pager = (2, 5);
+
+        // Act 
+        var found = await repoTest1.GetAsync(lostReportsIds, sort, pager);
+        var foundProj = await repoTest2.GetAsync(lostReportsIds,
+            entityToDto: r => new { r.Id, r.RoomDetails.Number, r.Duration },
+            sortOrder: r => r
+                .OrderBy(r => r.Number)
+                .ThenBy(r => r.Id),
+            pager);
+
+        var all = await repoTest3.GetAsync(sort, pager);
+        var allProj = await repoTest4.GetAsync(
+            entityToDto: r => new { r.Id, r.RoomDetails.Number, r.Duration },
+            sortOrder: r => r
+                .OrderBy(r => r.Number)
+                .ThenBy(r => r.Id),
+            pager);
+
+        // Assert
+        using var _ = new AssertionScope();
+        found.Should().BeEquivalentTo(lostReports
+            .OrderBy(r => r.RoomDetails.Number)
+            .ThenBy(r => r.Id)
+            .Skip((int)(pager.pageNum * pager.pageSize))
+            .Take((int)pager.pageSize));
+
+        foundProj.Should().BeEquivalentTo(lostReports
+            .Select(r => new { r.Id, r.RoomDetails.Number, r.Duration })
+            .OrderBy(r => r.Number)
+            .ThenBy(r => r.Id)
+            .Skip((int)(pager.pageNum * pager.pageSize))
+            .Take((int)pager.pageSize)
+        );
+
+        all.Should().BeEquivalentTo(_fakeHotel.Reports
+            .OrderBy(r => r.RoomDetails.Number)
+            .ThenBy(r => r.Id)
+            .Skip((int)(pager.pageNum * pager.pageSize))
+            .Take((int)pager.pageSize));
+
+        allProj.Should().BeEquivalentTo(_fakeHotel.Reports
+            .Select(r => new { r.Id, r.RoomDetails.Number, r.Duration })
+            .OrderBy(r => r.Number)
+            .ThenBy(r => r.Id)
+            .Skip((int)(pager.pageNum * pager.pageSize))
+            .Take((int)pager.pageSize)
+        );
     }
 }

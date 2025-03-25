@@ -11,20 +11,11 @@ namespace gmafffff.starterKit.Domain;
 public interface IRepository<T, in TId> : IDisposable
     where T : Entity<TId>
     where TId : struct, IEquatable<TId> {
-    #region Поиск и загрузка
+    #region == Запросы
 
-    /// <summary>
-    ///     Принимает на учёт все сущности из центрального (базисного) склада и выдаёт их
-    /// </summary>
-    /// <returns><see cref="IImmutableList{T}" /> всех сущностей</returns>
-    Task<IImmutableList<T>> LoadAllAsync(CancellationToken cancel = default);
+    #region Локальный поиск с последующим запросом центрального склада
 
-    /// <summary>
-    ///     Отпускает все сущности из центрального (базисного) склада трансфером, не принимая их к себе на учёт
-    /// </summary>
-    /// <returns><see cref="IImmutableList{T}" /> всех сущностей</returns>
-    Task<IImmutableList<T>> GetAllDetachAsync(CancellationToken cancel = default);
-
+    #region Синхронно
 
     /// <summary>
     ///     Ищет искомые сущности по идентификаторам в кладовой и выдает их.
@@ -50,6 +41,9 @@ public interface IRepository<T, in TId> : IDisposable
     /// <returns>Найденная сущность или null, если она не найдена в кладовой и центральном (базисном) складе</returns>
     T? Find(TId id);
 
+    #endregion
+
+    #region Асинхронно
 
     /// <summary>
     ///     Асинхронно ищет искомые сущности по идентификаторам в кладовой и выдает их.
@@ -78,6 +72,13 @@ public interface IRepository<T, in TId> : IDisposable
     /// <returns>Найденная сущность или null, если она не найдена в кладовой и центральном (базисном) складе</returns>
     Task<T?> FindAsync(TId id, CancellationToken cancel = default);
 
+    #endregion
+
+    #endregion
+
+    #region Загрузка в оперативный склад
+
+    #region Синхронно
 
     /// <summary>
     ///     Принимает на учёт сущности, соответствующие спецификации <paramref name="spec" />,
@@ -112,6 +113,15 @@ public interface IRepository<T, in TId> : IDisposable
     /// <returns>Принятая на учёт сущность или null, если она не найдена в центральном (базисном) складе</returns>
     T? Load(TId id);
 
+    #endregion
+
+    #region Асинхронно
+
+    /// <summary>
+    ///     Принимает на учёт все сущности из центрального (базисного) склада и выдаёт их
+    /// </summary>
+    /// <returns><see cref="IImmutableSet{T}" /> всех сущностей</returns>
+    Task<IImmutableSet<T>> LoadAsync(CancellationToken cancel = default);
 
     /// <summary>
     ///     Асинхронно принимает на учёт сущности, соответствующие спецификации <paramref name="spec" />,
@@ -121,7 +131,7 @@ public interface IRepository<T, in TId> : IDisposable
     /// <remarks>Если спецификация <paramref name="spec" /> не задана (null), то вернёт пустой список</remarks>
     /// <param name="cancel"><see cref="CancellationToken" /> отмены операции</param>
     /// <returns><see cref="IImmutableList{T}" /> принятых на учёт сущностей</returns>
-    Task<IImmutableList<T>> LoadAsync(Expression<Func<T, bool>>? spec = null,
+    Task<IImmutableList<T>> LoadAsync(Expression<Func<T, bool>> spec,
         CancellationToken cancel = default);
 
     /// <summary>
@@ -151,6 +161,27 @@ public interface IRepository<T, in TId> : IDisposable
     /// <returns>Принятая на учёт сущность или null, если она не найдена в центральном (базисном) складе</returns>
     Task<T?> LoadAsync(TId id, CancellationToken cancel = default);
 
+    #endregion
+
+    #endregion
+
+    #region Загрузка в оперативный склад без связанных сущностей
+
+    /// <summary>
+    ///     Асинхронно принимает на учёт господствующие сущности, соответствующие спецификации <paramref name="spec" />,
+    ///     из центрального (базисного) склада и выдаёт их. Подчинённые сущности не загружаются
+    /// </summary>
+    /// <param name="spec">Особенности, которым должны соответствовать отпускаемые сущности, в форме предиката</param>
+    /// <remarks>Если спецификация <paramref name="spec" /> не задана (null), то вернёт пустой список</remarks>
+    /// <param name="cancel"><see cref="CancellationToken" /> отмены операции</param>
+    /// <returns><see cref="IImmutableList{T}" /> принятых на учёт сущностей</returns>
+    Task<IImmutableList<T>> LoadOnlyRootAsync(Expression<Func<T, bool>>? spec = null,
+        CancellationToken cancel = default);
+
+    #endregion
+
+    #region Индексатор
+
     /// <summary>
     ///     Ищет единственную сущность, по идентификатору <paramref name="id" /> в кладовой и выдает её.
     ///     Отсутствующую сущность предварительно запрашивает из центрального (базисного) склада и принимает её на учёт
@@ -168,20 +199,179 @@ public interface IRepository<T, in TId> : IDisposable
     /// <returns><see cref="IImmutableList{T}" /> принятых на учёт сущностей</returns>
     IImmutableList<T> this[Expression<Func<T, bool>>? spec] { get; }
 
+    #endregion
+
+    #region Выгрузка данных потребителю без постановки на учет в оперативном складе
 
     /// <summary>
-    ///     Асинхронно принимает на учёт господствующие сущности, соответствующие спецификации <paramref name="spec" />,
-    ///     из центрального (базисного) склада и выдаёт их. Подчинённые сущности не загружаются
+    ///     Отпускает все сущности из центрального (базисного) склада трансфером, не принимая их к себе на учёт
+    /// </summary>
+    /// <returns><see cref="IImmutableList{T}" /> всех сущностей</returns>
+    Task<IList<T>> GetAsync(
+        Func<IQueryable<T>, IOrderedQueryable<T>>? sortOrder = null, (uint pageNum, uint pageSize)? pager = null,
+        CancellationToken cancel = default);
+
+    /// <summary>
+    ///     Отпускает Dto всех сущностей из центрального (базисного) склада трансфером, не принимая их к себе на учёт
+    /// </summary>
+    /// <typeparam name="TDto">Обменный формат сущности</typeparam>
+    /// <param name="entityToDto">Проекция сущности в Dto</param>
+    /// <param name="sortOrder">Порядок сортировки</param>
+    /// <param name="pager">Постраничная загрузка</param>
+    /// <param name="cancel"></param>
+    /// <returns><see cref="IImmutableList{T}" /> всех сущностей</returns>
+    Task<IList<TDto>> GetAsync<TDto>(Expression<Func<T, TDto>> entityToDto,
+        Func<IQueryable<TDto>, IOrderedQueryable<TDto>>? sortOrder = null, (uint pageNum, uint pageSize)? pager = null,
+        CancellationToken cancel = default) where TDto : class;
+
+    /// <summary>
+    ///     Асинхронно отпускает сущности, соответствующие спецификации <paramref name="spec" />,
+    ///     из центрального (базисного) склада трансфером, не принимая их к себе на учёт
     /// </summary>
     /// <param name="spec">Особенности, которым должны соответствовать отпускаемые сущности, в форме предиката</param>
     /// <remarks>Если спецификация <paramref name="spec" /> не задана (null), то вернёт пустой список</remarks>
+    /// <param name="sortOrder">Порядок сортировки</param>
+    /// <param name="pager">Постраничная загрузка</param>
     /// <param name="cancel"><see cref="CancellationToken" /> отмены операции</param>
-    /// <returns><see cref="IImmutableList{T}" /> принятых на учёт сущностей</returns>
-    Task<IImmutableList<T>> LoadOnlyRootAsync(Expression<Func<T, bool>>? spec = null,
+    /// <returns><see cref="IList{T}" /> выданных сущностей</returns>
+    Task<IList<T>> GetAsync(Expression<Func<T, bool>> spec,
+        Func<IQueryable<T>, IOrderedQueryable<T>>? sortOrder = null, (uint pageNum, uint pageSize)? pager = null,
+        CancellationToken cancel = default);
+
+    /// <summary>
+    ///     Асинхронно отпускает Dto сущностей, соответствующих спецификации <paramref name="spec" />,
+    ///     из центрального (базисного) склада трансфером, не принимая их к себе на учёт
+    /// </summary>
+    /// <typeparam name="TDto">Обменный формат сущности</typeparam>
+    /// <param name="spec">Особенности, которым должны соответствовать отпускаемые сущности, в форме предиката</param>
+    /// <remarks>Если спецификация <paramref name="spec" /> не задана (null), то вернёт пустой список</remarks>
+    /// <param name="entityToDto">Проекция сущности в Dto</param>
+    /// <param name="sortOrder">Порядок сортировки</param>
+    /// <param name="pager">Постраничная загрузка</param>
+    /// <param name="cancel"><see cref="CancellationToken" /> отмены операции</param>
+    /// <returns><see cref="IList{T}" /> выданных сущностей</returns>
+    Task<IList<TDto>> GetAsync<TDto>(Expression<Func<T, bool>> spec, Expression<Func<T, TDto>> entityToDto,
+        Func<IQueryable<TDto>, IOrderedQueryable<TDto>>? sortOrder = null, (uint pageNum, uint pageSize)? pager = null,
+        CancellationToken cancel = default) where TDto : class;
+
+    /// <summary>
+    ///     Асинхронно отпускает сущности, с определёнными <paramref name="ids" />,
+    ///     из центрального (базисного) склада трансфером, не принимая их к себе на учёт
+    /// </summary>
+    /// <param name="ids">Список идентификаторов отпускаемых сущностей</param>
+    /// <param name="sortOrder">Порядок сортировки</param>
+    /// <param name="pager">Постраничная загрузка</param>
+    /// <param name="cancel"><see cref="CancellationToken" /> отмены операции</param>
+    /// <returns><see cref="IList{T}" /> выданных сущностей</returns>
+    Task<IList<T>> GetAsync(IEnumerable<TId> ids,
+        Func<IQueryable<T>, IOrderedQueryable<T>>? sortOrder = null, (uint pageNum, uint pageSize)? pager = null,
+        CancellationToken cancel = default);
+
+    /// <summary>
+    ///     Асинхронно отпускает Dto сущностей, с определёнными <paramref name="ids" />,
+    ///     из центрального (базисного) склада трансфером, не принимая их к себе на учёт
+    /// </summary>
+    /// <typeparam name="TDto">Обменный формат сущности</typeparam>
+    /// <param name="ids">Список идентификаторов отпускаемых сущностей</param>
+    /// <param name="entityToDto">Проекция сущности в Dto</param>
+    /// <param name="sortOrder">Порядок сортировки</param>
+    /// <param name="pager">Постраничная загрузка</param>
+    /// <param name="cancel"><see cref="CancellationToken" /> отмены операции</param>
+    /// <returns><see cref="IList{T}" /> выданных сущностей</returns>
+    Task<IList<TDto>> GetAsync<TDto>(IEnumerable<TId> ids, Expression<Func<T, TDto>> entityToDto,
+        Func<IQueryable<TDto>, IOrderedQueryable<TDto>>? sortOrder = null, (uint pageNum, uint pageSize)? pager = null,
+        CancellationToken cancel = default) where TDto : class;
+
+    /// <summary>
+    ///     Асинхронно отпускает сущности, с определёнными <paramref name="ids" />,
+    ///     из центрального (базисного) склада трансфером, не принимая их к себе на учёт
+    /// </summary>
+    /// <param name="ids">Список идентификаторов отпускаемых сущностей</param>
+    /// <param name="sortOrder">Порядок сортировки</param>
+    /// <param name="pager">Постраничная загрузка</param>
+    /// <param name="cancel"><see cref="CancellationToken" /> отмены операции</param>
+    /// <returns><see cref="IList{T}" /> выданных сущностей</returns>
+    Task<IList<T>> GetAsync(
+        Func<IQueryable<T>, IOrderedQueryable<T>>? sortOrder = null, (uint pageNum, uint pageSize)? pager = null,
+        CancellationToken cancel = default,
+        params TId[] ids);
+
+    /// <summary>
+    ///     Асинхронно отпускает Dto сущностей, с определёнными <paramref name="ids" />,
+    ///     из центрального (базисного) склада трансфером, не принимая их к себе на учёт
+    /// </summary>
+    /// <typeparam name="TDto">Обменный формат сущности</typeparam>
+    /// <param name="entityToDto">Проекция сущности в Dto</param>
+    /// <param name="ids">Список идентификаторов отпускаемых сущностей</param>
+    /// <param name="sortOrder">Порядок сортировки</param>
+    /// <param name="pager">Постраничная загрузка</param>
+    /// <param name="cancel"><see cref="CancellationToken" /> отмены операции</param>
+    /// <returns><see cref="IList{T}" /> выданных сущностей</returns>
+    Task<IList<TDto>> GetAsync<TDto>(Expression<Func<T, TDto>> entityToDto,
+        Func<IQueryable<TDto>, IOrderedQueryable<TDto>>? sortOrder = null, (uint pageNum, uint pageSize)? pager = null,
+        CancellationToken cancel = default,
+        params TId[] ids) where TDto : class;
+
+    /// <summary>
+    ///     Асинхронно отпускает сущность, с определённым <paramref name="id" />,
+    ///     из центрального (базисного) склада трансфером, не принимая её к себе на учёт
+    /// </summary>
+    /// <param name="id">Идентификатор сущности</param>
+    /// <param name="cancel"><see cref="CancellationToken" /> отмены операции</param>
+    /// <returns>Выданная сущность или null, если она не найдена в центральном (базисном) складе</returns>
+    Task<T?> GetAsync(TId id, CancellationToken cancel = default);
+
+    /// <summary>
+    ///     Асинхронно отпускает Dto сущности, с определённым <paramref name="id" />,
+    ///     из центрального (базисного) склада трансфером, не принимая её к себе на учёт
+    /// </summary>
+    /// <typeparam name="TDto">Обменный формат сущности</typeparam>
+    /// <param name="id">Идентификатор сущности</param>
+    /// <param name="entityToDto">Проекция сущности в Dto</param>
+    /// <param name="cancel"><see cref="CancellationToken" /> отмены операции</param>
+    /// <returns>Выданная сущность или null, если она не найдена в центральном (базисном) складе</returns>
+    Task<TDto?> GetAsync<TDto>(TId id, Expression<Func<T, TDto>> entityToDto, CancellationToken cancel = default);
+
+    #endregion
+
+    #region Подсчет сущностей
+
+    /// <summary>
+    ///     Возвращает число сущностей в центральном (базовом) складе
+    /// </summary>
+    int Count();
+
+    /// <summary>
+    ///     Асинхронно возвращает число сущностей в центральном (базовом) складе
+    /// </summary>
+    Task<int> CountAsync(CancellationToken cancel = default);
+
+    /// <summary>
+    ///     Подсчитывает количество сущностей в центральном (базовом) складе,
+    ///     соответствующих <paramref name="spec" />
+    /// </summary>
+    /// <param name="spec">Спецификация включаемых в подсчет сущностей</param>
+    /// <remarks>Если спецификация <paramref name="spec" /> не задана (null), то вернёт 0</remarks>
+    /// <returns>Число сущностей, соответствующих спецификации <paramref name="spec" /></returns>
+    int CountBy(Expression<Func<T, bool>>? spec = null);
+
+    /// <summary>
+    ///     Асинхронно подсчитывает количество сущностей в центральном (базовом) складе,
+    ///     соответствующих <paramref name="spec" />
+    /// </summary>
+    /// <param name="spec">Спецификация включаемых в подсчет сущностей</param>
+    /// <param name="cancel">Токен отмены</param>
+    /// <remarks>Если спецификация <paramref name="spec" /> не задана (null), то вернёт 0</remarks>
+    /// <returns>Число сущностей, соответствующих спецификации <paramref name="spec" /></returns>
+    Task<int> CountByAsync(Expression<Func<T, bool>>? spec = null,
         CancellationToken cancel = default);
 
     #endregion
 
+    #endregion
+
+
+    #region == Управление
 
     #region Добавление
 
@@ -210,7 +400,6 @@ public interface IRepository<T, in TId> : IDisposable
     void Add(IEnumerable<object> entities);
 
     #endregion
-
 
     #region Удаление
 
@@ -290,8 +479,7 @@ public interface IRepository<T, in TId> : IDisposable
 
     #endregion
 
-
-    #region Замена всех свойств сущности
+    #region Изменение сущностей
 
     /// <summary>
     ///     Заменить все свойства сущности
@@ -306,42 +494,6 @@ public interface IRepository<T, in TId> : IDisposable
     void Update(object entity);
 
     #endregion
-
-
-    #region Характеристики
-
-    /// <summary>
-    ///     Возвращает число сущностей в центральном (базовом) складе
-    /// </summary>
-    int Count();
-
-    /// <summary>
-    ///     Асинхронно возвращает число сущностей в центральном (базовом) складе
-    /// </summary>
-    Task<int> CountAsync(CancellationToken cancel = default);
-
-    /// <summary>
-    ///     Подсчитывает количество сущностей в центральном (базовом) складе,
-    ///     соответствующих <paramref name="spec" />
-    /// </summary>
-    /// <param name="spec">Спецификация включаемых в подсчет сущностей</param>
-    /// <remarks>Если спецификация <paramref name="spec" /> не задана (null), то вернёт 0</remarks>
-    /// <returns>Число сущностей, соответствующих спецификации <paramref name="spec" /></returns>
-    int CountBy(Expression<Func<T, bool>>? spec = null);
-
-    /// <summary>
-    ///     Асинхронно подсчитывает количество сущностей в центральном (базовом) складе,
-    ///     соответствующих <paramref name="spec" />
-    /// </summary>
-    /// <param name="spec">Спецификация включаемых в подсчет сущностей</param>
-    /// <param name="cancel">Токен отмены</param>
-    /// <remarks>Если спецификация <paramref name="spec" /> не задана (null), то вернёт 0</remarks>
-    /// <returns>Число сущностей, соответствующих спецификации <paramref name="spec" /></returns>
-    Task<int> CountByAsync(Expression<Func<T, bool>>? spec = null,
-        CancellationToken cancel = default);
-
-    #endregion
-
 
     #region Сохранение
 
@@ -359,6 +511,8 @@ public interface IRepository<T, in TId> : IDisposable
     /// </summary>
     /// <returns>Количество синхронизированных сущностей</returns>
     Task<int> SaveChangesAsync(CancellationToken cancel = default);
+
+    #endregion
 
     #endregion
 }

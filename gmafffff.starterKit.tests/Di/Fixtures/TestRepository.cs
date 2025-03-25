@@ -9,14 +9,6 @@ public class TestRepository : ITestRepository {
         throw new NotImplementedException();
     }
 
-    public async Task<IImmutableList<TestEntity>> LoadAllAsync(CancellationToken cancel = default) {
-        throw new NotImplementedException();
-    }
-
-    public async Task<IImmutableList<TestEntity>> GetAllDetachAsync(CancellationToken cancel = default) {
-        throw new NotImplementedException();
-    }
-
     public IImmutableList<TestEntity> Find(IEnumerable<int> ids) {
         throw new NotImplementedException();
     }
@@ -29,15 +21,15 @@ public class TestRepository : ITestRepository {
         throw new NotImplementedException();
     }
 
-    public async Task<IImmutableList<TestEntity>> FindAsync(IEnumerable<int> ids, CancellationToken cancel = default) {
+    public Task<IImmutableList<TestEntity>> FindAsync(IEnumerable<int> ids, CancellationToken cancel = default) {
         throw new NotImplementedException();
     }
 
-    public async Task<IImmutableList<TestEntity>> FindAsync(CancellationToken cancel = default, params int[] ids) {
+    public Task<IImmutableList<TestEntity>> FindAsync(CancellationToken cancel = default, params int[] ids) {
         throw new NotImplementedException();
     }
 
-    public async Task<TestEntity?> FindAsync(int id, CancellationToken cancel = default) {
+    public Task<TestEntity?> FindAsync(int id, CancellationToken cancel = default) {
         throw new NotImplementedException();
     }
 
@@ -57,20 +49,24 @@ public class TestRepository : ITestRepository {
         throw new NotImplementedException();
     }
 
-    public async Task<IImmutableList<TestEntity>> LoadAsync(Expression<Func<TestEntity, bool>>? spec = null,
+    public Task<IImmutableSet<TestEntity>> LoadAsync(CancellationToken cancel = default) {
+        throw new NotImplementedException();
+    }
+
+    public Task<IImmutableList<TestEntity>> LoadAsync(Expression<Func<TestEntity, bool>>? spec = null,
         CancellationToken cancel = default) {
         throw new NotImplementedException();
     }
 
-    public async Task<IImmutableList<TestEntity>> LoadAsync(IEnumerable<int> ids, CancellationToken cancel = default) {
+    public Task<IImmutableList<TestEntity>> LoadAsync(IEnumerable<int> ids, CancellationToken cancel = default) {
         throw new NotImplementedException();
     }
 
-    public async Task<IImmutableList<TestEntity>> LoadAsync(CancellationToken cancel = default, params int[] ids) {
+    public Task<IImmutableList<TestEntity>> LoadAsync(CancellationToken cancel = default, params int[] ids) {
         throw new NotImplementedException();
     }
 
-    public async Task<TestEntity?> LoadAsync(int id, CancellationToken cancel = default) {
+    public Task<TestEntity?> LoadAsync(int id, CancellationToken cancel = default) {
         throw new NotImplementedException();
     }
 
@@ -84,7 +80,65 @@ public class TestRepository : ITestRepository {
         set => throw new NotImplementedException();
     }
 
-    public async Task<IImmutableList<TestEntity>> LoadOnlyRootAsync(Expression<Func<TestEntity, bool>>? spec = null,
+    public Task<IImmutableList<TestEntity>> LoadOnlyRootAsync(Expression<Func<TestEntity, bool>>? spec = null,
+        CancellationToken cancel = default) {
+        throw new NotImplementedException();
+    }
+
+    public Task<IList<TestEntity>> GetAsync(
+        Func<IQueryable<TestEntity>, IOrderedQueryable<TestEntity>>? sortOrder = null,
+        (uint pageNum, uint pageSize)? pager = null, CancellationToken cancel = default) {
+        throw new NotImplementedException();
+    }
+
+    public Task<IList<TDto>> GetAsync<TDto>(Expression<Func<TestEntity, TDto>> entityToDto,
+        Func<IQueryable<TDto>, IOrderedQueryable<TDto>>? sortOrder = null, (uint pageNum, uint pageSize)? pager = null,
+        CancellationToken cancel = default) where TDto : class {
+        throw new NotImplementedException();
+    }
+
+    public Task<IList<TestEntity>> GetAsync(Expression<Func<TestEntity, bool>> spec,
+        Func<IQueryable<TestEntity>, IOrderedQueryable<TestEntity>>? sortOrder = null,
+        (uint pageNum, uint pageSize)? pager = null, CancellationToken cancel = default) {
+        throw new NotImplementedException();
+    }
+
+    public Task<IList<TDto>> GetAsync<TDto>(Expression<Func<TestEntity, bool>> spec,
+        Expression<Func<TestEntity, TDto>> entityToDto,
+        Func<IQueryable<TDto>, IOrderedQueryable<TDto>>? sortOrder = null, (uint pageNum, uint pageSize)? pager = null,
+        CancellationToken cancel = default) where TDto : class {
+        throw new NotImplementedException();
+    }
+
+    public Task<IList<TestEntity>> GetAsync(IEnumerable<int> ids,
+        Func<IQueryable<TestEntity>, IOrderedQueryable<TestEntity>>? sortOrder = null,
+        (uint pageNum, uint pageSize)? pager = null, CancellationToken cancel = default) {
+        throw new NotImplementedException();
+    }
+
+    public Task<IList<TDto>> GetAsync<TDto>(IEnumerable<int> ids, Expression<Func<TestEntity, TDto>> entityToDto,
+        Func<IQueryable<TDto>, IOrderedQueryable<TDto>>? sortOrder = null, (uint pageNum, uint pageSize)? pager = null,
+        CancellationToken cancel = default) where TDto : class {
+        throw new NotImplementedException();
+    }
+
+    public Task<IList<TestEntity>> GetAsync(
+        Func<IQueryable<TestEntity>, IOrderedQueryable<TestEntity>>? sortOrder = null,
+        (uint pageNum, uint pageSize)? pager = null, CancellationToken cancel = default, params int[] ids) {
+        throw new NotImplementedException();
+    }
+
+    public Task<IList<TDto>> GetAsync<TDto>(Expression<Func<TestEntity, TDto>> entityToDto,
+        Func<IQueryable<TDto>, IOrderedQueryable<TDto>>? sortOrder = null, (uint pageNum, uint pageSize)? pager = null,
+        CancellationToken cancel = default, params int[] ids) where TDto : class {
+        throw new NotImplementedException();
+    }
+
+    public Task<TestEntity?> GetAsync(int id, CancellationToken cancel = default) {
+        throw new NotImplementedException();
+    }
+
+    public Task<TDto?> GetAsync<TDto>(int id, Expression<Func<TestEntity, TDto>> entityToDto,
         CancellationToken cancel = default) {
         throw new NotImplementedException();
     }
@@ -145,7 +199,7 @@ public class TestRepository : ITestRepository {
         throw new NotImplementedException();
     }
 
-    public async Task<int> DeleteBulkAsync(Expression<Func<TestEntity, bool>>? spec,
+    public Task<int> DeleteBulkAsync(Expression<Func<TestEntity, bool>>? spec,
         CancellationToken cancel = default) {
         throw new NotImplementedException();
     }
@@ -162,7 +216,7 @@ public class TestRepository : ITestRepository {
         throw new NotImplementedException();
     }
 
-    public async Task<int> CountAsync(CancellationToken cancel = default) {
+    public Task<int> CountAsync(CancellationToken cancel = default) {
         throw new NotImplementedException();
     }
 
@@ -170,7 +224,7 @@ public class TestRepository : ITestRepository {
         throw new NotImplementedException();
     }
 
-    public async Task<int> CountByAsync(Expression<Func<TestEntity, bool>>? spec = null,
+    public Task<int> CountByAsync(Expression<Func<TestEntity, bool>>? spec = null,
         CancellationToken cancel = default) {
         throw new NotImplementedException();
     }
@@ -179,7 +233,7 @@ public class TestRepository : ITestRepository {
         throw new NotImplementedException();
     }
 
-    public async Task<int> SaveChangesAsync(CancellationToken cancel = default) {
+    public Task<int> SaveChangesAsync(CancellationToken cancel = default) {
         throw new NotImplementedException();
     }
 }

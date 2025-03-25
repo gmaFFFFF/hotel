@@ -1,7 +1,6 @@
-using System.Collections.Immutable;
 using gmafffff.starterKit.AppError;
+using gmafffff.starterKit.Messaging;
 using LanguageExt;
-using Query = gmafffff.starterKit.Messaging.Query;
 
 namespace gmafffff.starterKit.BusinessLogic;
 
@@ -11,7 +10,7 @@ namespace gmafffff.starterKit.BusinessLogic;
 /// <typeparam name="TQuery">Запрос типа <see cref="Query" /></typeparam>
 /// <typeparam name="TResult">Возвращаемый тип результат</typeparam>
 public abstract class QueryDbHandler<TQuery, TResult> : IQueryHandler<TQuery, TResult>
-    where TQuery : Query {
+    where TQuery : Query<TResult> {
     public async Task<Fin<IList<TResult>>> RunQueryAsync(TQuery query, CancellationToken cancel = default) {
         try {
             var result = await CreateDbQuery(query, cancel).ConfigureAwait(false);
@@ -25,5 +24,5 @@ public abstract class QueryDbHandler<TQuery, TResult> : IQueryHandler<TQuery, TR
         }
     }
 
-    public abstract Task<IImmutableList<TResult>> CreateDbQuery(TQuery query, CancellationToken cancel = default);
+    public abstract Task<IList<TResult>> CreateDbQuery(TQuery query, CancellationToken cancel = default);
 }

@@ -9,7 +9,7 @@ public class HotelBlockConfig : StandardMapsterConfig {
         // HotelDto
         config.Apply(new RoomConfig());
         config
-            .NewConfig<HotelBlock<int, Guid>, HotelDto>()
+            .ForType<HotelBlock<int, Guid>, HotelDto>()
             .TwoWays()
             .Map(member: d => d.BlockId, source: s => s.Id)
             .GenerateMapper(All);
