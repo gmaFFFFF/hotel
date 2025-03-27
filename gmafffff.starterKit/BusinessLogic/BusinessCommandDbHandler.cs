@@ -1,3 +1,4 @@
+using gmafffff.starterKit.Domain;
 using gmafffff.starterKit.Messaging;
 using LanguageExt;
 using LanguageExt.Common;
@@ -8,18 +9,25 @@ namespace gmafffff.starterKit.BusinessLogic;
 /// <summary>
 ///     Устанавливает типовой порядок выполнения команды, связанной с записью в БД
 /// </summary>
-/// <typeparam name="TCommand"></typeparam>
-/// <typeparam name="TEvent"></typeparam>
-/// <typeparam name="TResult"></typeparam>
-public abstract class BusinessCommandDbHandler<TCommand, TEvent, TResult>(bool isSaveToDbSeparately = true) :
+/// <typeparam name="TCommand">Исполняемая бизнес-команда</typeparam>
+/// <typeparam name="TEvent">Событие в ответ на команду</typeparam>
+/// <typeparam name="TRepo">Оперативный склад, используемый для запроса</typeparam>
+/// <typeparam name="TEntity">Сущность — корень агрегата</typeparam>
+/// <typeparam name="TId">Идентификатор сущности</typeparam>
+/// <typeparam name="TLoad">Тип загружаемой сущности из хранилища</typeparam>
+/// <typeparam name="TResult">Тип сущности, полученный в результате команды</typeparam>
+public abstract class BusinessCommandDbHandler<
+    TCommand, TEvent,
+    TEntity, TId, TRepo,
+    TLoad, TResult>(
+    TRepo repo,
+    bool isSaveToDbSeparately = true) :
     IBusinessCommandHandler<TCommand, TEvent>
     where TCommand : BusinessCommand
-    where TEvent : BusinessEvent {
-    /// <summary>
-    ///     Предварительный результат, несохранённый в БД
-    /// </summary>
-    protected IList<TResult> PreliminaryResult = [];
-
+    where TEvent : BusinessEvent
+    where TEntity : Entity<TId>
+    where TId : struct, IEquatable<TId>
+    where TRepo : IRepository<TEntity, TId> {
     /// <summary>
     ///     Выполнение команды происходит отдельно от сохранения её результата в БД?
     /// </summary>
@@ -28,58 +36,95 @@ public abstract class BusinessCommandDbHandler<TCommand, TEvent, TResult>(bool i
     /// <summary>
     ///     Последняя обработанная команда
     /// </summary>
-    public TCommand? LastCommand { get; private set; }
+    public TCommand Command { get; private set; } = null!;
 
     /// <summary>
     ///     Результат успешного выполнения команды
     /// </summary>
-    public IList<TEvent>? LastResult { get; protected set; }
-
-    /// <summary>
-    ///     Нужно ли отправить изменения в БД
-    /// </summary>
-    /// <remarks>
-    ///     Изменяется обработчиком события <see cref="BeforeSaving" />
-    /// </remarks>
-    private bool IsSaveResult { get; set; } = true;
+    public IList<TEvent>? Result { get; protected set; }
 
     public virtual async Task<Fin<IList<TEvent>>> ExecuteAsync(TCommand command,
         CancellationToken cancel = default) {
-        LastCommand = command.MustNotBeNull();
-        PreliminaryResult = [];
-        LastResult = null;
+        Command = command.MustNotBeNull();
+        Result = null;
 
         // --- Запись шагов (внутренних вызов функций) в функциональном стиле 
         // исключила дублирование проверок результата предыдущего шага и отмены
 
         // Функциональные обёртки для функций-шагов
-        var load = FinT<IO, Unit>.LiftIO(IO.liftAsync(async env => await LoadAsync(env.Token).ConfigureAwait(false)));
-        var act = FinT<IO, Unit>.LiftIO(
-            IO.liftAsync(async env => await RunActionAsync(env.Token).ConfigureAwait(false)));
-        var nothing = FinT<IO, Unit>.Lift(Fin<Unit>.Succ(Unit.Default));
+        var load = (TRepo repo) =>
+            FinT<IO, IList<TLoad>>.LiftIO(
+                IO.liftAsync(
+                    async env => await LoadAsync(repo, env.Token).ConfigureAwait(false)));
+        var act = (IList<TLoad> loaded) =>
+            FinT<IO, IList<TResult>>.LiftIO(
+                IO.liftAsync(
+                    async env => await RunActionAsync(loaded, env.Token).ConfigureAwait(false)));
+        var nothing = FinT<IO, int>.Lift(Fin<int>.Succ(0));
+        var saveDb = (TRepo repo) =>
+            FinT<IO, int>.LiftIO(
+                IO.liftAsync(async env => await SaveAsync(repo, env.Token).ConfigureAwait(false)));
         // Сохранение в БД выполняется если не было отменено
-        var saveDbIf = (bool isSave) => isSave
-            ? FinT<IO, Unit>.LiftIO(IO.liftAsync(async env => await SaveAsync(env.Token).ConfigureAwait(false)))
+        var saveDbIf = (bool isSave, TRepo repo) => isSave ? saveDb(repo) : nothing;
+        var beforeSave = (IList<TResult> res) =>
+            FinT<IO, bool>.Lift(
+                IO.lift(() => OnBeforeSaving(res)));
+        // Отдельные команды могут выполняться непосредственно в БД, поэтому операция сохранения может быть не нужна
+        var saveSeparate = (IList<TResult> res, TRepo repo) => IsSaveToDbSeparately
+            ? beforeSave(res).Bind(isSaveResult => saveDbIf(isSaveResult, repo))
             : nothing;
-        var beforeSave = FinT<IO, Unit>.Lift(IO.lift(OnBeforeSaving));
-        // Отдельные команды могут выполняться непосредственно в БД, поэтому операция сохранения вероятно не нужна
-        var saveSeparate = IsSaveToDbSeparately
-            ? beforeSave.Bind(_ => saveDbIf(IsSaveResult))
-            : nothing;
-        var pack = FinT<IO, Unit>.Lift(IO.lift(PackResultToEvent));
+        var pack = (IList<TResult> res) =>
+            FinT<IO, IList<TEvent>>.Lift(
+                IO.lift(() => PackResultToEvent(res)));
+
 
         // Выполняем шаги последовательно, при условии успешного выполнения предыдущего шага и отсутствия отмены
-        var steps = from _1 in load
-            from _2 in act
-            from _3 in saveSeparate
-            from _4 in pack
-            select _1;
+        var steps =
+            from loaded in load(repo)
+            from res in act(loaded)
+            from count in saveSeparate(res, repo)
+            from events in pack(res)
+            select events;
 
-        var run = await steps.Run().RunAsync(EnvIO.New(token: cancel)).ConfigureAwait(false);
+        var run = await steps
+            .Run()
+            .RunAsync(EnvIO.New(token: cancel))
+            .ConfigureAwait(false);
+
         if (run.IsFail) return (Error)run;
+        Result = run.IfFail(Array.Empty<TEvent>()).ToArray();
 
-        var result = LastResult ?? throw new InvalidOperationException("Отсутствует результат");
-        return Fin<IList<TEvent>>.Succ(result);
+        return Fin<IList<TEvent>>.Succ(Result);
+    }
+
+    /// <summary>
+    ///     Загрузить данные, необходимые для выполнения команды
+    /// </summary>
+    protected virtual Task<Fin<IList<TLoad>>> LoadAsync(TRepo repo, CancellationToken cancel = default) {
+        return Task.FromResult(Fin<IList<TLoad>>.Succ([]));
+    }
+
+    /// <summary>
+    ///     Непосредственное выполнение команды
+    /// </summary>
+    protected virtual Task<Fin<IList<TResult>>> RunActionAsync(IList<TLoad> loaded,
+        CancellationToken cancel = default) {
+        return Task.FromResult(Fin<IList<TResult>>.Succ([]));
+    }
+
+    /// <summary>
+    ///     Действие, выполняемое перед сохранением результатов в БД
+    /// </summary>
+    /// <remarks>
+    ///     Не уверен, что этот хук нужен, но захотелось иметь возможность вмешаться в процесс перед сохранением
+    /// </remarks>
+    /// <exception cref="InvalidOperationException"></exception>
+    protected virtual bool OnBeforeSaving(IList<TResult> result) {
+        var arg = new BeforeSavingEventArgs(Command, result, isSaveResult: true);
+
+        BeforeSaving?.Invoke(this, arg);
+
+        return arg.IsSaveResult;
     }
 
     /// <summary>
@@ -89,50 +134,21 @@ public abstract class BusinessCommandDbHandler<TCommand, TEvent, TResult>(bool i
     public event EventHandler<BeforeSavingEventArgs>? BeforeSaving;
 
     /// <summary>
-    ///     Загрузить данные, необходимые для выполнения команды
-    /// </summary>
-    protected virtual Task<Fin<Unit>> LoadAsync(CancellationToken cancel = default) {
-        return Task.FromResult(Fin<Unit>.Succ(Unit.Default));
-    }
-
-    /// <summary>
-    ///     Непосредственное выполнение команды и сохранить предварительный результат в <see cref="PreliminaryResult" />
-    /// </summary>
-    protected abstract Task<Fin<Unit>> RunActionAsync(CancellationToken cancel = default);
-
-    /// <summary>
-    ///     Действие, выполняемое перед сохранением результатов в БД
-    /// </summary>
-    /// <remarks>
-    ///     Не уверен, что этот хук нужен, но захотелось иметь возможность вмешаться в процесс перед сохранением
-    /// </remarks>
-    /// <exception cref="InvalidOperationException"></exception>
-    protected virtual void OnBeforeSaving() {
-        IsSaveResult = true;
-
-        var result = PreliminaryResult ??
-                     throw new InvalidOperationException("Отсутствует предварительный результат");
-        var arg = new BeforeSavingEventArgs(LastCommand!, result, IsSaveResult);
-
-        BeforeSaving?.Invoke(this, arg);
-
-        IsSaveResult = arg.IsSaveResult;
-    }
-
-    /// <summary>
     ///     Сохранить результат выполнения команды
     /// </summary>
     /// <remarks>
     ///     Не каждая команда поддерживает сохранение
     /// </remarks>
-    protected virtual Task<Fin<Unit>> SaveAsync(CancellationToken cancel = default) {
-        return Task.FromResult(Fin<Unit>.Succ(Unit.Default));
+    protected virtual async Task<Fin<int>> SaveAsync(TRepo repo, CancellationToken cancel = default) {
+        return await repo
+            .SaveChangesAsync(cancel)
+            .ConfigureAwait(false);
     }
 
     /// <summary>
-    ///     Упаковывает результат в событие и сохраняет в <see cref="LastResult" />
+    ///     Упаковывает результат в событие и сохраняет в <see cref="Result" />
     /// </summary>
-    protected abstract void PackResultToEvent();
+    protected abstract IList<TEvent> PackResultToEvent(IList<TResult> result);
 
     /// <summary>
     ///     Аргументы события, вызываемого перед сохранением результатов выполнения команды
@@ -140,12 +156,12 @@ public abstract class BusinessCommandDbHandler<TCommand, TEvent, TResult>(bool i
     /// <param name="command"></param>
     public class BeforeSavingEventArgs(
         TCommand command,
-        ICollection<TResult> result,
+        IList<TResult> result,
         bool isSaveResult = true) : EventArgs {
         /// <summary>
         ///     Предварительный результат выполнения команды
         /// </summary>
-        public IList<TResult> PreliminaryResult = [..result];
+        public IList<TResult> Result = result;
 
         /// <summary>
         ///     Выполняемая команда

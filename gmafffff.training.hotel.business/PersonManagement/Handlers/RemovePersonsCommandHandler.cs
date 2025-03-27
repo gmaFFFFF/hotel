@@ -1,5 +1,5 @@
 ﻿using gmafffff.starterKit.BusinessLogic;
-using gmafffff.starterKit.Messaging.Standard;
+using gmafffff.starterKit.Messaging.Crud;
 using gmafffff.training.hotel.business.PersonManagement.Commands;
 using gmafffff.training.hotel.domain.Model;
 using gmafffff.training.hotel.domain.Services.Repositories;
@@ -7,26 +7,25 @@ using gmafffff.training.hotel.domain.Services.Repositories;
 namespace gmafffff.training.hotel.business.PersonManagement.Handlers;
 
 public class RemovePersonsCommandHandler(IPersonsRepository<Guid> repo)
-    : BusinessCommandDbHandler<RemovePersonsCommand, RemovedBusinessEvent<Guid>, Person<Guid>> {
-    protected override async Task<Fin<Unit>> LoadAsync(CancellationToken cancel = default) {
-        PreliminaryResult = (await repo.LoadAsync(spec: person => LastCommand!.Ids.Contains(person.Id), cancel))
+    : BusinessCommandDbHandler<RemovePersonsCommand, RemovedBusinessEvent<Guid>,
+        Person<Guid>, Guid, IPersonsRepository<Guid>, Person<Guid>, Person<Guid>>(repo) {
+    protected override async Task<Fin<IList<Person<Guid>>>> LoadAsync(IPersonsRepository<Guid> repo,
+        CancellationToken cancel = default) {
+        return (await repo
+                .LoadAsync(spec: person => Command.Ids.Contains(person.Id), cancel)
+                .ConfigureAwait(false))
             .ToList();
-        return Unit.Default;
     }
 
-    protected override Task<Fin<Unit>> RunActionAsync(CancellationToken cancel = default) {
-        repo.Delete(PreliminaryResult);
-        return Task.FromResult(Fin<Unit>.Succ(Unit.Default));
+    protected override Task<Fin<IList<Person<Guid>>>> RunActionAsync(IList<Person<Guid>> loaded,
+        CancellationToken cancel = default) {
+        repo.Delete(loaded);
+        return Task.FromResult(Fin<IList<Person<Guid>>>.Succ(loaded));
     }
 
-    protected override async Task<Fin<Unit>> SaveAsync(CancellationToken cancel = default) {
-        await repo.SaveChangesAsync(cancel);
-        return Unit.Default;
-    }
-
-    protected override void PackResultToEvent() {
-        LastResult = PreliminaryResult
-            .Select(person => new RemovedBusinessEvent<Guid>(person.Id, LastCommand!))
+    protected override IList<RemovedBusinessEvent<Guid>> PackResultToEvent(IList<Person<Guid>> result) {
+        return result
+            .Select(person => new RemovedBusinessEvent<Guid>(person.Id, Command))
             .ToList();
     }
 }

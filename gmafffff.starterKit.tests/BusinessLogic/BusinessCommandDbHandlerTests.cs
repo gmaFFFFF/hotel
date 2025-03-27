@@ -3,7 +3,7 @@ using gmafffff.starterKit.tests.BusinessLogic.Fixtures;
 
 namespace gmafffff.starterKit.tests.BusinessLogic;
 
-[TestSubject(typeof(BusinessCommandDbHandler<,,>))]
+[TestSubject(typeof(BusinessCommandDbHandler<,,,,,,>))]
 public class BusinessCommandDbHandlerTests {
     public static TheoryData<DbHandlerCommand, bool, DbHandlerStatus, bool> TestRuns {
         get {
@@ -34,7 +34,7 @@ public class BusinessCommandDbHandlerTests {
     /// </summary>
     [Theory]
     [MemberData(nameof(TestRuns))]
-    public async Task TestingMethodExecuteasyncAsWhiteBox(
+    public async Task TestingMethodExecuteAsWhiteBoxAsync(
         DbHandlerCommand command,
         bool isSuccess, DbHandlerStatus exceptedResult,
         bool isSaveToDbSeparately) {

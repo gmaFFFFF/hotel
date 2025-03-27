@@ -84,7 +84,7 @@ public static class RegisterServicesExtensions {
 
     /// <summary>
     ///     Регистрирует в сервисе внедрения зависимостей обработчики бизнес команд,
-    ///     реализующие класс <see cref="BusinessCommandDbHandler{TCommand,TEvent,TResult}" />
+    ///     реализующие класс <see cref="BusinessCommandDbHandler{TCommand,TEvent,TEntity,TId,TRepo,TLoad,TResult}" />
     /// </summary>
     /// <param name="this">Описание служб</param>
     /// <param name="assemblies">Сборки для поиска. Если аргумент опущен, то поиск по всем сборкам домена приложения</param>
@@ -97,7 +97,7 @@ public static class RegisterServicesExtensions {
                 : scan.FromAssemblies(assemblies);
 
             selector
-                .AddClasses(@class => @class.AssignableTo(typeof(BusinessCommandDbHandler<,,>)))
+                .AddClasses(@class => @class.AssignableTo(typeof(BusinessCommandDbHandler<,,,,,,>)))
                 .AsImplementedInterfaces(predicate: @interface =>
                     @interface.IsGenericType
                         ? !IgnoreInterfaces.Contains(@interface.GetGenericTypeDefinition())

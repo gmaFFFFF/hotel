@@ -1,6 +1,6 @@
 ﻿using gmafffff.starterKit.AppError;
 using gmafffff.starterKit.BusinessLogic;
-using gmafffff.starterKit.Messaging.Standard;
+using gmafffff.starterKit.Messaging.Crud;
 using gmafffff.training.hotel.business.PersonManagement.Commands;
 using gmafffff.training.hotel.domain.Model;
 using gmafffff.training.hotel.domain.Services.Mappers;
@@ -9,33 +9,28 @@ using gmafffff.training.hotel.domain.Services.Repositories;
 namespace gmafffff.training.hotel.business.PersonManagement.Handlers;
 
 public class UpdatePersonCommandHandler(IPersonsRepository<Guid> repo, IPersonManagementMapper mapper)
-    : BusinessCommandDbHandler<UpdatePersonCommand, UpdatedBusinessEvent<Guid>, Person<Guid>> {
-    protected override async Task<Fin<Unit>> LoadAsync(CancellationToken cancel = default) {
+    : BusinessCommandDbHandler<UpdatePersonCommand, UpdatedBusinessEvent<Guid>,
+        Person<Guid>, Guid, IPersonsRepository<Guid>, Person<Guid>, Person<Guid>>(repo) {
+    protected override async Task<Fin<IList<Person<Guid>>>> LoadAsync(IPersonsRepository<Guid> repo,
+        CancellationToken cancel = default) {
         var found = await repo
-            .LoadAsync(LastCommand!.Id, cancel)
+            .LoadAsync(Command.Id, cancel)
             .ConfigureAwait(false);
 
-        if (found is null)
-            return AppErrorHelper.NewError(AppErrorCode.DbNotFound);
-
-        PreliminaryResult = [found];
-
-        return Unit.Default;
+        return found is null
+            ? AppErrorHelper.NewError(AppErrorCode.DbNotFound)
+            : Fin<IList<Person<Guid>>>.Succ([found]);
     }
 
-    protected override Task<Fin<Unit>> RunActionAsync(CancellationToken cancel = default) {
-        mapper.Update(LastCommand!.PersonUpdate, PreliminaryResult[0]);
-        return Task.FromResult(Fin<Unit>.Succ(Unit.Default));
+    protected override Task<Fin<IList<Person<Guid>>>> RunActionAsync(IList<Person<Guid>> loaded,
+        CancellationToken cancel = default) {
+        mapper.Update(Command.PersonUpdate, loaded[0]);
+        return Task.FromResult(Fin<IList<Person<Guid>>>.Succ(loaded));
     }
 
-    protected override async Task<Fin<Unit>> SaveAsync(CancellationToken cancel = default) {
-        await repo.SaveChangesAsync(cancel);
-        return Unit.Default;
-    }
-
-    protected override void PackResultToEvent() {
-        LastResult = PreliminaryResult
-            .Select(person => new UpdatedBusinessEvent<Guid>(person.Id, LastCommand!))
+    protected override IList<UpdatedBusinessEvent<Guid>> PackResultToEvent(IList<Person<Guid>> result) {
+        return result
+            .Select(person => new UpdatedBusinessEvent<Guid>(person.Id, Command))
             .ToList();
     }
 }

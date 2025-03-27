@@ -18,10 +18,12 @@ public partial class PersonManagementTests {
             // Arrange
             var exceptedIds = FakeHotel.Hotel.Rooms
                 .Where(Room<Guid>.IsFreeRoom.Not().Compile())
-                .SelectMany(r => r.Visit!.Visitors);
+                .SelectMany(r => r.Visit!.Visitors)
+                .ToArray();
             var excepted = FakeHotel.Persons
                 .Where(p => exceptedIds.Contains(p.Id))
-                .Select(person => person.Adapt<PersonDto>());
+                .Select(person => person.Adapt<PersonDto>())
+                .ToArray();
             var query = new GetPersonsQuery(p => exceptedIds.Contains(p.Id));
             var handler = Scope.ServiceProvider.GetRequiredService<IQueryHandler<GetPersonsQuery, PersonDto>>();
 

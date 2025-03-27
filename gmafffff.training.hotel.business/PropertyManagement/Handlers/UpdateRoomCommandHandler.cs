@@ -1,6 +1,6 @@
 ﻿using gmafffff.starterKit.AppError;
 using gmafffff.starterKit.BusinessLogic;
-using gmafffff.starterKit.Messaging.Standard;
+using gmafffff.starterKit.Messaging.Crud;
 using gmafffff.training.hotel.business.PropertyManagement.Commands;
 using gmafffff.training.hotel.domain.Model;
 using gmafffff.training.hotel.domain.Services.Mappers;
@@ -9,36 +9,32 @@ using gmafffff.training.hotel.domain.Services.Repositories;
 namespace gmafffff.training.hotel.business.PropertyManagement.Handlers;
 
 public class UpdateRoomCommandHandler(IHotelBlocksRepository<int, Guid> repo, IPropertyManagementMapper mapper)
-    : BusinessCommandDbHandler<UpdateRoomCommand, UpdatedBusinessEvent<int>, Room<Guid>> {
-    protected override async Task<Fin<Unit>> LoadAsync(CancellationToken cancel = default) {
+    : BusinessCommandDbHandler<UpdateRoomCommand, UpdatedBusinessEvent<int>,
+        HotelBlock<int, Guid>, int, IHotelBlocksRepository<int, Guid>,
+        Room<Guid>, Room<Guid>>(repo) {
+    protected override async Task<Fin<IList<Room<Guid>>>> LoadAsync(IHotelBlocksRepository<int, Guid> repo,
+        CancellationToken cancel = default) {
         var found = (await repo
-                .LoadWithRoomFilterAsync(predicate: room => room.Id == LastCommand!.Id, cancel)
+                .LoadWithRoomFilterAsync(predicate: room => room.Id == Command.Id, cancel)
                 .ConfigureAwait(false))
             .SingleOrDefault()
             ?.Rooms
             .SingleOrDefault();
 
-        if (found is null)
-            return AppErrorHelper.NewError(AppErrorCode.DbNotFound);
-
-        PreliminaryResult = [found];
-
-        return Unit.Default;
+        return found is null
+            ? AppErrorHelper.NewError(AppErrorCode.DbNotFound)
+            : Fin<IList<Room<Guid>>>.Succ([found]);
     }
 
-    protected override Task<Fin<Unit>> RunActionAsync(CancellationToken cancel = default) {
-        mapper.Update(LastCommand!.RoomUpdate, PreliminaryResult[0]);
-        return Task.FromResult(Fin<Unit>.Succ(Unit.Default));
+    protected override Task<Fin<IList<Room<Guid>>>> RunActionAsync(IList<Room<Guid>> loaded,
+        CancellationToken cancel = default) {
+        mapper.Update(Command.RoomUpdate, loaded[0]);
+        return Task.FromResult(Fin<IList<Room<Guid>>>.Succ(loaded));
     }
 
-    protected override async Task<Fin<Unit>> SaveAsync(CancellationToken cancel = default) {
-        await repo.SaveChangesAsync(cancel);
-        return Unit.Default;
-    }
-
-    protected override void PackResultToEvent() {
-        LastResult = PreliminaryResult
-            .Select(room => new UpdatedBusinessEvent<int>(room.Id, LastCommand!))
+    protected override IList<UpdatedBusinessEvent<int>> PackResultToEvent(IList<Room<Guid>> result) {
+        return result
+            .Select(room => new UpdatedBusinessEvent<int>(room.Id, Command))
             .ToList();
     }
 }

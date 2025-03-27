@@ -4,36 +4,42 @@ using gmafffff.starterKit.BusinessLogic;
 namespace gmafffff.starterKit.tests.BusinessLogic.Fixtures;
 
 public class DbHandler(bool isSaveToDbSeparately = true)
-    : BusinessCommandDbHandler<DbHandlerCommand, DbHandlerEvent, DbHandlerStatus>(isSaveToDbSeparately) {
+    : BusinessCommandDbHandler<DbHandlerCommand, DbHandlerEvent,
+        BusinessEntity, int, Repo, DbHandlerStatus,
+        DbHandlerStatus>(new Repo(), isSaveToDbSeparately) {
     public static EventHandler<BeforeSavingEventArgs> Handler =
         (_, args) => args.IsSaveResult = args.Command.IsSaveResult;
 
-    protected override Task<Fin<Unit>> LoadAsync(CancellationToken cancel = default) {
-        PreliminaryResult.Add(DbHandlerStatus.Load);
-        return LastCommand!.IsSuccessLoad
-            ? base.LoadAsync(cancel)
-            : Task.FromResult(Fin<Unit>.Fail(AppErrorHelper.NewError(AppErrorCode.TimedOut)));
+    public DbHandlerStatus Status;
+
+
+    protected override Task<Fin<IList<DbHandlerStatus>>> LoadAsync(Repo repo, CancellationToken cancel = default) {
+        Status = DbHandlerStatus.Load;
+        return Command.IsSuccessLoad
+            ? Task.FromResult(Fin<IList<DbHandlerStatus>>.Succ([Status]))
+            : Task.FromResult(Fin<IList<DbHandlerStatus>>.Fail(AppErrorHelper.NewError(AppErrorCode.TimedOut)));
     }
 
-    protected override Task<Fin<Unit>> RunActionAsync(CancellationToken cancel = default) {
-        PreliminaryResult[index: 0] |= DbHandlerStatus.Action;
-        return LastCommand!.Exception is { } exc
+    protected override Task<Fin<IList<DbHandlerStatus>>> RunActionAsync(IList<DbHandlerStatus> status,
+        CancellationToken cancel = default) {
+        Status = status[0] | DbHandlerStatus.Action;
+        return Command.Exception is { } exc
             ? throw exc
-            : Task.FromResult<Fin<Unit>>(Unit.Default);
+            : Task.FromResult(Fin<IList<DbHandlerStatus>>.Succ([Status]));
     }
 
-    protected override void OnBeforeSaving() {
-        PreliminaryResult[index: 0] |= DbHandlerStatus.BeforeSaving;
-        base.OnBeforeSaving();
+    protected override bool OnBeforeSaving(IList<DbHandlerStatus> status) {
+        Status = status[0] | DbHandlerStatus.BeforeSaving;
+        return base.OnBeforeSaving([Status]);
     }
 
-    protected override Task<Fin<Unit>> SaveAsync(CancellationToken cancel = default) {
-        PreliminaryResult[index: 0] |= DbHandlerStatus.Save;
-        return base.SaveAsync(cancel);
+    protected override Task<Fin<int>> SaveAsync(Repo repo, CancellationToken cancel = default) {
+        Status |= DbHandlerStatus.Save;
+        return base.SaveAsync(repo, cancel);
     }
 
-    protected override void PackResultToEvent() {
-        PreliminaryResult[index: 0] |= DbHandlerStatus.WithoutSave;
-        LastResult = [new DbHandlerEvent(PreliminaryResult[index: 0], LastCommand.MessageId)];
+    protected override IList<DbHandlerEvent> PackResultToEvent(IList<DbHandlerStatus> status) {
+        Status |= DbHandlerStatus.Pack;
+        return [new DbHandlerEvent(Status, Command.MessageId)];
     }
 }

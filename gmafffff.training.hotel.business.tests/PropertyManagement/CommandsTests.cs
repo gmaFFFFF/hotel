@@ -1,7 +1,7 @@
 ﻿using FluentAssertions;
 using FluentAssertions.Execution;
 using gmafffff.starterKit.BusinessLogic;
-using gmafffff.starterKit.Messaging.Standard;
+using gmafffff.starterKit.Messaging.Crud;
 using gmafffff.training.hotel.business.PropertyManagement.Commands;
 using gmafffff.training.hotel.business.tests.Fixtures;
 using gmafffff.training.hotel.domain.Model;

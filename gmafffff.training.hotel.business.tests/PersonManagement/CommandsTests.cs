@@ -1,7 +1,7 @@
 ﻿using FluentAssertions;
 using FluentAssertions.Execution;
 using gmafffff.starterKit.BusinessLogic;
-using gmafffff.starterKit.Messaging.Standard;
+using gmafffff.starterKit.Messaging.Crud;
 using gmafffff.starterKit.Utils;
 using gmafffff.training.hotel.business.PersonManagement.Commands;
 using gmafffff.training.hotel.business.tests.Fixtures;
@@ -73,7 +73,8 @@ public partial class PersonManagementTests {
                 .Select(person => person.Id)
                 .Except(suitablePersons)
                 .ToArray();
-            if (leavingPersons.Length < 2) throw new NotSupportedException();
+            if (leavingPersons.Length < 2)
+                throw new NotSupportedException("Если не сложилась тестовая ситуация нужно просто перезапустить тест");
 
             var command = new RemovePersonsCommand(leavingPersons);
             var runner =

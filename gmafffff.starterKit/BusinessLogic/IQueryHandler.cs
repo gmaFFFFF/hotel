@@ -1,5 +1,5 @@
+using gmafffff.starterKit.Messaging;
 using LanguageExt;
-using Query = gmafffff.starterKit.Messaging.Query;
 
 namespace gmafffff.starterKit.BusinessLogic;
 
@@ -9,7 +9,7 @@ namespace gmafffff.starterKit.BusinessLogic;
 /// <typeparam name="TQuery">Запрос типа <see cref="Query" /></typeparam>
 /// <typeparam name="TResult">Возвращаемый тип результат</typeparam>
 public interface IQueryHandler<in TQuery, TResult>
-    where TQuery : Query {
+    where TQuery : Query<TResult> {
     /// <summary>
     ///     Вернуть запрошенные данные
     /// </summary>
