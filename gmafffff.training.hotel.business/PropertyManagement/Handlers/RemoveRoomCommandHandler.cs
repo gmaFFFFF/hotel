@@ -7,7 +7,7 @@ using gmafffff.training.hotel.domain.Services.Repositories;
 namespace gmafffff.training.hotel.business.PropertyManagement.Handlers;
 
 public class RemoveRoomCommandHandler(IHotelBlocksRepository<int, Guid> repo)
-    : BusinessCommandDbHandler<RemoveRoomsCommand, RemovedBusinessEvent<int>,
+    : BusinessCommandDbHandler<RemoveRoomsCommand, DeletedBusinessEvent<int>,
         HotelBlock<int, Guid>, int, IHotelBlocksRepository<int, Guid>,
         HotelBlock<int, Guid>, Room<Guid>>(repo) {
     protected override async Task<Fin<IList<HotelBlock<int, Guid>>>> LoadAsync(IHotelBlocksRepository<int, Guid> repo,
@@ -29,9 +29,9 @@ public class RemoveRoomCommandHandler(IHotelBlocksRepository<int, Guid> repo)
         return Task.FromResult(Fin<IList<Room<Guid>>>.Succ(del));
     }
 
-    protected override IList<RemovedBusinessEvent<int>> PackResultToEvent(IList<Room<Guid>> result) {
+    protected override IList<DeletedBusinessEvent<int>> PackResultToEvent(IList<Room<Guid>> result) {
         return result
-            .Select(room => new RemovedBusinessEvent<int>(room.Id, Command))
+            .Select(room => new DeletedBusinessEvent<int>(room.Id, Command))
             .ToList();
     }
 }

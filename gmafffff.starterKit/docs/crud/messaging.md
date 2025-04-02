@@ -11,7 +11,9 @@
 * `gmafffff.starterKit.Messaging.BusinessEvent` — события, возникающие в результате исполнения
   `gmafffff.starterKit.Messaging.BusinessCommand`.
 
-Для некоторых часто встречающихся событий предусмотрены стандартные события:
+Для некоторых часто встречающихся команд/событий/запросов предусмотрены стандартные сообщения:
 
-* `gmafffff.starterKit.Messaging.Standard.CreatedBusinessEvent` — событие создания сущности.
-* `gmafffff.starterKit.Messaging.Standard.RemoveBusinessEvent` — событие удаления сущности.
+* `gmafffff.starterKit.Messaging.Crud.CreateBusinessCommand` / `CreatedBusinessEvent` — создания сущности.
+* `gmafffff.starterKit.Messaging.Crud.UpdateBusinessCommand` / `UpdatedBusinessEvent` — изменение сущности.
+* `gmafffff.starterKit.Messaging.Crud.DeleteBusinessCommand` / `DeletedBusinessEvent` — удаления сущности.
+* `gmafffff.starterKit.Messaging.Crud.ReadDbQuery` — запрос сущностей.

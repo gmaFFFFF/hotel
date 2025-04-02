@@ -1,4 +1,4 @@
-namespace gmafffff.starterKit.Messaging.Standard;
+namespace gmafffff.starterKit.Messaging.Crud;
 
 public record CreatedBusinessEvent<TEntityId>(TEntityId EntityId, Guid CommandId, Guid MessageId = default)
     : BusinessEvent(CommandId, MessageId)

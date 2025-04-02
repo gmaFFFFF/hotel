@@ -16,7 +16,7 @@
 Производный класс должен переопределить следующие функции — шаги:
 
 1. `LoadAsync` — загружает необходимые данные из БД в кладовую.
-2. `RunActionAsync` — выполняет необходимые действия, сохраняя предварительный результат в свойство `PreliminaryResult`.
+2. `RunActionAsync` — выполняет необходимые действия.
 3. `OnBeforeSaving` — действие выполняемое перед сохранением, например, принятие решения о сохранении.
    По умолчанию вызывает подписчиков события `BeforeSaving`.
 4. `SaveAsync` — сохраняет результат в БД, если команда поддерживает раздельное выполнение и сохранение.
@@ -34,6 +34,7 @@
 Отмена сохранения возможна только командами с поддержкой сохранения в отдельном шаге,
 см. свойство `IsSaveToDbSeparately`.
 
+
 ## Обработчик запросов к БД
 
 Абстрактный класс `gmafffff.starterKit.BusinessLogic.QueryDbHandler` определяет порядок обработки запроса данных из БД.
@@ -42,13 +43,20 @@
 [!TIP]
 `gmafffff.starterKit.Messaging.Query` содержит информацию о постраничной разбивке.
 
+## Примитивные обработчики CRUD
+
+Если стоит задача примитивного добавления/удаления/изменения/чтения сущности, являющейся корнем агрегата, в центральном
+складе
+то можно создать классы, производные от:
+
+* `gmafffff.starterKit.BusinessLogic.Crud.CreateDbCommandHandler`
+* `gmafffff.starterKit.BusinessLogic.Crud.DeleteDbCommandHandler`
+* `gmafffff.starterKit.BusinessLogic.Crud.UpdateDbCommandHandler`
+* `gmafffff.starterKit.BusinessLogic.Crud.ReadDbQueryHandler`
+
 ## DI
 
 Определены методы расширения `IServiceCollection` для регистрации в контейнере DI:
 
-*
-
-Регистрация бизнес-правил в контейнере DI осуществляется вызовом `AddBusinessRules` —
-
-* Обработчик запросов к БД — `AddQueryHandlers`;
-* Обработчик команд, связанных с записью в БД — `AddBusinessCommandDbHandlers`; 
+* Обработчиков запросов к БД — `AddQueryHandlers`;
+* Обработчиков команд, связанных с записью в БД — `AddBusinessCommandDbHandlers`; 

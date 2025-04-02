@@ -11,7 +11,7 @@ public class AddPersonCommandSpec : LocalizedSpecification,
     public AddPersonCommandSpec() {
         // Приведение типа к ISpecificationHolder<PersonAddDto> потребовалось, т.к. интерфейс реализован явно
         var personAddDtoSpec = ((ISpecificationHolder<PersonAddDto>)new PersonSpec()).Specification;
-        Specification = s => s.Member(memberSelector: m => m.Person, personAddDtoSpec);
+        Specification = s => s.Member(memberSelector: m => m.New, personAddDtoSpec);
     }
 
     public Specification<AddPersonCommand> Specification { get; }

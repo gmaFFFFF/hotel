@@ -24,7 +24,7 @@ public partial class PersonManagementTests {
                 .Where(p => exceptedIds.Contains(p.Id))
                 .Select(person => person.Adapt<PersonDto>())
                 .ToArray();
-            var query = new GetPersonsQuery(p => exceptedIds.Contains(p.Id));
+            var query = new GetPersonsQuery(p => exceptedIds.Contains(p.PersonId));
             var handler = Scope.ServiceProvider.GetRequiredService<IQueryHandler<GetPersonsQuery, PersonDto>>();
 
             // Act

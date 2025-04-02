@@ -25,15 +25,15 @@ public partial class PersonManagementTests {
             // Act
             var result = await runner.Execute(command);
             var newPerson = (await PersonRepo
-                    .GetPersonsAsync(person => person.FullName.FirstName == command.Person.FirstName &&
-                                               person.FullName.SurName == command.Person.SurName &&
-                                               person.FullName.Patronymic == command.Person.Patronymic)
+                    .GetPersonsAsync(person => person.FullName.FirstName == command.New.FirstName &&
+                                               person.FullName.SurName == command.New.SurName &&
+                                               person.FullName.Patronymic == command.New.Patronymic)
                 ).Single();
 
             // Assert
             using var _ = new AssertionScope();
             result.IsSucc.Should().BeTrue();
-            newPerson.Should().BeEquivalentTo(command.Person,
+            newPerson.Should().BeEquivalentTo(command.New,
                 config: config => config.ExcludingMissingMembers());
         }
 
@@ -57,7 +57,7 @@ public partial class PersonManagementTests {
             // Assert
             using var _ = new AssertionScope();
             result.IsSucc.Should().BeTrue();
-            updatedPerson.Should().BeEquivalentTo(command.PersonUpdate,
+            updatedPerson.Should().BeEquivalentTo(command.Changed,
                 config: config => config.ExcludingMissingMembers());
         }
 
@@ -78,7 +78,7 @@ public partial class PersonManagementTests {
 
             var command = new RemovePersonsCommand(leavingPersons);
             var runner =
-                new BusinessActionRunner<RemovePersonsCommand, RemovedBusinessEvent<Guid>>(Scope.ServiceProvider);
+                new BusinessActionRunner<RemovePersonsCommand, DeletedBusinessEvent<Guid>>(Scope.ServiceProvider);
 
             // Act
             var result = await runner.Execute(command);

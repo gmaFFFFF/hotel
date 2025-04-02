@@ -73,7 +73,7 @@ public partial class PropertyManagementTests {
             if (removeRooms.Length < 2) throw new NotSupportedException();
 
             var command = new RemoveRoomsCommand(removeRoomsIds);
-            var runner = new BusinessActionRunner<RemoveRoomsCommand, RemovedBusinessEvent<int>>(Scope.ServiceProvider);
+            var runner = new BusinessActionRunner<RemoveRoomsCommand, DeletedBusinessEvent<int>>(Scope.ServiceProvider);
 
             // Act
             var result = await runner.Execute(command);

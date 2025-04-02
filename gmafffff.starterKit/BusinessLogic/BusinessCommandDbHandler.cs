@@ -20,7 +20,7 @@ public abstract class BusinessCommandDbHandler<
     TCommand, TEvent,
     TEntity, TId, TRepo,
     TLoad, TResult>(
-    TRepo repo,
+    TRepo repository,
     bool isSaveToDbSeparately = true) :
     IBusinessCommandHandler<TCommand, TEvent>
     where TCommand : BusinessCommand
@@ -80,9 +80,9 @@ public abstract class BusinessCommandDbHandler<
 
         // Выполняем шаги последовательно, при условии успешного выполнения предыдущего шага и отсутствия отмены
         var steps =
-            from loaded in load(repo)
+            from loaded in load(repository)
             from res in act(loaded)
-            from count in saveSeparate(res, repo)
+            from count in saveSeparate(res, repository)
             from events in pack(res)
             select events;
 
