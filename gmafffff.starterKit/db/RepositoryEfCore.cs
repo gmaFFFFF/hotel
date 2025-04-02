@@ -7,6 +7,9 @@ using Microsoft.EntityFrameworkCore.Query;
 
 namespace gmafffff.starterKit.Db;
 
+/// <summary>
+///     Реализация <see cref="IRepository{T,TId}" /> для EF Core
+/// </summary>
 public class RepositoryEfCore<T, TId> : IRepository<T, TId>
     where T : Entity<TId>
     where TId : struct, IEquatable<TId> {
@@ -157,6 +160,17 @@ public class RepositoryEfCore<T, TId> : IRepository<T, TId>
 
         return spec is null
             ? Array.Empty<T>()
+            : await RunQueryAsync(query, cancel).ConfigureAwait(false);
+    }
+
+    public async Task<IList<TDto>> GetAsync<TDto>(Expression<Func<TDto, bool>> spec,
+        Expression<Func<T, TDto>> entityToDto,
+        Func<IQueryable<TDto>, IOrderedQueryable<TDto>>? sortOrder = null, (uint pageNum, uint pageSize)? pager = null,
+        CancellationToken cancel = default) where TDto : class {
+        var query = QueryBuilder(GetAll.Select(entityToDto), spec, sortOrder: sortOrder, pager: pager);
+
+        return spec is null
+            ? Array.Empty<TDto>()
             : await RunQueryAsync(query, cancel).ConfigureAwait(false);
     }
 

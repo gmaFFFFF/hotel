@@ -236,4 +236,11 @@ public class TestRepository : ITestRepository {
     public Task<int> SaveChangesAsync(CancellationToken cancel = default) {
         throw new NotImplementedException();
     }
+
+    public Task<IList<TDto>> GetAsync<TDto>(Expression<Func<TDto, bool>> spec,
+        Expression<Func<TestEntity, TDto>> entityToDto,
+        Func<IQueryable<TDto>, IOrderedQueryable<TDto>>? sortOrder = null, (uint pageNum, uint pageSize)? pager = null,
+        CancellationToken cancel = default) where TDto : class {
+        throw new NotImplementedException();
+    }
 }

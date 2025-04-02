@@ -243,12 +243,33 @@ public interface IRepository<T, in TId> : IDisposable
     ///     из центрального (базисного) склада трансфером, не принимая их к себе на учёт
     /// </summary>
     /// <typeparam name="TDto">Обменный формат сущности</typeparam>
+    /// <param name="spec">Особенности, которым должны соответствовать отпускаемые DTO, в форме предиката</param>
+    /// <remarks>Если спецификация <paramref name="spec" /> не задана (null), то вернёт пустой список</remarks>
+    /// <param name="entityToDto">Проекция сущности в Dto</param>
+    /// <param name="sortOrder">Порядок сортировки</param>
+    /// <param name="pager">Постраничная загрузка</param>
+    /// <param name="cancel"><see cref="CancellationToken" /> отмены операции</param>
+    /// <returns><see cref="IList{T}" /> выданных сущностей</returns>
+    Task<IList<TDto>> GetAsync<TDto>(Expression<Func<TDto, bool>> spec, Expression<Func<T, TDto>> entityToDto,
+        Func<IQueryable<TDto>, IOrderedQueryable<TDto>>? sortOrder = null, (uint pageNum, uint pageSize)? pager = null,
+        CancellationToken cancel = default) where TDto : class;
+
+    /// <summary>
+    ///     Асинхронно отпускает Dto сущностей, соответствующих спецификации <paramref name="spec" />,
+    ///     из центрального (базисного) склада трансфером, не принимая их к себе на учёт
+    /// </summary>
+    /// <typeparam name="TDto">Обменный формат сущности</typeparam>
     /// <param name="spec">Особенности, которым должны соответствовать отпускаемые сущности, в форме предиката</param>
     /// <remarks>Если спецификация <paramref name="spec" /> не задана (null), то вернёт пустой список</remarks>
     /// <param name="entityToDto">Проекция сущности в Dto</param>
     /// <param name="sortOrder">Порядок сортировки</param>
     /// <param name="pager">Постраничная загрузка</param>
     /// <param name="cancel"><see cref="CancellationToken" /> отмены операции</param>
+    /// <remarks>
+    /// Метод имеет компромиссный интерфейс: фильтрует по сущности, но сортирует по DTO, 
+    /// т.к. фильтрация по сущности, несмотря на нарушение инкапсуляции, даёт максимум гибкости,
+    /// в тоже время, сортировка по DTO сделает результат предсказуемым для пользователя.
+    /// </remarks>
     /// <returns><see cref="IList{T}" /> выданных сущностей</returns>
     Task<IList<TDto>> GetAsync<TDto>(Expression<Func<T, bool>> spec, Expression<Func<T, TDto>> entityToDto,
         Func<IQueryable<TDto>, IOrderedQueryable<TDto>>? sortOrder = null, (uint pageNum, uint pageSize)? pager = null,
