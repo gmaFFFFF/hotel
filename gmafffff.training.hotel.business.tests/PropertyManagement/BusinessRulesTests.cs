@@ -10,7 +10,7 @@ using Xunit.Abstractions;
 namespace gmafffff.training.hotel.business.tests.PropertyManagement;
 
 public partial class PropertyManagementTests {
-    public class BusinessRulesTests(ITestOutputHelper output) : TestContext(output) {
+    public class BusinessRules(ITestOutputHelper output) : TestContext(output) {
         /// <summary>
         ///     Бизнес-правило <see cref="RoomNumberMustUnique" /> соблюдается при добавлении
         /// </summary>

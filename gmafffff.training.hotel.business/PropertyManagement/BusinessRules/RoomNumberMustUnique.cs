@@ -15,7 +15,7 @@ public class RoomNumberMustUnique(IHotelBlocksRepositoryFactory<int, Guid> repos
         return count == 0;
     }
 
-    public Enum ErrorCode => ViolationBusinessRules.RuleRoomNumberRepeat;
+    public Enum ErrorCode => ErrorBusinessRules.RuleRoomNumberRepeat;
 
     public async Task<bool> IsSatisfiedAsync(UpdateRoomCommand command, CancellationToken cancel = default) {
         var updateRoomNum = command.RoomUpdate.Number;

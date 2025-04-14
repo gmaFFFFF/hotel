@@ -12,7 +12,7 @@ using Xunit.Abstractions;
 namespace gmafffff.training.hotel.business.tests.PersonManagement;
 
 public partial class PersonManagementTests {
-    public class CommandsTests(ITestOutputHelper output) : TestContext(output) {
+    public class Commands(ITestOutputHelper output) : TestContext(output) {
         /// <summary>
         ///     Добавляет персону
         /// </summary>

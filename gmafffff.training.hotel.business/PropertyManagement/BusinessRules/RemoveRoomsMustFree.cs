@@ -9,7 +9,7 @@ namespace gmafffff.training.hotel.business.PropertyManagement.BusinessRules;
 
 public class RemoveRoomsMustFree(IHotelBlocksRepositoryFactory<int, Guid> repositoryFactory)
     : IBusinessRule<RemoveRoomsCommand> {
-    public Enum ErrorCode => ViolationBusinessRules.RuleRoomBusy;
+    public Enum ErrorCode => ErrorBusinessRules.RuleRoomBusy;
 
     public async Task<bool> IsSatisfiedAsync(RemoveRoomsCommand command, CancellationToken cancel = default) {
         var repository = repositoryFactory.CreateTransient();

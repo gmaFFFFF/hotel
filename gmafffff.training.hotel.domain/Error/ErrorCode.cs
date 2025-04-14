@@ -5,7 +5,7 @@ namespace gmafffff.training.hotel.domain.Error;
 /// </summary>
 public enum ErrorCode {
     None,
-    ValidationRoomNumberNo,
+    ValidationRoomNumberNo = 0x8203,  // CRC16 gmafffff.training.hotel.domain.Error.ErrorCode
     ValidationRoomCapacityNo,
     ValidationPersonNameNo,
     ValidationSurNameNo

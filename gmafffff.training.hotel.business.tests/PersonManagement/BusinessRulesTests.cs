@@ -9,7 +9,7 @@ using Xunit.Abstractions;
 namespace gmafffff.training.hotel.business.tests.PersonManagement;
 
 public partial class PersonManagementTests {
-    public class BusinessRulesTests(ITestOutputHelper output) : TestContext(output) {
+    public class BusinessRules(ITestOutputHelper output) : TestContext(output) {
         /// <summary>
         ///     Бизнес правило <see cref="RemovePersonShouldNotSuitable" /> соблюдается
         /// </summary>

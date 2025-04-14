@@ -12,7 +12,7 @@ namespace gmafffff.training.hotel.business.PersonManagement.BusinessRules;
 /// </summary>
 public class RemovePersonShouldNotSuitable(IHotelBlocksRepositoryFactory<int, Guid> repositoryFactory)
     : IBusinessRule<RemovePersonsCommand> {
-    public Enum ErrorCode => ViolationBusinessRules.PersonLivesInHotel;
+    public Enum ErrorCode => ErrorBusinessRules.RulePersonLivesInHotel;
 
     public async Task<bool> IsSatisfiedAsync(RemovePersonsCommand command, CancellationToken cancel = default) {
         var repository = repositoryFactory.CreateTransient();

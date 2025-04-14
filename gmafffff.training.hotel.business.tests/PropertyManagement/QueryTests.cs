@@ -11,7 +11,7 @@ using Xunit.Abstractions;
 namespace gmafffff.training.hotel.business.tests.PropertyManagement;
 
 public partial class PropertyManagementTests {
-    public class QueryTests(ITestOutputHelper output) : TestContext(output) {
+    public class Query(ITestOutputHelper output) : TestContext(output) {
         [Fact]
         public async Task CanQueryData() {
             // Arrange
