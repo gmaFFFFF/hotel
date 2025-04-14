@@ -60,14 +60,21 @@ public class AppErrorHelper {
                 holderType.GetInterfaces()
                     .Where(IsAppropriateInterface)
                     .Select(@interface => (TErrorCode: @interface
-                        .GenericTypeArguments[0], holderType)));
+                        .GenericTypeArguments[0], holderType, @interface)));
 
         var messages = errorCodesAndMessagesHolders
             .Select(kv => {
                 var holder = Activator.CreateInstance(kv.holderType);
-                var prop = kv.holderType.GetProperty(nameof(IErrorMessage<Enum>.Messages));
-                Debug.Assert(prop != null, nameof(prop) + " != null");
-                var value = (IDictionary)prop.GetValue(holder)!;
+                // Так как интерфейс IErrorMessage<> может быть реализован явно, 
+                // то напрямую вызывать GetProperty нельзя:
+                // var prop = kv.holderType.GetProperty(nameof(IErrorMessage<Enum>.Messages));
+                // var value = (IDictionary)prop.GetValue(holder)!;
+                // Приходится использовать InterfaceMapping:
+                var mapToInterface = kv.holderType.GetInterfaceMap(kv.@interface);
+                var get_prop_method = mapToInterface.InterfaceMethods
+                    .Single(m => m.Name == $"get_{nameof(IErrorMessage<Enum>.Messages)}");
+                var value = (IDictionary)get_prop_method.Invoke(holder, null)!;
+
                 var outerKeys = value.Keys.Cast<string>();
                 var outerValues = value.Values.Cast<IDictionary>()
                     .Select(inner => {

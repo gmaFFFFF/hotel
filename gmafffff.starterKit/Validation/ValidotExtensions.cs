@@ -11,8 +11,8 @@ public static class ValidotExtensions {
 
     /// <summary>
     ///     По заданному коду ошибки <paramref name="error" /> заполняет информацию, передаваемую в методы
-    ///     <see cref="WithMessageExtension.WithMessage{T}(Validot.Specification.IWithMessageIn{T}, string)" /> и
-    ///     <see cref="WithExtraCodeExtension.WithExtraCode{T}(Validot.Specification.IWithExtraCodeIn{T}, string)" />,
+    ///     <see cref="WithMessageExtension.WithMessage{T}(IWithMessageIn{T}, string)" /> и
+    ///     <see cref="WithExtraCodeExtension.WithExtraCode{T}(IWithExtraCodeIn{T}, string)" />,
     ///     т.е.:
     ///     <list type="number">
     ///         <item>ключ к локализованному сообщению об ошибке (для человека);</item>
@@ -35,6 +35,20 @@ public static class ValidotExtensions {
     }
 
     /// <summary>
+    ///     Преобразует результат проверки в enum-коды ошибок
+    /// </summary>
+    /// <param name="this"></param>
+    /// <returns></returns>
+    public static IEnumerable<Enum> ToErrorCodes(this IValidationResult @this){
+        return @this.Codes
+            .Where(code => code.StartsWith(PrefixAppInnerCode))
+            .Select(code => code.Remove(0, PrefixAppInnerCode.Length))
+            .Select(Base64Decode)
+            .Select(AppErrorHelper.String2ErrorCode)
+            .OfType<Enum>();
+    }
+
+    /// <summary>
     ///     Преобразует результат проверки в ожидаемые ошибки приложения <see cref="LanguageExt.Common.Expected" />
     /// </summary>
     /// <param name="this"></param>
@@ -43,14 +57,7 @@ public static class ValidotExtensions {
         if (!@this.AnyErrors)
             return Error.Empty;
 
-        var errorCodes = @this.CodeMap.Values
-            .SelectMany(x => x)
-            .Where(code => code.StartsWith(PrefixAppInnerCode))
-            .Select(code => code.Replace(PrefixAppInnerCode, ""))
-            .Select(Base64Decode)
-            .Select(AppErrorHelper.String2ErrorCode)
-            .OfType<Enum>()
-            .ToArray();
+        var errorCodes = @this.ToErrorCodes().ToArray();
 
         return errorCodes.Length == 1
             ? AppErrorHelper.NewError(errorCodes.Single())
