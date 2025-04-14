@@ -2,7 +2,7 @@
 using gmafffff.starterKit.Domain;
 using gmafffff.training.hotel.domain.Dto.PropertyManagement;
 
-namespace gmafffff.training.hotel.domain.Services.Repositories;
+namespace gmafffff.training.hotel.domain.Contracts.Repositories;
 
 public interface IHotelBlocksRepository<TId, TPersonId> : IRepository<HotelBlock<TId, TPersonId>, TId>
     where TId : struct, IEquatable<TId>

@@ -1,5 +1,5 @@
-using gmafffff.training.hotel.domain.Services.Mappers;
-using gmafffff.training.hotel.domain.Services.Repositories;
+using gmafffff.training.hotel.domain.Contracts.Mappers;
+using gmafffff.training.hotel.domain.Contracts.Repositories;
 using gmafffff.training.hotel.infrastructure.mapper.Required;
 using gmafffff.training.hotel.SampleModel.FakeDb;
 

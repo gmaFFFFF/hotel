@@ -1,6 +1,6 @@
 using gmafffff.starterKit.Domain;
 
-namespace gmafffff.training.hotel.domain.Services.Repositories;
+namespace gmafffff.training.hotel.domain.Contracts.Repositories;
 
 public interface IAccommodationReportsRepositoryFactory<TPersonId> :
     IRepositoryFactory<IAccommodationReportsRepository<TPersonId>, AccommodationReport<TPersonId>, int>

@@ -1,7 +1,7 @@
 using gmafffff.starterKit.BusinessLogic;
 using gmafffff.training.hotel.business.Error;
 using gmafffff.training.hotel.business.PropertyManagement.Commands;
-using gmafffff.training.hotel.domain.Services.Repositories;
+using gmafffff.training.hotel.domain.Contracts.Repositories;
 
 namespace gmafffff.training.hotel.business.PropertyManagement.BusinessRules;
 

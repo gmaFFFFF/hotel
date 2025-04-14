@@ -1,7 +1,7 @@
 ﻿using gmafffff.starterKit.Domain;
 using gmafffff.training.hotel.domain.Dto.PersonManagement;
 
-namespace gmafffff.training.hotel.domain.Services.Repositories;
+namespace gmafffff.training.hotel.domain.Contracts.Repositories;
 
 public interface IPersonsRepository<TId> : IRepository<Person<TId>, TId>
     where TId : struct, IEquatable<TId> {
