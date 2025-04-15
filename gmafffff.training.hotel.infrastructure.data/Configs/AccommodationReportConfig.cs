@@ -10,10 +10,7 @@ public class AccommodationReportConfig : IEntityTypeConfiguration<AccommodationR
             .HasColumnName(PrimaryKey);
 
         // Комплексные свойства
-        builder.ComplexProperty(x => x.RoomDetails)
-            .Property(x => x.Type)
-            .HasConversion<string>();
-
+        builder.ComplexProperty(x => x.RoomDetails);
         builder.ComplexProperty(x => x.TariffDetails);
     }
 }

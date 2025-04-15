@@ -9,6 +9,18 @@ public sealed class HotelDbContext : DbContext {
     public DbSet<HotelBlock<int, Guid>> HotelRooms { get; set; }
     public DbSet<AccommodationReport<Guid>> AccommodationReports { get; set; }
 
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder) {
+        configurationBuilder
+            .Properties<Enum>()
+            .HaveConversion<string>();
+
+        if(Database.IsSqlite())
+            configurationBuilder
+                .Properties<decimal>()
+                .HaveConversion<double>();
+
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(HotelDbContext).Assembly);
     }

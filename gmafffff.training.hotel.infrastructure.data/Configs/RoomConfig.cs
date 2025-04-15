@@ -16,9 +16,7 @@ public class RoomConfig : IEntityTypeConfiguration<Room<Guid>> {
         // Теневые свойства
 
         // Комплексные свойства
-        builder.ComplexProperty(x => x.RoomDetails)
-            .Property(x => x.Type)
-            .HasConversion<string>();
+        builder.ComplexProperty(x => x.RoomDetails);
 
         // Принадлежащие сущности
         builder.OwnsOne(navigationExpression: x => x.Visit, buildAction: v => {
