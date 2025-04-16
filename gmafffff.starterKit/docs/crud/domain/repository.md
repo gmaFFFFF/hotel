@@ -2,13 +2,15 @@
 
 ## Общие сведения
 
+Пространство имен: `gmafffff.starterKit.Domain`.
+
 Для получения доступа к сущностям, находящимся в центральном складе (БД),
 используется шаблон Repository (оперативный склад, кладовая).
 
-Интерфейс `gmafffff.starterKit.Domain.IRepository` временно извлекает из центрального склада сущности типа,
-производного от [`gmafffff.starterKit.Domain.Entity`](./entity.md).
+Интерфейс `IRepository` временно извлекает из центрального склада сущности типа,
+производного от [`Entity`](./entity.md).
 
-`gmafffff.starterKit.Domain.IRepository` объявляет группы методов:
+`IRepository` объявляет группы методов:
 
 * Find — для поиска сущностей в кладовой, а при отсутствии — загрузки их из центрального склада (например, БД);
 * Load — загрузка сущностей из центрального склада;
@@ -18,19 +20,19 @@
 * Count — подсчет сущностей в центральном складе;
 * Save — отправка запланированных изменений в центральный склад.
 
-Реализация `IRepository` для Ef Core представлена классом `gmafffff.starterKit.Db.RepositoryEfCore`.
+Реализация `IRepository` для Ef Core представлена классом `gmafffff.starterKit.EntityFrameworkCore.Repository`.
 
-`gmafffff.starterKit.Domain.IRepositoryFactory` предназначен для создания короткоживущих (transient) кладовок.
+`IRepositoryFactory` предназначен для создания короткоживущих (transient) кладовок.
 
 ## Использование
 
-Для каждой сущности — корня агрегата объявите интерфейс, производный от `gmafffff.starterKit.Domain.IRepository`.
+Для каждой сущности — корня агрегата объявите интерфейс, производный от `IRepository`.
 Добавляйте в него методы, используемые различными компонентами приложения для загрузки/обновления данных из БД.
 
-Для каждого интерфейса оперативного склада объявите `gmafffff.starterKit.Domain.IRepositoryFactory`.
+Для каждого интерфейса оперативного склада объявите `IRepositoryFactory`.
 
 В отдельной инфраструктурной сборке реализуйте `IRepository`, используя для EF Core реализацию по умолчанию —
-`gmafffff.starterKit.Db.RepositoryEfCore`, а также `IRepositoryFactory`.
+`gmafffff.starterKit.EntityFrameworkCore.Repository`, а также `IRepositoryFactory`.
 
 Зарегистрируйте в контейнере DI оперативные склады и фабрики вызовом `AddRepositories` —
 метода расширения `IServiceCollection`.

@@ -2,11 +2,11 @@
 
 ## Общие сведения
 
-Бизнес команде `gmafffff.starterKit.Messaging.BusinessCommand`
-соответствует обработчик команды, реализующий `gmafffff.starterKit.BusinessLogic.IBusinessCommandHandler`.
+Бизнес команде `gmafffff.starterKit.Messaging.BusinessCommand` соответствует обработчик команды,
+реализующий `gmafffff.starterKit.BusinessLogic.IBusinessCommandHandler`.
 
-Запросу `gmafffff.starterKit.Messaging.Query`
-соответствует обработчик запроса, реализующий `gmafffff.starterKit.BusinessLogic.IQueryHandler`.
+Запросу `gmafffff.starterKit.Messaging.Query` соответствует обработчик запроса,
+реализующий `gmafffff.starterKit.BusinessLogic.IQueryHandler`.
 
 ## Обработчик команд, связанных с записью в БД
 
@@ -27,7 +27,7 @@
 Информация о поддержке отдельного сохранения доступна в свойстве `IsSaveToDbSeparately`.
 
 [!TIP]
-Если `IsSaveToDbSeparately` == false, то методы `OnBeforeSaving` и `SaveAsync` не будут вызваны.
+Если `IsSaveToDbSeparately == false`, то методы `OnBeforeSaving` и `SaveAsync` не будут вызваны.
 
 Пользователь может подписаться на событие `BeforeSaving`, в обработчике которого может предотвратить сохранение,
 установив свойство `IsSaveResult` аргумента типа, производного от `BeforeSavingEventArgs` в `false`.
@@ -45,14 +45,15 @@
 
 ## Примитивные обработчики CRUD
 
-Если стоит задача примитивного добавления/удаления/изменения/чтения сущности, являющейся корнем агрегата, в центральном
-складе
-то можно создать классы, производные от:
+Пространство имен: `gmafffff.starterKit.BusinessLogic.Crud`.
 
-* `gmafffff.starterKit.BusinessLogic.Crud.CreateDbCommandHandler`
-* `gmafffff.starterKit.BusinessLogic.Crud.DeleteDbCommandHandler`
-* `gmafffff.starterKit.BusinessLogic.Crud.UpdateDbCommandHandler`
-* `gmafffff.starterKit.BusinessLogic.Crud.ReadDbQueryHandler`
+Если стоит задача примитивного добавления/удаления/изменения/чтения сущности, являющейся корнем агрегата, в центральном
+складе, то можно создать классы, производные от:
+
+* `CreateDbCommandHandler`
+* `DeleteDbCommandHandler`
+* `UpdateDbCommandHandler`
+* `ReadDbQueryHandler`
 
 ## DI
 

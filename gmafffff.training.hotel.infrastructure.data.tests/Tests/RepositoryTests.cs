@@ -3,11 +3,11 @@ using gmafffff.training.hotel.sampleModel.FakeModel.AutoFixture;
 
 namespace gmafffff.training.hotel.infrastructure.data.tests.Tests;
 
-public class RepositoryEfCoreTests : IClassFixture<SqliteDbFixture> {
+public class RepositoryTests : IClassFixture<SqliteDbFixture> {
     private readonly FakeHotel _fakeHotel = new FakeHotelBuilder().Build();
     private readonly SqliteDbFixture _sqliteDbFixture;
 
-    public RepositoryEfCoreTests(SqliteDbFixture sqliteDbFixture, ITestOutputHelper output) {
+    public RepositoryTests(SqliteDbFixture sqliteDbFixture, ITestOutputHelper output) {
         _sqliteDbFixture = sqliteDbFixture;
 
         _sqliteDbFixture.LogAction = output.WriteLine;

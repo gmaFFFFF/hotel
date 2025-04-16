@@ -1,4 +1,6 @@
-﻿namespace gmafffff.training.hotel.infrastructure.data.Sessions;
+﻿using gmafffff.starterKit.EntityFrameworkCore.Conventions;
+
+namespace gmafffff.training.hotel.infrastructure.data.Sessions;
 
 public sealed class HotelDbContext : DbContext {
     public HotelDbContext(DbContextOptions<HotelDbContext> options) : base(options) {
@@ -14,11 +16,13 @@ public sealed class HotelDbContext : DbContext {
             .Properties<Enum>()
             .HaveConversion<string>();
 
-        if(Database.IsSqlite())
+        if (Database.IsSqlite())
             configurationBuilder
                 .Properties<decimal>()
                 .HaveConversion<double>();
 
+        configurationBuilder.Conventions.Add(_ => new PrimaryKeyNameConventionIsEntityNameId());
+        configurationBuilder.Conventions.Add(_ => new ForeignKeyNameConventionIsParentEntityNameParentColumnName());
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) {

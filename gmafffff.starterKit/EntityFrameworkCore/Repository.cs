@@ -10,7 +10,7 @@ namespace gmafffff.starterKit.Db;
 /// <summary>
 ///     Реализация <see cref="IRepository{T,TId}" /> для EF Core
 /// </summary>
-public class RepositoryEfCore<T, TId> : IRepository<T, TId>
+public class Repository<T, TId> : IRepository<T, TId>
     where T : Entity<TId>
     where TId : struct, IEquatable<TId> {
     #region == Запросы
@@ -413,9 +413,9 @@ public class RepositoryEfCore<T, TId> : IRepository<T, TId>
     protected readonly DbSet<T> Entities;
 
 
-    public RepositoryEfCore(DbContext dbContext) : this(dbContext, autoInclude: null) { }
+    public Repository(DbContext dbContext) : this(dbContext, autoInclude: null) { }
 
-    public RepositoryEfCore(DbContext dbContext,
+    public Repository(DbContext dbContext,
         Func<IQueryable<T>, IIncludableQueryable<T, object>>? autoInclude = null) {
         Context = dbContext;
         Entities = dbContext.Set<T>();

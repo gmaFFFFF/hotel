@@ -3,15 +3,12 @@
 public class RoomConfig : IEntityTypeConfiguration<Room<Guid>> {
     public const string EntityName = "Room";
     public const string PrimaryKey = $"{EntityName}Id";
-    public const string HotelBlockForeignKey = HotelBlockConfig.PrimaryKey;
     public const string RoomVisitTable = "RoomVisit";
     public const string RowVersionCol = "rowVersion";
 
-    public void Configure(EntityTypeBuilder<Room<Guid>> builder) {
+    public void Configure(EntityTypeBuilder<Room<Guid>> builder) {        
         // Наименования
         builder.ToTable($"{EntityName}s");
-        builder.Property(x => x.Id)
-            .HasColumnName(PrimaryKey);
 
         // Теневые свойства
 
@@ -47,8 +44,9 @@ public class RoomConfig : IEntityTypeConfiguration<Room<Guid>> {
         // Маркер параллелизма
 
         // Связи
-        builder.Property<int>(HotelBlockForeignKey)
-            .HasColumnName(HotelBlockForeignKey)
+        builder
+            .HasOne<HotelBlock<int, Guid>>()
+            .WithMany(h => h.Rooms)
             .IsRequired();
     }
 

@@ -2,6 +2,8 @@
 
 ## Общие сведения
 
+Пространство имен: `gmafffff.starterKit.AppError`.
+
 Для передачи пользователю информации об ошибке использован
 тип [`LanguageExt.Common.Error`](https://louthy.github.io/language-ext/LanguageExt.Core/Common/index.html),
 который учитывает, что ошибки бывают:
@@ -11,19 +13,19 @@
 * ManyErrors — много ошибок (возможно ноль).
 
 LanguageExt не определяет способ совместного хранения кодов ошибок и соответствующих им локализованных сообщений.
-Класс `gmafffff.starterKit.AppError.AppErrorHelper` решает данную проблему.
+Класс `AppErrorHelper` решает данную проблему.
 
-## `gmafffff.starterKit.AppError.AppErrorHelper`
+## `AppErrorHelper`
 
 Вспомогательный статический класс, помогающий создавать (метод `NewError`) ожидаемые ошибки с локализованными
 сообщениями по их enum-коду.
 Коды ошибок хранятся в пользовательских Enum'ах, а локализованные сообщения в типах,
-реализующих `gmafffff.starterKit.AppError.IErrorMessage<TEnumErrorCode>`.
+реализующих `IErrorMessage<TEnumErrorCode>`.
 
 ## Использование
 
-Пользовательские ошибки создаются по аналогии со встроенными — `gmafffff.starterKit.AppError.AppErrorCode`,
-так же как и локализованные сообщения к ним — `gmafffff.starterKit.AppError.AppErrorMessages`.
+Пользовательские ошибки создаются по аналогии со встроенными — `AppErrorCode`,
+так же как и локализованные сообщения к ним — `AppErrorMessages`.
 
 Для этого необходимо:
 
@@ -38,7 +40,7 @@ LanguageExt не определяет способ совместного хра
 как CRC-16 полного названия Enum-типа с помощью [Hash Generator](https://codebeautify.org/crc-16-hash-generator)
 
 Ошибки (`LanguageExt.Common.Error`) создаются с помощью статических методов
-`gmafffff.starterKit.AppError.AppErrorHelper.NewError(…)`, принимающих Enum-код ошибки.
+`AppErrorHelper.NewError(…)`, принимающих Enum-код ошибки.
 
 [!IMPORTANT]
 Механизм работает без DI.

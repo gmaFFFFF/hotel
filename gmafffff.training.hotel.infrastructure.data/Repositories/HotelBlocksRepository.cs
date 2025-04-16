@@ -5,7 +5,7 @@ using gmafffff.training.hotel.infrastructure.data.Sessions;
 namespace gmafffff.training.hotel.infrastructure.data.Repositories;
 
 public class HotelBlocksRepository :
-    RepositoryEfCore<HotelBlock<int, Guid>, int>,
+    Repository<HotelBlock<int, Guid>, int>,
     IHotelBlocksRepository<int, Guid> {
     protected readonly IPropertyManagementMapper PropertyManagementMapper;
 
