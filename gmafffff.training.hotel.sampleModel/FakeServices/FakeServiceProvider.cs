@@ -1,6 +1,7 @@
 ﻿using gmafffff.starterKit.Di;
 using gmafffff.training.hotel.business.PropertyManagement.BusinessRules;
 using gmafffff.training.hotel.business.PropertyManagement.Handlers;
+using gmafffff.training.hotel.business.SettlementManagement.Validations;
 using gmafffff.training.hotel.domain.Validation;
 using gmafffff.training.hotel.infrastructure.data.Repositories;
 using gmafffff.training.hotel.infrastructure.data.Sessions;
@@ -13,26 +14,25 @@ using NSubstitute;
 namespace gmafffff.training.hotel.SampleModel.FakeServices;
 
 public class FakeServiceProvider : IDisposable {
-    private readonly SqliteDbFixture _sqliteDbFixture;
     public readonly ServiceProvider Instance;
 
     public FakeServiceProvider(Action<string>? logAction = null) {
-        _sqliteDbFixture = new SqliteDbFixture();
-        _sqliteDbFixture.LogAction = logAction ?? (_ => { });
+        var sqliteDbFixture = new SqliteDbFixture();
+        sqliteDbFixture.LogAction = logAction ?? (_ => { });
         // Для вывода лога в файл на рабочем столе
         // _sqliteDbFixture.LogAction = _sqliteDbFixture.DefaultFileLogStream.WriteLine;
 
         ServiceCollection = new ServiceCollection();
-        ServiceCollection.AddScoped<HotelDbContext>(_ => _sqliteDbFixture.CreateDbContext());
+        ServiceCollection.AddScoped<HotelDbContext>(_ => sqliteDbFixture.CreateDbContext());
         ServiceCollection.AddSingleton<IDbContextFactory<HotelDbContext>>(_ => {
             var factory = Substitute.For<IDbContextFactory<HotelDbContext>>();
-            factory.CreateDbContext().Returns(_ => _sqliteDbFixture.CreateDbContext());
+            factory.CreateDbContext().Returns(_ => sqliteDbFixture.CreateDbContext());
             return factory;
         });
 
         ServiceCollection.AddRepositories(typeof(HotelBlocksRepository).Assembly);
 
-        ServiceCollection.AddValidotValidators(typeof(RoomSpec).Assembly);
+        ServiceCollection.AddValidotValidators([typeof(RoomSpec).Assembly, typeof(SettleInCommandSpec).Assembly]);
         ServiceCollection.AddBusinessRules(typeof(RoomNumberMustUnique).Assembly);
         ServiceCollection.AddEntityMappersWithConfig(typeof(IPropertyManagementMapperMapster).Assembly);
         ServiceCollection.AddBusinessCommandDbHandlers(typeof(AddRoomCommandHandler).Assembly);

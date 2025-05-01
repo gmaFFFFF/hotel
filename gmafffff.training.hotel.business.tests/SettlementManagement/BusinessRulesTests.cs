@@ -1,0 +1,66 @@
+using FluentAssertions;
+using gmafffff.starterKit.Utils;
+using gmafffff.training.hotel.business.SettlementManagement.BusinessRules;
+using gmafffff.training.hotel.business.SettlementManagement.Commands;
+using gmafffff.training.hotel.business.tests.Fixtures;
+using gmafffff.training.hotel.domain.Model;
+using gmafffff.training.hotel.sampleModel.FakeModel.AutoFixture;
+using Xunit.Abstractions;
+
+namespace gmafffff.training.hotel.business.tests.SettlementManagement;
+
+public partial class SettlementManagementTests {
+    public class BusinessRules(ITestOutputHelper output) : TestContext(output) {
+        /// <summary>
+        ///     Бизнес-правило <see cref="NumberVisitorsNotExceedCapacityRoom" /> соблюдается
+        /// </summary>
+        [Theory]
+        [HotelAutodata]
+        public async Task NumberVisitorsNotExceedCapacityRoomIsSuccessful(SettleInCommand command) {
+            // Arrange
+            var room = FakeHotel.Hotel.Rooms
+                .Where(Room<Guid>.IsFreeRoom.Not().Compile())
+                .FirstOrDefault(r => r.RoomDetails.Capacity > r.Visit!.Visitors.Count);
+            if (room is null)
+                throw new Exception("Не сложились обстоятельства для теста. Повторите запуск");
+            var visitors = FakeHotel.Persons
+                .Where(p => !room.Visit!.Visitors.Contains(p.Id))
+                .Take(room.RoomDetails.Capacity - room.Visit!.Visitors.Count).Select(v => v.Id);
+
+            command = command with { RoomId = room.Id, Visitors = visitors };
+
+            // Act
+            var rule = new NumberVisitorsNotExceedCapacityRoom(HotelRepoFactory);
+
+            // Act, Assert
+            (await rule.IsSatisfiedAsync(command))
+                .Should().BeTrue();
+        }
+
+        /// <summary>
+        ///     Бизнес-правило <see cref="NumberVisitorsNotExceedCapacityRoom" /> не соблюдается
+        /// </summary>
+        [Theory]
+        [HotelAutodata]
+        public async Task NumberVisitorsNotExceedCapacityRoomIsFail(SettleInCommand command) {
+            // Arrange
+            var room = FakeHotel.Hotel.Rooms
+                .Where(Room<Guid>.IsFreeRoom.Not().Compile())
+                .FirstOrDefault(r => r.RoomDetails.Capacity > r.Visit!.Visitors.Count);
+            if (room is null)
+                throw new Exception("Не сложились обстоятельства для теста. Повторите запуск");
+            var visitors = FakeHotel.Persons
+                .Where(p => !room.Visit!.Visitors.Contains(p.Id))
+                .Take(room.RoomDetails.Capacity - room.Visit!.Visitors.Count + 1).Select(v => v.Id);
+
+            command = command with { RoomId = room.Id, Visitors = visitors };
+
+            // Act
+            var rule = new NumberVisitorsNotExceedCapacityRoom(HotelRepoFactory);
+
+            // Act, Assert
+            (await rule.IsSatisfiedAsync(command))
+                .Should().BeFalse();
+        }
+    }
+}
