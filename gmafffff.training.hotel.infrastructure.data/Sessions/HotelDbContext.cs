@@ -1,4 +1,5 @@
-﻿using gmafffff.starterKit.EntityFrameworkCore.Conventions;
+﻿using EntityFramework.Exceptions.Sqlite;
+using gmafffff.starterKit.EntityFrameworkCore.Conventions;
 
 namespace gmafffff.training.hotel.infrastructure.data.Sessions;
 
@@ -27,5 +28,9 @@ public sealed class HotelDbContext : DbContext {
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(HotelDbContext).Assembly);
+    }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
+        optionsBuilder.UseExceptionProcessor();
     }
 }
