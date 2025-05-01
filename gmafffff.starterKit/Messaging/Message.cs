@@ -4,7 +4,9 @@
 ///     Реализация интерфейса <see cref="IMessage{T}" />, в котором идентификатор имеет тип <see cref="Guid" />
 /// </summary>
 /// <param name="MessageId">Идентификатор сообщения</param>
-public abstract record Message(Guid MessageId = default) : IMessage<Guid> {
+/// <param name="Created">Дата создания сообщения</param>
+public abstract record Message(Guid MessageId = default, DateTime Created = default) : IMessage<Guid> {
+    public DateTime Created { get; init; } = Created == default ? DateTime.UtcNow : Created;
     public Guid MessageId { get; init; } = MessageId == default ? NextGuid() : MessageId;
 
     /// <summary>
