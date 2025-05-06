@@ -1,8 +1,11 @@
+using gmafffff.starterKit.Db;
 using gmafffff.training.hotel.SampleModel.FakeDb;
 using gmafffff.training.hotel.sampleModel.FakeModel.AutoFixture;
+using JetBrains.Annotations;
 
 namespace gmafffff.training.hotel.infrastructure.data.tests.Tests;
 
+[TestSubject(typeof(Repository<,>))]
 public class RepositoryTests : IClassFixture<SqliteDbFixture> {
     private readonly FakeHotel _fakeHotel = new FakeHotelBuilder().Build();
     private readonly SqliteDbFixture _sqliteDbFixture;

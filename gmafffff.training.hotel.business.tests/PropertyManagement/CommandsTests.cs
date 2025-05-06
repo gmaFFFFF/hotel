@@ -3,14 +3,19 @@ using FluentAssertions.Execution;
 using gmafffff.starterKit.BusinessLogic;
 using gmafffff.starterKit.Messaging.Crud;
 using gmafffff.training.hotel.business.PropertyManagement.Commands;
+using gmafffff.training.hotel.business.PropertyManagement.Handlers;
 using gmafffff.training.hotel.business.tests.Fixtures;
 using gmafffff.training.hotel.domain.Model;
 using gmafffff.training.hotel.sampleModel.FakeModel.AutoFixture;
+using JetBrains.Annotations;
 using Xunit.Abstractions;
 
 namespace gmafffff.training.hotel.business.tests.PropertyManagement;
 
 public partial class PropertyManagementTests {
+    [TestSubject(typeof(AddRoomCommandHandler))]
+    [TestSubject(typeof(UpdateRoomCommandHandler))]
+    [TestSubject(typeof(RemoveRoomCommandHandler))]
     public class Commands(ITestOutputHelper output) : TestContext(output) {
         /// <summary>
         ///     Добавляет номер
@@ -25,7 +30,7 @@ public partial class PropertyManagementTests {
                     Number = guid.ToString()
                 }
             };
-            var runner = new BusinessActionRunner<AddRoomCommand, CreatedBusinessEvent<int>>(Scope.ServiceProvider);
+            var runner = new BusinessActionRunner<AddRoomCommand>(Scope.ServiceProvider);
 
             // Act
             var result = await runner.Execute(command);
@@ -47,7 +52,7 @@ public partial class PropertyManagementTests {
         public async Task UpdateRoom(UpdateRoomCommand command) {
             // Arrange
             var old = FakeHotel.Hotel.Rooms.First();
-            var runner = new BusinessActionRunner<UpdateRoomCommand, UpdatedBusinessEvent<int>>(Scope.ServiceProvider);
+            var runner = new BusinessActionRunner<UpdateRoomCommand>(Scope.ServiceProvider);
             command = command with { Id = old.Id };
 
             // Act
@@ -73,7 +78,7 @@ public partial class PropertyManagementTests {
             if (removeRooms.Length < 2) throw new NotSupportedException();
 
             var command = new RemoveRoomsCommand(removeRoomsIds);
-            var runner = new BusinessActionRunner<RemoveRoomsCommand, DeletedBusinessEvent<int>>(Scope.ServiceProvider);
+            var runner = new BusinessActionRunner<RemoveRoomsCommand>(Scope.ServiceProvider);
 
             // Act
             var result = await runner.Execute(command);
@@ -81,9 +86,10 @@ public partial class PropertyManagementTests {
             // Assert
             using var _ = new AssertionScope();
             result.IsSucc.Should().BeTrue();
-            result.IfSucc(events =>
-                events.Select(e => new { Id = e.EntityId }).Should()
-                    .BeEquivalentTo(removeRooms.Select(r => new { r.Id })));
+            result.SuccSpan()[0]
+                .OfType<DeletedBusinessEvent<int>>()
+                .Select(e => new { Id = e.EntityId })
+                .Should().BeEquivalentTo(removeRooms.Select(r => new { r.Id }));
 
             (await HotelRepo.GetRoomsAsync(room => removeRoomsIds.Contains(room.Id)))
                 .Should().BeEmpty();

@@ -11,9 +11,9 @@ namespace gmafffff.starterKit.BusinessLogic;
 /// <summary>
 ///     Обеспечивает выполнение команд, при условии соблюдения бизнес-правил
 /// </summary>
-public class BusinessActionRunner<TCommand, TEvent>(IServiceProvider serviceProvider)
-    where TCommand : BusinessCommand
-    where TEvent : BusinessEvent {
+public class BusinessActionRunner<TCommand>(IServiceProvider serviceProvider)
+    : IBusinessActionRunner
+    where TCommand : BusinessCommand {
     /// <summary>
     ///     Контейнер DI
     /// </summary>
@@ -26,13 +26,18 @@ public class BusinessActionRunner<TCommand, TEvent>(IServiceProvider serviceProv
     public bool IncludeFormalValidationError { get; set; } = false;
 
     /// <summary>
-    ///     Продолжить проверку на соответствие бизнес правилам,
+    ///     Продолжить проверку на соответствие бизнес правилам
     ///     после выявления первого несоответствия
     /// </summary>
     /// <remarks>
     ///     Установка в true повышает производительность, т.к. правила проверяются параллельно, а не последовательно
     /// </remarks>
     public bool ContinueValidateBusinessRulesAfterFirstError { get; set; } = true;
+
+    Task<Fin<IList<BusinessEvent>>> IBusinessActionRunner.Execute(BusinessCommand command,
+        CancellationToken cancel) {
+        return Execute((TCommand)command, cancel);
+    }
 
     /// <summary>
     ///     Соответствует ли команда требованиям формальной корректности
@@ -108,21 +113,21 @@ public class BusinessActionRunner<TCommand, TEvent>(IServiceProvider serviceProv
     /// <summary>
     ///     Выполнить команду
     /// </summary>
-    public virtual async Task<Fin<IList<TEvent>>> Execute(TCommand command,
+    public virtual async Task<Fin<IList<BusinessEvent>>> Execute(TCommand command,
         CancellationToken cancel = default) {
-        var handler = ServiceProvider.GetRequiredService<IBusinessCommandHandler<TCommand, TEvent>>();
+        var handler = ServiceProvider.GetRequiredService<IBusinessCommandHandler<TCommand>>();
 
         var validate = (TCommand cmd) => IsFormalValid(cmd).ToFin();
         var violateRule = (TCommand cmd) => IO.liftAsync(async env =>
             (await IsBusinessRulesSatisfyAsync(cmd, env.Token).ConfigureAwait(false)).ToFin());
         var handle = (TCommand cmd) =>
-            IO.liftAsync(async env => await handler.ExecuteAsync(command, env.Token).ConfigureAwait(false));
+            IO.liftAsync(async env => await handler.ExecuteAsync(cmd, env.Token).ConfigureAwait(false));
 
 
         var steps =
             from _1 in FinT<IO, Unit>.Lift(validate(command))
             from _2 in FinT<IO, Unit>.LiftIO(violateRule(command))
-            from events in FinT<IO, IList<TEvent>>.LiftIO(handle(command))
+            from events in FinT<IO, IList<BusinessEvent>>.LiftIO(handle(command))
             select events;
 
         try {

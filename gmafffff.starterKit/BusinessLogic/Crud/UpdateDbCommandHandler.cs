@@ -1,6 +1,7 @@
 using gmafffff.starterKit.AppError;
 using gmafffff.starterKit.Domain;
 using gmafffff.starterKit.Mappers;
+using gmafffff.starterKit.Messaging;
 using gmafffff.starterKit.Messaging.Crud;
 using gmafffff.starterKit.Utils;
 using LanguageExt;
@@ -12,7 +13,8 @@ public class UpdateDbCommandHandler<
     TEntity, TEntityId>(
     IRepository<TEntity, TEntityId> repository,
     IEntityMapperBackward<TEntity, TEntityId, TDto> mapper)
-    : BusinessCommandDbHandler<TUpdateCommand, TUpdatedEvent, TEntity, TEntityId, IRepository<TEntity, TEntityId>,
+    : BusinessCommandDbHandler<TUpdateCommand,
+            TEntity, TEntityId, IRepository<TEntity, TEntityId>,
             TEntity, TEntity>
         (repository, isSaveToDbSeparately: true)
     where TUpdateCommand : UpdateBusinessCommand<TEntityId, TDto>
@@ -36,9 +38,10 @@ public class UpdateDbCommandHandler<
         return Task.FromResult(Fin<IList<TEntity>>.Succ(loaded));
     }
 
-    protected override IList<TUpdatedEvent> PackResultToEvent(IList<TEntity> result) {
+    protected override IList<BusinessEvent> PackResultToEvent(IList<TEntity> result) {
         return result
             .Select(r => Activator<TUpdatedEvent>.CreateInstance(r.Id, Command, default(Guid)))
-            .ToArray();
+            .Cast<BusinessEvent>()
+            .ToList();
     }
 }

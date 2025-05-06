@@ -17,14 +17,11 @@ namespace gmafffff.starterKit.BusinessLogic;
 /// <typeparam name="TLoad">Тип загружаемой сущности из хранилища</typeparam>
 /// <typeparam name="TResult">Тип сущности, полученный в результате команды</typeparam>
 public abstract class BusinessCommandDbHandler<
-    TCommand, TEvent,
+    TCommand,
     TEntity, TId, TRepo,
-    TLoad, TResult>(
-    TRepo repository,
-    bool isSaveToDbSeparately = true) :
-    IBusinessCommandHandler<TCommand, TEvent>
+    TLoad, TResult>(TRepo repository, bool isSaveToDbSeparately = true) :
+    IBusinessCommandHandler<TCommand>
     where TCommand : BusinessCommand
-    where TEvent : BusinessEvent
     where TEntity : Entity<TId>
     where TId : struct, IEquatable<TId>
     where TRepo : IRepository<TEntity, TId> {
@@ -41,9 +38,9 @@ public abstract class BusinessCommandDbHandler<
     /// <summary>
     ///     Результат успешного выполнения команды
     /// </summary>
-    public IList<TEvent>? Result { get; protected set; }
+    public IList<BusinessEvent>? Result { get; protected set; }
 
-    public virtual async Task<Fin<IList<TEvent>>> ExecuteAsync(TCommand command,
+    public virtual async Task<Fin<IList<BusinessEvent>>> ExecuteAsync(TCommand command,
         CancellationToken cancel = default) {
         Command = command.MustNotBeNull();
         Result = null;
@@ -74,7 +71,7 @@ public abstract class BusinessCommandDbHandler<
             ? beforeSave(res).Bind(isSaveResult => saveDbIf(isSaveResult, repo))
             : nothing;
         var pack = (IList<TResult> res) =>
-            FinT<IO, IList<TEvent>>.Lift(
+            FinT<IO, IList<BusinessEvent>>.Lift(
                 IO.lift(() => PackResultToEvent(res)));
 
 
@@ -92,9 +89,9 @@ public abstract class BusinessCommandDbHandler<
             .ConfigureAwait(false);
 
         if (run.IsFail) return (Error)run;
-        Result = run.IfFail(Array.Empty<TEvent>()).ToArray();
+        Result = run.IfFail(Array.Empty<BusinessEvent>()).ToArray();
 
-        return Fin<IList<TEvent>>.Succ(Result);
+        return Fin<IList<BusinessEvent>>.Succ(Result);
     }
 
     /// <summary>
@@ -148,7 +145,7 @@ public abstract class BusinessCommandDbHandler<
     /// <summary>
     ///     Упаковывает результат в событие и сохраняет в <see cref="Result" />
     /// </summary>
-    protected abstract IList<TEvent> PackResultToEvent(IList<TResult> result);
+    protected abstract IList<BusinessEvent> PackResultToEvent(IList<TResult> result);
 
     /// <summary>
     ///     Аргументы события, вызываемого перед сохранением результатов выполнения команды

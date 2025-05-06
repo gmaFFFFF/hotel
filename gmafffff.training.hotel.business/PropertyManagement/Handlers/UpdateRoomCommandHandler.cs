@@ -9,7 +9,7 @@ using gmafffff.training.hotel.domain.Model;
 namespace gmafffff.training.hotel.business.PropertyManagement.Handlers;
 
 public class UpdateRoomCommandHandler(IHotelBlocksRepository<int, Guid> repo, IPropertyManagementMapper mapper)
-    : BusinessCommandDbHandler<UpdateRoomCommand, UpdatedBusinessEvent<int>,
+    : BusinessCommandDbHandler<UpdateRoomCommand,
         HotelBlock<int, Guid>, int, IHotelBlocksRepository<int, Guid>,
         Room<Guid>, Room<Guid>>(repo) {
     protected override async Task<Fin<IList<Room<Guid>>>> LoadAsync(IHotelBlocksRepository<int, Guid> repo,
@@ -32,9 +32,10 @@ public class UpdateRoomCommandHandler(IHotelBlocksRepository<int, Guid> repo, IP
         return Task.FromResult(Fin<IList<Room<Guid>>>.Succ(loaded));
     }
 
-    protected override IList<UpdatedBusinessEvent<int>> PackResultToEvent(IList<Room<Guid>> result) {
+    protected override IList<BusinessEvent> PackResultToEvent(IList<Room<Guid>> result) {
         return result
             .Select(room => new UpdatedBusinessEvent<int>(room.Id, Command))
+            .Cast<BusinessEvent>()
             .ToList();
     }
 }

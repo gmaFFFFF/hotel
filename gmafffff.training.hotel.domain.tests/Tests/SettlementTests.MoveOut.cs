@@ -1,6 +1,9 @@
-﻿namespace gmafffff.training.hotel.domain.tests.Tests;
+﻿using JetBrains.Annotations;
+
+namespace gmafffff.training.hotel.domain.tests.Tests;
 
 public partial class SettlementTests {
+    [TestSubject(typeof(HotelBlock<,>))]
     public sealed class MoveOut {
         /// <summary>
         ///     После выселения номер становится доступным для заселения

@@ -5,11 +5,14 @@ using gmafffff.training.hotel.business.PropertyManagement.Commands;
 using gmafffff.training.hotel.business.tests.Fixtures;
 using gmafffff.training.hotel.domain.Model;
 using gmafffff.training.hotel.sampleModel.FakeModel.AutoFixture;
+using JetBrains.Annotations;
 using Xunit.Abstractions;
 
 namespace gmafffff.training.hotel.business.tests.PropertyManagement;
 
 public partial class PropertyManagementTests {
+    [TestSubject(typeof(RoomNumberMustUnique))]
+    [TestSubject(typeof(RemoveRoomsMustFree))]
     public class BusinessRules(ITestOutputHelper output) : TestContext(output) {
         /// <summary>
         ///     Бизнес-правило <see cref="RoomNumberMustUnique" /> соблюдается при добавлении

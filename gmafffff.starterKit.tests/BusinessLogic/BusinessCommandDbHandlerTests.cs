@@ -3,7 +3,7 @@ using gmafffff.starterKit.tests.BusinessLogic.Fixtures;
 
 namespace gmafffff.starterKit.tests.BusinessLogic;
 
-[TestSubject(typeof(BusinessCommandDbHandler<,,,,,,>))]
+[TestSubject(typeof(BusinessCommandDbHandler<,,,,,>))]
 public class BusinessCommandDbHandlerTests {
     public static TheoryData<DbHandlerCommand, bool, DbHandlerStatus, bool> TestRuns {
         get {
@@ -51,6 +51,7 @@ public class BusinessCommandDbHandlerTests {
         var result = await handler.ExecuteAsync(command);
         result.IsSucc.Should().Be(isSuccess);
         result.IfSucc(events => events
+            .OfType<DbHandlerEvent>()
             .Should()
             .ContainSingle(predicate: e => e.Result == exceptedResult));
     }

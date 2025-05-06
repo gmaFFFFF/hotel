@@ -1,5 +1,6 @@
 ﻿using gmafffff.starterKit.AppError;
 using gmafffff.starterKit.BusinessLogic;
+using gmafffff.starterKit.Messaging;
 using gmafffff.starterKit.tests.BusinessLogic.Fixtures;
 using gmafffff.starterKit.tests.Validation.Fixtures;
 using NSubstitute.ExceptionExtensions;
@@ -9,7 +10,7 @@ using Validot.Results;
 
 namespace gmafffff.starterKit.tests.BusinessLogic;
 
-[TestSubject(typeof(BusinessActionRunner<,>))]
+[TestSubject(typeof(BusinessActionRunner<>))]
 public class BusinessActionRunnerTests {
     private readonly IBusinessRule<BusinessActionCommand> _exceptionRule1 =
         Substitute.For<IBusinessRule<BusinessActionCommand>>();
@@ -23,13 +24,13 @@ public class BusinessActionRunnerTests {
     private readonly IBusinessRule<BusinessActionCommand> _failRule2 =
         Substitute.For<IBusinessRule<BusinessActionCommand>>();
 
-    private readonly IBusinessCommandHandler<BusinessActionCommand, BusinessActionResult> _handler =
-        Substitute.For<IBusinessCommandHandler<BusinessActionCommand, BusinessActionResult>>();
+    private readonly IBusinessCommandHandler<BusinessActionCommand> _handler =
+        Substitute.For<IBusinessCommandHandler<BusinessActionCommand>>();
 
     private readonly BusinessActionCommand _notValidCommand = new(false);
     private readonly IServiceProvider _provider = Substitute.For<IServiceProvider>();
 
-    private readonly BusinessActionRunner<BusinessActionCommand, BusinessActionResult> _runner;
+    private readonly BusinessActionRunner<BusinessActionCommand> _runner;
 
     private readonly IBusinessRule<BusinessActionCommand> _successRule1 =
         Substitute.For<IBusinessRule<BusinessActionCommand>>();
@@ -67,17 +68,17 @@ public class BusinessActionRunnerTests {
 
         // Обработчик команды
         _handler.ExecuteAsync(Arg.Any<BusinessActionCommand>(), Arg.Any<CancellationToken>())
-            .Returns(Fin<IList<BusinessActionResult>>.Succ([new BusinessActionResult(_validCommand)]));
+            .Returns(Fin<IList<BusinessEvent>>.Succ([new BusinessActionResult(_validCommand)]));
 
 
         // Контейнер служб
         _provider.GetService(typeof(IValidator<BusinessActionCommand>))
             .Returns(_validator);
-        _provider.GetService(typeof(IBusinessCommandHandler<BusinessActionCommand, BusinessActionResult>))
+        _provider.GetService(typeof(IBusinessCommandHandler<BusinessActionCommand>))
             .Returns(_handler);
 
 
-        _runner = new BusinessActionRunner<BusinessActionCommand, BusinessActionResult>(_provider);
+        _runner = new BusinessActionRunner<BusinessActionCommand>(_provider);
     }
 
     /// <summary>

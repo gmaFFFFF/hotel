@@ -9,6 +9,7 @@ using Validot;
 
 namespace gmafffff.starterKit.tests.Di;
 
+[TestSubject(typeof(RegisterServicesExtensions))]
 public class RegisterServicesTests {
     /// <summary>
     ///     Регистрирует бизнес-правила
@@ -125,7 +126,7 @@ public class RegisterServicesTests {
 
         provider.Received().Add(Arg.Is<ServiceDescriptor>(descriptor =>
             descriptor.ServiceType.IsGenericType &&
-            descriptor.ServiceType.GetGenericTypeDefinition() == typeof(IBusinessCommandHandler<,>) &&
+            descriptor.ServiceType.GetGenericTypeDefinition() == typeof(IBusinessCommandHandler<>) &&
             descriptor.ImplementationType == typeof(TestBusinessCommandDbHandler) &&
             descriptor.Lifetime == ServiceLifetime.Transient));
     }

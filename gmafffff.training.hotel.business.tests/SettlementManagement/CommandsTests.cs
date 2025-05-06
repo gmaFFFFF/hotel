@@ -5,14 +5,18 @@ using gmafffff.starterKit.BusinessLogic;
 using gmafffff.starterKit.Utils;
 using gmafffff.training.hotel.business.SettlementManagement.Commands;
 using gmafffff.training.hotel.business.SettlementManagement.Events;
+using gmafffff.training.hotel.business.SettlementManagement.Handlers;
 using gmafffff.training.hotel.business.tests.Fixtures;
 using gmafffff.training.hotel.domain.Model;
 using gmafffff.training.hotel.sampleModel.FakeModel.AutoFixture;
+using JetBrains.Annotations;
 using Xunit.Abstractions;
 
 namespace gmafffff.training.hotel.business.tests.SettlementManagement;
 
 public partial class SettlementManagementTests {
+    [TestSubject(typeof(SettleInCommandHandler))]
+    [TestSubject(typeof(MoveOutCommandHandler))]
     public class CommandsTests(ITestOutputHelper output) : TestContext(output) {
         /// <summary>
         ///     Возможно заселение в пустой номер
@@ -24,7 +28,7 @@ public partial class SettlementManagementTests {
             var room = FakeHotel.Hotel.Rooms.Where(Room<Guid>.IsFreeRoom.Compile()).First();
             var visitors = FakeHotel.Persons.Take(room.RoomDetails.Capacity).Select(v => v.Id);
 
-            var runner = new BusinessActionRunner<SettleInCommand, SettledInEvent>(Scope.ServiceProvider);
+            var runner = new BusinessActionRunner<SettleInCommand>(Scope.ServiceProvider);
             command = command with { RoomId = room.Id, Visitors = visitors, DepartureDatePlanned = null };
 
             // Act
@@ -33,7 +37,7 @@ public partial class SettlementManagementTests {
             // Assert
             using var _ = new AssertionScope();
             result.IsSucc.Should().BeTrue();
-            result.IfSucc(e => e.Single().RoomId.Should().Be(command.RoomId));
+            result.IfSucc(e => e.OfType<SettledInEvent>().Single().RoomId.Should().Be(command.RoomId));
             var saveRoom = (await HotelRepo.LoadWithRoomFilterAsync(r => r.Id == room.Id))
                 .Single()
                 .Rooms.Single();
@@ -59,7 +63,7 @@ public partial class SettlementManagementTests {
                 .Where(p => !room.Visit!.Visitors.Contains(p.Id))
                 .Take(room.RoomDetails.Capacity - room.Visit!.Visitors.Count).Select(v => v.Id);
 
-            var runner = new BusinessActionRunner<SettleInCommand, SettledInEvent>(Scope.ServiceProvider);
+            var runner = new BusinessActionRunner<SettleInCommand>(Scope.ServiceProvider);
             command = command with { RoomId = room.Id, Visitors = visitors, DepartureDatePlanned = null };
 
             // Act
@@ -68,7 +72,7 @@ public partial class SettlementManagementTests {
             // Assert
             using var _ = new AssertionScope();
             result.IsSucc.Should().BeTrue();
-            result.IfSucc(e => e.Single().RoomId.Should().Be(command.RoomId));
+            result.IfSucc(e => e.OfType<SettledInEvent>().Single().RoomId.Should().Be(command.RoomId));
             var saveRoom = (await HotelRepo.LoadWithRoomFilterAsync(r => r.Id == room.Id))
                 .Single()
                 .Rooms.Single();
@@ -89,7 +93,7 @@ public partial class SettlementManagementTests {
             var visitors = FakeHotel.Persons.Take(room.RoomDetails.Capacity).Select(v => v.Id).ToArray();
             visitors[0] = Guid.NewGuid();
 
-            var runner = new BusinessActionRunner<SettleInCommand, SettledInEvent>(Scope.ServiceProvider);
+            var runner = new BusinessActionRunner<SettleInCommand>(Scope.ServiceProvider);
             command = command with { RoomId = room.Id, Visitors = visitors, DepartureDatePlanned = null };
 
             // Act
@@ -112,7 +116,7 @@ public partial class SettlementManagementTests {
             var command1 = new MoveOutCommand(rooms[0].Id, DateOnly.FromDateTime(DateTime.Today.AddDays(-1)));
             var command2 = new MoveOutCommand(rooms[1].Id);
 
-            var runner = new BusinessActionRunner<MoveOutCommand, MovedOutEvent>(Scope.ServiceProvider);
+            var runner = new BusinessActionRunner<MoveOutCommand>(Scope.ServiceProvider);
 
             // Act
             var res1 = await runner.Execute(command1);
@@ -121,7 +125,7 @@ public partial class SettlementManagementTests {
             // Assert
             using var _ = new AssertionScope();
             res1.IsSucc.Should().BeTrue();
-            var report1 = res1.SuccSpan()[0][0].Report;
+            var report1 = res1.Map(be => be.OfType<MovedOutEvent>().ToArray()).SuccSpan()[0][0].Report;
             report1.RoomDetails.Should().Be(rooms[0].RoomDetails);
             report1.Visitors.Should().BeEquivalentTo(rooms[0].Visit.Visitors);
             report1.ArrivalDate.Should().Be(rooms[0].Visit.ArrivalDate);
@@ -129,7 +133,8 @@ public partial class SettlementManagementTests {
             report1.DepartureDate.Should().Be(DateOnly.FromDateTime(DateTime.Today.AddDays(-1)));
 
             res2.IsSucc.Should().BeTrue();
-            res2.SuccSpan()[0][0].Report.DepartureDate.Should().Be(DateOnly.FromDateTime(DateTime.Today));
+            res2.Map(be => be.OfType<MovedOutEvent>().ToArray()).SuccSpan()[0][0].Report.DepartureDate.Should()
+                .Be(DateOnly.FromDateTime(DateTime.Today));
         }
     }
 }

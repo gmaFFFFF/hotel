@@ -4,11 +4,13 @@ using gmafffff.training.hotel.business.PersonManagement.BusinessRules;
 using gmafffff.training.hotel.business.PersonManagement.Commands;
 using gmafffff.training.hotel.business.tests.Fixtures;
 using gmafffff.training.hotel.domain.Model;
+using JetBrains.Annotations;
 using Xunit.Abstractions;
 
 namespace gmafffff.training.hotel.business.tests.PersonManagement;
 
 public partial class PersonManagementTests {
+    [TestSubject(typeof(RemovePersonShouldNotSuitable))]
     public class BusinessRules(ITestOutputHelper output) : TestContext(output) {
         /// <summary>
         ///     Бизнес правило <see cref="RemovePersonShouldNotSuitable" /> соблюдается

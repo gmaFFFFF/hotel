@@ -4,14 +4,19 @@ using gmafffff.starterKit.BusinessLogic;
 using gmafffff.starterKit.Messaging.Crud;
 using gmafffff.starterKit.Utils;
 using gmafffff.training.hotel.business.PersonManagement.Commands;
+using gmafffff.training.hotel.business.PersonManagement.Handlers;
 using gmafffff.training.hotel.business.tests.Fixtures;
 using gmafffff.training.hotel.domain.Model;
 using gmafffff.training.hotel.sampleModel.FakeModel.AutoFixture;
+using JetBrains.Annotations;
 using Xunit.Abstractions;
 
 namespace gmafffff.training.hotel.business.tests.PersonManagement;
 
 public partial class PersonManagementTests {
+    [TestSubject(typeof(AddPersonCommandHandler))]
+    [TestSubject(typeof(UpdatePersonCommandHandler))]
+    [TestSubject(typeof(RemovePersonsCommandHandler))]
     public class Commands(ITestOutputHelper output) : TestContext(output) {
         /// <summary>
         ///     Добавляет персону
@@ -20,7 +25,7 @@ public partial class PersonManagementTests {
         [HotelAutodata]
         public async Task AddPerson(AddPersonCommand command) {
             // Arrange
-            var runner = new BusinessActionRunner<AddPersonCommand, CreatedBusinessEvent<Guid>>(Scope.ServiceProvider);
+            var runner = new BusinessActionRunner<AddPersonCommand>(Scope.ServiceProvider);
 
             // Act
             var result = await runner.Execute(command);
@@ -46,7 +51,7 @@ public partial class PersonManagementTests {
             // Arrange
             var old = FakeHotel.Persons.First();
             var runner =
-                new BusinessActionRunner<UpdatePersonCommand, UpdatedBusinessEvent<Guid>>(Scope.ServiceProvider);
+                new BusinessActionRunner<UpdatePersonCommand>(Scope.ServiceProvider);
             command = command with { Id = old.Id };
 
             // Act
@@ -78,13 +83,14 @@ public partial class PersonManagementTests {
 
             var command = new RemovePersonsCommand(leavingPersons);
             var runner =
-                new BusinessActionRunner<RemovePersonsCommand, DeletedBusinessEvent<Guid>>(Scope.ServiceProvider);
+                new BusinessActionRunner<RemovePersonsCommand>(Scope.ServiceProvider);
 
             // Act
             var result = await runner.Execute(command);
 
             // Assert
             var removePersonIds = result.IfFail(_ => [])
+                .OfType<DeletedBusinessEvent<Guid>>()
                 .Select(e => e.EntityId);
 
             using var _ = new AssertionScope();

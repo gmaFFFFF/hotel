@@ -1,10 +1,12 @@
 ﻿using FluentAssertions;
 using gmafffff.starterKit.BusinessLogic;
 using gmafffff.starterKit.Utils;
+using gmafffff.training.hotel.business.PersonManagement.Handlers;
 using gmafffff.training.hotel.business.PersonManagement.Queries;
 using gmafffff.training.hotel.business.tests.Fixtures;
 using gmafffff.training.hotel.domain.Dto.PersonManagement;
 using gmafffff.training.hotel.domain.Model;
+using JetBrains.Annotations;
 using Mapster;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
@@ -12,6 +14,7 @@ using Xunit.Abstractions;
 namespace gmafffff.training.hotel.business.tests.PersonManagement;
 
 public partial class PersonManagementTests {
+    [TestSubject(typeof(GetPersonsQueryHandler))]
     public class Query(ITestOutputHelper output) : TestContext(output) {
         [Fact]
         public async Task CanQueryData() {

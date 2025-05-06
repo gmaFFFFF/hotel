@@ -4,6 +4,7 @@ using gmafffff.training.hotel.business.PropertyManagement.Queries;
 using gmafffff.training.hotel.business.tests.Fixtures;
 using gmafffff.training.hotel.domain.Dto.PropertyManagement;
 using gmafffff.training.hotel.domain.Model;
+using JetBrains.Annotations;
 using Mapster;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
@@ -11,6 +12,7 @@ using Xunit.Abstractions;
 namespace gmafffff.training.hotel.business.tests.PropertyManagement;
 
 public partial class PropertyManagementTests {
+    [TestSubject(typeof(GetRoomsQuery))]
     public class Query(ITestOutputHelper output) : TestContext(output) {
         [Fact]
         public async Task CanQueryData() {

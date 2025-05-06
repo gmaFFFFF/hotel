@@ -9,7 +9,7 @@ namespace gmafffff.training.hotel.business.SettlementManagement.Handlers;
 
 public class MoveOutCommandHandler(
     IHotelBlocksRepository<int, Guid> repo)
-    : BusinessCommandDbHandler<MoveOutCommand, MovedOutEvent,
+    : BusinessCommandDbHandler<MoveOutCommand,
         HotelBlock<int, Guid>, int, IHotelBlocksRepository<int, Guid>,
         HotelBlock<int, Guid>, AccommodationReport<Guid>>(repo) {
     protected override async Task<Fin<IList<HotelBlock<int, Guid>>>> LoadAsync(IHotelBlocksRepository<int, Guid> repo,
@@ -31,9 +31,10 @@ public class MoveOutCommandHandler(
         return Task.FromResult(Fin<IList<AccommodationReport<Guid>>>.Succ([report]));
     }
 
-    protected override IList<MovedOutEvent> PackResultToEvent(IList<AccommodationReport<Guid>> result) {
+    protected override IList<BusinessEvent> PackResultToEvent(IList<AccommodationReport<Guid>> result) {
         return result
             .Select(report => new MovedOutEvent(report, Command))
+            .Cast<BusinessEvent>()
             .ToList();
     }
 }

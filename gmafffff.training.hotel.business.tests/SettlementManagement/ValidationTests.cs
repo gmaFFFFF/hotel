@@ -1,7 +1,9 @@
 using FluentAssertions;
 using gmafffff.training.hotel.business.Error;
 using gmafffff.training.hotel.business.SettlementManagement.Commands;
+using gmafffff.training.hotel.business.SettlementManagement.Validations;
 using gmafffff.training.hotel.business.tests.Fixtures;
+using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Validot;
 using Xunit.Abstractions;
@@ -9,6 +11,7 @@ using Xunit.Abstractions;
 namespace gmafffff.training.hotel.business.tests.SettlementManagement;
 
 public partial class SettlementManagementTests {
+    [TestSubject(typeof(SettleInCommandSpec))]
     public class Validation(ITestOutputHelper output) : TestContext(output) {
         public static TheoryData<SettleInCommand, Enum?> SettleInCommandSample {
             get {

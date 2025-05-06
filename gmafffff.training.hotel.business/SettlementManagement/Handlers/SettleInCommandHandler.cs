@@ -10,7 +10,7 @@ namespace gmafffff.training.hotel.business.SettlementManagement.Handlers;
 public class SettleInCommandHandler(
     IHotelBlocksRepository<int, Guid> repo,
     IPersonsRepository<Guid> personsRepository)
-    : BusinessCommandDbHandler<SettleInCommand, SettledInEvent,
+    : BusinessCommandDbHandler<SettleInCommand,
         HotelBlock<int, Guid>, int, IHotelBlocksRepository<int, Guid>,
         HotelBlock<int, Guid>, Room<Guid>>(repo) {
     protected override async Task<Fin<IList<HotelBlock<int, Guid>>>> LoadAsync(IHotelBlocksRepository<int, Guid> repo,
@@ -35,9 +35,10 @@ public class SettleInCommandHandler(
         return Task.FromResult(Fin<IList<Room<Guid>>>.Succ([room]));
     }
 
-    protected override IList<SettledInEvent> PackResultToEvent(IList<Room<Guid>> result) {
+    protected override IList<BusinessEvent> PackResultToEvent(IList<Room<Guid>> result) {
         return result
             .Select(room => new SettledInEvent(room.Id, Command))
+            .Cast<BusinessEvent>()
             .ToList();
     }
 }

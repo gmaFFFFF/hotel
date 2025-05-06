@@ -2,9 +2,11 @@ using gmafffff.training.hotel.domain.Contracts.Mappers;
 using gmafffff.training.hotel.domain.Contracts.Repositories;
 using gmafffff.training.hotel.infrastructure.mapper.Required;
 using gmafffff.training.hotel.SampleModel.FakeDb;
+using JetBrains.Annotations;
 
 namespace gmafffff.training.hotel.infrastructure.data.tests.Tests;
 
+[TestSubject(typeof(HotelBlocksRepository))]
 public class HotelBlocksRepositoryTests : IClassFixture<SqliteDbFixture> {
     private readonly FakeHotel _fakeHotel = new FakeHotelBuilder().Build();
     private readonly IPropertyManagementMapper _mapper = new PropertyManagementMapperMapster();

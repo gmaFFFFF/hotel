@@ -1,10 +1,11 @@
 using gmafffff.starterKit.AppError;
 using gmafffff.starterKit.BusinessLogic;
+using gmafffff.starterKit.Messaging;
 
 namespace gmafffff.starterKit.tests.BusinessLogic.Fixtures;
 
 public class DbHandler(bool isSaveToDbSeparately = true)
-    : BusinessCommandDbHandler<DbHandlerCommand, DbHandlerEvent,
+    : BusinessCommandDbHandler<DbHandlerCommand,
         BusinessEntity, int, Repo, DbHandlerStatus,
         DbHandlerStatus>(new Repo(), isSaveToDbSeparately) {
     public static EventHandler<BeforeSavingEventArgs> Handler =
@@ -38,7 +39,7 @@ public class DbHandler(bool isSaveToDbSeparately = true)
         return base.SaveAsync(repo, cancel);
     }
 
-    protected override IList<DbHandlerEvent> PackResultToEvent(IList<DbHandlerStatus> status) {
+    protected override IList<BusinessEvent> PackResultToEvent(IList<DbHandlerStatus> status) {
         Status |= DbHandlerStatus.Pack;
         return [new DbHandlerEvent(Status, Command.MessageId)];
     }

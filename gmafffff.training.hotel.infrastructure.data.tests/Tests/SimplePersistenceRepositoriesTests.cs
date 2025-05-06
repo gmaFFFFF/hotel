@@ -1,7 +1,11 @@
 ﻿using gmafffff.training.hotel.SampleModel.FakeDb;
+using JetBrains.Annotations;
 
 namespace gmafffff.training.hotel.infrastructure.data.tests.Tests;
 
+[TestSubject(typeof(HotelBlock<,>))]
+[TestSubject(typeof(AccommodationReport<>))]
+[TestSubject(typeof(Person<>))]
 public class SimplePersistenceRepositoriesTests : IClassFixture<SqliteDbFixture> {
     private readonly FakeHotel _fakeHotel = new FakeHotelBuilder().Build();
     private readonly SqliteDbFixture _sqliteDbFixture;

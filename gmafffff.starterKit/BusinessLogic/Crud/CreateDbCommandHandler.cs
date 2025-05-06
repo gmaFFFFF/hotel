@@ -1,5 +1,6 @@
 using gmafffff.starterKit.Domain;
 using gmafffff.starterKit.Mappers;
+using gmafffff.starterKit.Messaging;
 using gmafffff.starterKit.Messaging.Crud;
 using gmafffff.starterKit.Utils;
 using LanguageExt;
@@ -11,9 +12,9 @@ public class CreateDbCommandHandler<
     TEntity, TEntityId>(
     IRepository<TEntity, TEntityId> repository,
     IEntityMapperBackward<TEntity, TEntityId, TDto> mapper)
-    : BusinessCommandDbHandler<TAddCommand, TAddedEvent, TEntity, TEntityId, IRepository<TEntity, TEntityId>, Unit,
-            TEntity>
-        (repository, isSaveToDbSeparately: true)
+    : BusinessCommandDbHandler<TAddCommand,
+        TEntity, TEntityId, IRepository<TEntity, TEntityId>,
+        Unit, TEntity>(repository, isSaveToDbSeparately: true)
     where TAddCommand : CreateBusinessCommand<TDto>
     where TAddedEvent : CreatedBusinessEvent<TEntityId>
     where TEntityId : struct, IEquatable<TEntityId>
@@ -25,9 +26,10 @@ public class CreateDbCommandHandler<
         return Task.FromResult(Fin<IList<TEntity>>.Succ([added]));
     }
 
-    protected override IList<TAddedEvent> PackResultToEvent(IList<TEntity> result) {
+    protected override IList<BusinessEvent> PackResultToEvent(IList<TEntity> result) {
         return result
             .Select(r => Activator<TAddedEvent>.CreateInstance(r.Id, Command, default(Guid)))
-            .ToArray();
+            .Cast<BusinessEvent>()
+            .ToList();
     }
 }

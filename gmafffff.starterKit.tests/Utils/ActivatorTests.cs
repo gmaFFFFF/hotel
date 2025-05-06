@@ -2,6 +2,7 @@ using gmafffff.starterKit.Utils;
 
 namespace gmafffff.starterKit.Tests.Utils;
 
+[TestSubject(typeof(Activator<>))]
 public class ActivatorTests {
     public const int RepeatCount = 10;
 

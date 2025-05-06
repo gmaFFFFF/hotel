@@ -1,4 +1,5 @@
 using gmafffff.starterKit.Domain;
+using gmafffff.starterKit.Messaging;
 using gmafffff.starterKit.Messaging.Crud;
 using gmafffff.starterKit.Utils;
 using LanguageExt;
@@ -8,9 +9,9 @@ namespace gmafffff.starterKit.BusinessLogic.Crud;
 public class DeleteDbCommandHandler<
     TDeleteCommand, TDeletedEvent,
     TEntity, TEntityId>(IRepository<TEntity, TEntityId> repository)
-    : BusinessCommandDbHandler<TDeleteCommand, TDeletedEvent, TEntity, TEntityId, IRepository<TEntity, TEntityId>,
-            TEntity, TEntity>
-        (repository, isSaveToDbSeparately: true)
+    : BusinessCommandDbHandler<TDeleteCommand,
+        TEntity, TEntityId, IRepository<TEntity, TEntityId>,
+        TEntity, TEntity>(repository, isSaveToDbSeparately: true)
     where TDeleteCommand : DeleteBusinessCommand<TEntityId>
     where TDeletedEvent : DeletedBusinessEvent<TEntityId>
     where TEntityId : struct, IEquatable<TEntityId>
@@ -29,9 +30,10 @@ public class DeleteDbCommandHandler<
         return Task.FromResult(Fin<IList<TEntity>>.Succ(loaded));
     }
 
-    protected override IList<TDeletedEvent> PackResultToEvent(IList<TEntity> result) {
+    protected override IList<BusinessEvent> PackResultToEvent(IList<TEntity> result) {
         return result
             .Select(r => Activator<TDeletedEvent>.CreateInstance(r.Id, Command, default(Guid)))
-            .ToArray();
+            .Cast<BusinessEvent>()
+            .ToList();
     }
 }

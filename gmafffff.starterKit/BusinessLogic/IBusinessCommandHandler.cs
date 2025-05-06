@@ -10,15 +10,10 @@ namespace gmafffff.starterKit.BusinessLogic;
 ///     Объект, производный от <see cref="BusinessCommand" />, представляющий команду, которую необходимо
 ///     выполнить
 /// </typeparam>
-/// <typeparam name="TEvent">
-///     Объект, производный от <see cref="BusinessEvent" />, представляющий изменения, которые произошли в
-///     системе
-/// </typeparam>
-public interface IBusinessCommandHandler<in TCommand, TEvent>
-    where TCommand : BusinessCommand
-    where TEvent : BusinessEvent {
+public interface IBusinessCommandHandler<in TCommand>
+    where TCommand : BusinessCommand {
     /// <summary>
     ///     Выполнить команду
     /// </summary>
-    Task<Fin<IList<TEvent>>> ExecuteAsync(TCommand command, CancellationToken cancel = default);
+    Task<Fin<IList<BusinessEvent>>> ExecuteAsync(TCommand command, CancellationToken cancel = default);
 }

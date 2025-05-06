@@ -5,6 +5,7 @@ using gmafffff.starterKit.tests.Domain.Fixtures;
 
 namespace gmafffff.starterKit.tests.Domain;
 
+[TestSubject(typeof(Entity<>))]
 public class EntityTests {
     private readonly Fixture _fixture = new();
 
