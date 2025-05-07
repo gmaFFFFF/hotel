@@ -7,9 +7,9 @@ namespace gmafffff.training.hotel.infrastructure.mapper.MapsterConfig;
 public class HotelBlockConfig : StandardMapsterConfig {
     protected override void Configure(TypeAdapterConfig config) {
         // HotelDto
-        config.Apply(new RoomConfig());
+        RoomConfig.ForOuterConfigure(config);
         config
-            .ForType<HotelBlock<int, Guid>, HotelDto>()
+            .NewConfig<HotelBlock<int, Guid>, HotelDto>()
             .TwoWays()
             .Map(member: d => d.BlockId, source: s => s.Id)
             .GenerateMapper(All);

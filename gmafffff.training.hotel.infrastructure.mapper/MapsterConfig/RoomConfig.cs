@@ -6,6 +6,10 @@ namespace gmafffff.training.hotel.infrastructure.mapper.MapsterConfig;
 
 public class RoomConfig : StandardMapsterConfig {
     protected override void Configure(TypeAdapterConfig config) {
+        ForOuterConfigure(config);
+    }
+
+    public static void ForOuterConfigure(TypeAdapterConfig config) {
         // RoomDto
         config.NewConfig<Room<Guid>, RoomDto>()
             .TwoWays()
