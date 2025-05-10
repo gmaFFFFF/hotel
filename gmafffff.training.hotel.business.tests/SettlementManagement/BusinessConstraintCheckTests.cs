@@ -1,6 +1,6 @@
 using FluentAssertions;
 using gmafffff.starterKit.Utils;
-using gmafffff.training.hotel.business.SettlementManagement.BusinessRules;
+using gmafffff.training.hotel.business.SettlementManagement.BusinessConstraintsChecks;
 using gmafffff.training.hotel.business.SettlementManagement.Commands;
 using gmafffff.training.hotel.business.tests.Fixtures;
 using gmafffff.training.hotel.domain.Model;
@@ -12,9 +12,9 @@ namespace gmafffff.training.hotel.business.tests.SettlementManagement;
 
 public partial class SettlementManagementTests {
     [TestSubject(typeof(NumberVisitorsNotExceedCapacityRoom))]
-    public class BusinessRules(ITestOutputHelper output) : TestContext(output) {
+    public class BusinessConstraintsChecks(ITestOutputHelper output) : TestContext(output) {
         /// <summary>
-        ///     Бизнес-правило <see cref="NumberVisitorsNotExceedCapacityRoom" /> соблюдается
+        ///     бизнес-ограничение <see cref="NumberVisitorsNotExceedCapacityRoom" /> соблюдается
         /// </summary>
         [Theory]
         [HotelAutodata]
@@ -32,15 +32,15 @@ public partial class SettlementManagementTests {
             command = command with { RoomId = room.Id, Visitors = visitors };
 
             // Act
-            var rule = new NumberVisitorsNotExceedCapacityRoom(HotelRepoFactory);
+            var check = new NumberVisitorsNotExceedCapacityRoom(HotelRepoFactory);
 
             // Act, Assert
-            (await rule.IsSatisfiedAsync(command))
+            (await check.IsSatisfiedAsync(command))
                 .Should().BeTrue();
         }
 
         /// <summary>
-        ///     Бизнес-правило <see cref="NumberVisitorsNotExceedCapacityRoom" /> не соблюдается
+        ///     бизнес-ограничение <see cref="NumberVisitorsNotExceedCapacityRoom" /> не соблюдается
         /// </summary>
         [Theory]
         [HotelAutodata]
@@ -58,10 +58,10 @@ public partial class SettlementManagementTests {
             command = command with { RoomId = room.Id, Visitors = visitors };
 
             // Act
-            var rule = new NumberVisitorsNotExceedCapacityRoom(HotelRepoFactory);
+            var check = new NumberVisitorsNotExceedCapacityRoom(HotelRepoFactory);
 
             // Act, Assert
-            (await rule.IsSatisfiedAsync(command))
+            (await check.IsSatisfiedAsync(command))
                 .Should().BeFalse();
         }
     }

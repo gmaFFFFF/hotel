@@ -3,14 +3,14 @@ using gmafffff.starterKit.Messaging;
 namespace gmafffff.starterKit.BusinessLogic;
 
 /// <summary>
-///     Бизнес правило
+///     Проверяющий бизнес-ограничений
 /// </summary>
-public interface IBusinessRule<in TCommand>
+public interface IBusinessConstraintCheck<in TCommand>
     where TCommand : BusinessCommand {
     Enum ErrorCode { get; }
 
     /// <summary>
-    ///     Выполняется ли бизнес-правило
+    ///     Выполняется ли бизнес-ограничение
     /// </summary>
     Task<bool> IsSatisfiedAsync(TCommand command, CancellationToken cancel = default);
 }

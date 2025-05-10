@@ -26,25 +26,7 @@ public static class RegisterServicesExtensions {
         typeof(IAsyncDisposable)
     ];
 
-    /// <summary>
-    ///     Регистрирует в сервисе внедрения зависимостей проверяющих бизнес-правила,
-    ///     реализующих интерфейс <see cref="IBusinessRule{TCommand}" />
-    /// </summary>
-    /// <param name="this">Описание служб</param>
-    /// <param name="assemblies">Сборки для поиска. Если аргумент опущен, то поиск по всем сборкам домена приложения</param>
-    /// <returns></returns>
-    public static IServiceCollection AddBusinessRules(this IServiceCollection @this, params Assembly[] assemblies) {
-        return @this.Scan(scan => {
-            var selector = assemblies.Length == 0
-                ? scan.FromApplicationDependencies()
-                : scan.FromAssemblies(assemblies);
-
-            selector
-                .AddClasses(@class => @class.AssignableTo(typeof(IBusinessRule<>)))
-                .AsImplementedInterfaces()
-                .WithScopedLifetime();
-        });
-    }
+    #region Данные
 
     /// <summary>
     ///     Регистрирует в сервисе внедрения зависимостей оперативные склады,
@@ -82,89 +64,6 @@ public static class RegisterServicesExtensions {
                     .WithSingletonLifetime();
             });
     }
-
-    /// <summary>
-    ///     Регистрирует в сервисе внедрения зависимостей исполнитель команд <see cref="IBusinessActionRunner{TCommand}" />
-    /// </summary>
-    /// <param name="this"></param>
-    /// <returns></returns>
-    public static IServiceCollection AddBusinessActionRunner(this IServiceCollection @this) {
-        return @this.AddTransient(typeof(IBusinessActionRunner<>), typeof(BusinessActionRunner<>));
-    }
-
-    /// <summary>
-    ///     Регистрирует в сервисе внедрения зависимостей обработчики бизнес команд,
-    ///     реализующие класс <see cref="BusinessCommandDbHandler{TCommand,TEntity,TId,TRepo,TLoad,TResult}" />
-    /// </summary>
-    /// <param name="this">Описание служб</param>
-    /// <param name="assemblies">Сборки для поиска. Если аргумент опущен, то поиск по всем сборкам домена приложения</param>
-    /// <returns></returns>
-    public static IServiceCollection AddBusinessCommandDbHandlers(this IServiceCollection @this,
-        params Assembly[] assemblies) {
-        return @this.Scan(scan => {
-            var selector = assemblies.Length == 0
-                ? scan.FromApplicationDependencies()
-                : scan.FromAssemblies(assemblies);
-
-            selector
-                .AddClasses(@class => @class.AssignableTo(typeof(BusinessCommandDbHandler<,,,,,>)))
-                .AsImplementedInterfaces(predicate: @interface =>
-                    @interface.IsGenericType
-                        ? !IgnoreInterfaces.Contains(@interface.GetGenericTypeDefinition())
-                        : !IgnoreInterfaces.Contains(@interface))
-                .WithTransientLifetime();
-        });
-    }
-
-    /// <summary>
-    ///     Регистрирует в сервисе внедрения зависимостей обработчики запросов,
-    ///     реализующие интерфейс <see cref="IQueryHandler{TQuery,TResult}" />
-    /// </summary>
-    /// <param name="this">Описание служб</param>
-    /// <param name="assemblies">Сборки для поиска. Если аргумент опущен, то поиск по всем сборкам домена приложения</param>
-    /// <returns></returns>
-    public static IServiceCollection AddQueryHandlers(this IServiceCollection @this,
-        params Assembly[] assemblies) {
-        return @this.Scan(scan => {
-            var selector = assemblies.Length == 0
-                ? scan.FromApplicationDependencies()
-                : scan.FromAssemblies(assemblies);
-
-            selector
-                .AddClasses(@class => @class.AssignableTo(typeof(IQueryHandler<,>)))
-                .AsImplementedInterfaces(predicate: @interface =>
-                    @interface.IsGenericType
-                        ? !IgnoreInterfaces.Contains(@interface.GetGenericTypeDefinition())
-                        : !IgnoreInterfaces.Contains(@interface))
-                .WithTransientLifetime();
-        });
-    }
-
-
-    /// <summary>
-    ///     Регистрирует в сервисе внедрения зависимостей конверторы <see cref="TriggerEvent" />,
-    ///     реализующие интерфейс <see cref="ITriggerEventToCommandTranslator{T}" />
-    /// </summary>
-    /// <param name="this">Описание служб</param>
-    /// <param name="assemblies">Сборки для поиска. Если аргумент опущен, то поиск по всем сборкам домена приложения</param>
-    /// <returns></returns>
-    public static IServiceCollection AddTriggerEventToCommandTranslators(this IServiceCollection @this,
-        params Assembly[] assemblies) {
-        return @this.Scan(scan => {
-            var selector = assemblies.Length == 0
-                ? scan.FromApplicationDependencies()
-                : scan.FromAssemblies(assemblies);
-
-            selector
-                .AddClasses(@class => @class.AssignableTo(typeof(ITriggerEventToCommandTranslator<>)))
-                .AsImplementedInterfaces(predicate: @interface =>
-                    @interface.IsGenericType
-                        ? !IgnoreInterfaces.Contains(@interface.GetGenericTypeDefinition())
-                        : !IgnoreInterfaces.Contains(@interface))
-                .WithTransientLifetime();
-        });
-    }
-
 
     /// <summary>
     ///     Регистрирует в сервисе внедрения зависимостей преобразователи,
@@ -219,6 +118,112 @@ public static class RegisterServicesExtensions {
         TypeAdapterConfig.GlobalSettings.Scan(assembliesToScan);
     }
 
+    #endregion
+
+    #region Бизнес-логика
+
+    /// <summary>
+    ///     Регистрирует в сервисе внедрения зависимостей исполнитель команд <see cref="IBusinessActionRunner{TCommand}" />
+    /// </summary>
+    /// <param name="this"></param>
+    /// <returns></returns>
+    public static IServiceCollection AddBusinessActionRunner(this IServiceCollection @this) {
+        return @this.AddTransient(typeof(IBusinessActionRunner<>), typeof(BusinessActionRunner<>));
+    }
+
+    /// <summary>
+    ///     Регистрирует в сервисе внедрения зависимостей проверяющих бизнес-ограничения,
+    ///     реализующих интерфейс <see cref="IBusinessConstraintCheck{TCommand}" />
+    /// </summary>
+    /// <param name="this">Описание служб</param>
+    /// <param name="assemblies">Сборки для поиска. Если аргумент опущен, то поиск по всем сборкам домена приложения</param>
+    /// <returns></returns>
+    public static IServiceCollection AddBusinessConstraintsChecks(this IServiceCollection @this,
+        params Assembly[] assemblies) {
+        return @this.Scan(scan => {
+            var selector = assemblies.Length == 0
+                ? scan.FromApplicationDependencies()
+                : scan.FromAssemblies(assemblies);
+
+            selector
+                .AddClasses(@class => @class.AssignableTo(typeof(IBusinessConstraintCheck<>)))
+                .AsImplementedInterfaces()
+                .WithScopedLifetime();
+        });
+    }
+
+    /// <summary>
+    ///     Регистрирует в сервисе внедрения зависимостей обработчики бизнес команд,
+    ///     реализующие класс <see cref="BusinessCommandDbHandler{TCommand,TEntity,TId,TRepo,TLoad,TResult}" />
+    /// </summary>
+    /// <param name="this">Описание служб</param>
+    /// <param name="assemblies">Сборки для поиска. Если аргумент опущен, то поиск по всем сборкам домена приложения</param>
+    /// <returns></returns>
+    public static IServiceCollection AddBusinessCommandDbHandlers(this IServiceCollection @this,
+        params Assembly[] assemblies) {
+        return @this.Scan(scan => {
+            var selector = assemblies.Length == 0
+                ? scan.FromApplicationDependencies()
+                : scan.FromAssemblies(assemblies);
+
+            selector
+                .AddClasses(@class => @class.AssignableTo(typeof(BusinessCommandDbHandler<,,,,,>)))
+                .AsImplementedInterfaces(predicate: @interface =>
+                    @interface.IsGenericType
+                        ? !IgnoreInterfaces.Contains(@interface.GetGenericTypeDefinition())
+                        : !IgnoreInterfaces.Contains(@interface))
+                .WithTransientLifetime();
+        });
+    }
+
+    /// <summary>
+    ///     Регистрирует в сервисе внедрения зависимостей обработчики запросов,
+    ///     реализующие интерфейс <see cref="IQueryHandler{TQuery,TResult}" />
+    /// </summary>
+    /// <param name="this">Описание служб</param>
+    /// <param name="assemblies">Сборки для поиска. Если аргумент опущен, то поиск по всем сборкам домена приложения</param>
+    /// <returns></returns>
+    public static IServiceCollection AddQueryHandlers(this IServiceCollection @this,
+        params Assembly[] assemblies) {
+        return @this.Scan(scan => {
+            var selector = assemblies.Length == 0
+                ? scan.FromApplicationDependencies()
+                : scan.FromAssemblies(assemblies);
+
+            selector
+                .AddClasses(@class => @class.AssignableTo(typeof(IQueryHandler<,>)))
+                .AsImplementedInterfaces(predicate: @interface =>
+                    @interface.IsGenericType
+                        ? !IgnoreInterfaces.Contains(@interface.GetGenericTypeDefinition())
+                        : !IgnoreInterfaces.Contains(@interface))
+                .WithTransientLifetime();
+        });
+    }
+
+    /// <summary>
+    ///     Регистрирует в сервисе внедрения зависимостей конверторы <see cref="TriggerEvent" />,
+    ///     реализующие интерфейс <see cref="ITriggerEventToCommandTranslator{T}" />
+    /// </summary>
+    /// <param name="this">Описание служб</param>
+    /// <param name="assemblies">Сборки для поиска. Если аргумент опущен, то поиск по всем сборкам домена приложения</param>
+    /// <returns></returns>
+    public static IServiceCollection AddTriggerEventToCommandTranslators(this IServiceCollection @this,
+        params Assembly[] assemblies) {
+        return @this.Scan(scan => {
+            var selector = assemblies.Length == 0
+                ? scan.FromApplicationDependencies()
+                : scan.FromAssemblies(assemblies);
+
+            selector
+                .AddClasses(@class => @class.AssignableTo(typeof(ITriggerEventToCommandTranslator<>)))
+                .AsImplementedInterfaces(predicate: @interface =>
+                    @interface.IsGenericType
+                        ? !IgnoreInterfaces.Contains(@interface.GetGenericTypeDefinition())
+                        : !IgnoreInterfaces.Contains(@interface))
+                .WithTransientLifetime();
+        });
+    }
+
     /// <summary>
     ///     Регистрирует в сервисе внедрения зависимостей проверяющих,
     ///     реализующих интерфейс <see cref="ISpecificationHolder{T}" />
@@ -261,4 +266,6 @@ public static class RegisterServicesExtensions {
 
         return @this;
     }
+
+    #endregion
 }

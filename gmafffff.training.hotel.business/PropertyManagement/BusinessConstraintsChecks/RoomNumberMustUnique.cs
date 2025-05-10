@@ -3,11 +3,11 @@ using gmafffff.training.hotel.business.Error;
 using gmafffff.training.hotel.business.PropertyManagement.Commands;
 using gmafffff.training.hotel.domain.Contracts.Repositories;
 
-namespace gmafffff.training.hotel.business.PropertyManagement.BusinessRules;
+namespace gmafffff.training.hotel.business.PropertyManagement.BusinessConstraintsChecks;
 
 public class RoomNumberMustUnique(IHotelBlocksRepositoryFactory<int, Guid> repositoryFactory)
-    : IBusinessRule<UpdateRoomCommand>,
-        IBusinessRule<AddRoomCommand> {
+    : IBusinessConstraintCheck<UpdateRoomCommand>,
+        IBusinessConstraintCheck<AddRoomCommand> {
     public async Task<bool> IsSatisfiedAsync(AddRoomCommand command, CancellationToken cancel = default) {
         var repository = repositoryFactory.CreateTransient();
         var count = await repository.CountRoomByAsync(predicate: room => room.RoomDetails.Number == command.Room.Number,
@@ -15,7 +15,7 @@ public class RoomNumberMustUnique(IHotelBlocksRepositoryFactory<int, Guid> repos
         return count == 0;
     }
 
-    public Enum ErrorCode => ErrorBusinessRules.RuleRoomNumberRepeat;
+    public Enum ErrorCode => ErrorBusinessConstraintCheck.CheckRoomNumberRepeat;
 
     public async Task<bool> IsSatisfiedAsync(UpdateRoomCommand command, CancellationToken cancel = default) {
         var updateRoomNum = command.RoomUpdate.Number;

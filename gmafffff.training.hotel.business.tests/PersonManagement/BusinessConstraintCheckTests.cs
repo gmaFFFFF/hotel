@@ -1,6 +1,6 @@
 ﻿using FluentAssertions;
 using gmafffff.starterKit.Utils;
-using gmafffff.training.hotel.business.PersonManagement.BusinessRules;
+using gmafffff.training.hotel.business.PersonManagement.BusinessConstraintsChecks;
 using gmafffff.training.hotel.business.PersonManagement.Commands;
 using gmafffff.training.hotel.business.tests.Fixtures;
 using gmafffff.training.hotel.domain.Model;
@@ -11,9 +11,9 @@ namespace gmafffff.training.hotel.business.tests.PersonManagement;
 
 public partial class PersonManagementTests {
     [TestSubject(typeof(RemovePersonShouldNotSuitable))]
-    public class BusinessRules(ITestOutputHelper output) : TestContext(output) {
+    public class BusinessConstraintsChecks(ITestOutputHelper output) : TestContext(output) {
         /// <summary>
-        ///     Бизнес правило <see cref="RemovePersonShouldNotSuitable" /> соблюдается
+        ///     бизнес-ограничение <see cref="RemovePersonShouldNotSuitable" /> соблюдается
         /// </summary>
         [Fact]
         public async Task RemovePersonShouldNotSuitableIsSuccessful() {
@@ -27,15 +27,15 @@ public partial class PersonManagementTests {
             if (leavingPersons.Length < 2) throw new NotSupportedException();
 
             var command = new RemovePersonsCommand(leavingPersons);
-            var rule = new RemovePersonShouldNotSuitable(HotelRepoFactory);
+            var check = new RemovePersonShouldNotSuitable(HotelRepoFactory);
 
             // Act, Assert
-            (await rule.IsSatisfiedAsync(command))
+            (await check.IsSatisfiedAsync(command))
                 .Should().BeTrue();
         }
 
         /// <summary>
-        ///     Бизнес правило <see cref="RemovePersonShouldNotSuitable" /> не соблюдается
+        ///     бизнес-ограничение <see cref="RemovePersonShouldNotSuitable" /> не соблюдается
         /// </summary>
         [Fact]
         public async Task RemovePersonShouldNotSuitableIsFail() {
@@ -51,10 +51,10 @@ public partial class PersonManagementTests {
             leavingPersons[^1] = suitablePersons[0];
 
             var command = new RemovePersonsCommand(leavingPersons);
-            var rule = new RemovePersonShouldNotSuitable(HotelRepoFactory);
+            var check = new RemovePersonShouldNotSuitable(HotelRepoFactory);
 
             // Act, Assert
-            (await rule.IsSatisfiedAsync(command))
+            (await check.IsSatisfiedAsync(command))
                 .Should().BeFalse();
         }
     }

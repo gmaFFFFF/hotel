@@ -1,6 +1,6 @@
 ﻿using FluentAssertions;
 using gmafffff.starterKit.Utils;
-using gmafffff.training.hotel.business.PropertyManagement.BusinessRules;
+using gmafffff.training.hotel.business.PropertyManagement.BusinessConstraintsChecks;
 using gmafffff.training.hotel.business.PropertyManagement.Commands;
 using gmafffff.training.hotel.business.tests.Fixtures;
 using gmafffff.training.hotel.domain.Model;
@@ -13,9 +13,9 @@ namespace gmafffff.training.hotel.business.tests.PropertyManagement;
 public partial class PropertyManagementTests {
     [TestSubject(typeof(RoomNumberMustUnique))]
     [TestSubject(typeof(RemoveRoomsMustFree))]
-    public class BusinessRules(ITestOutputHelper output) : TestContext(output) {
+    public class BusinessConstraintsChecks(ITestOutputHelper output) : TestContext(output) {
         /// <summary>
-        ///     Бизнес-правило <see cref="RoomNumberMustUnique" /> соблюдается при добавлении
+        ///     бизнес-ограничение <see cref="RoomNumberMustUnique" /> соблюдается при добавлении
         /// </summary>
         /// <returns></returns>
         [Theory]
@@ -23,15 +23,15 @@ public partial class PropertyManagementTests {
         public async Task RoomNumberMustUniqueByAddIsSuccessful(AddRoomCommand command, Guid guid) {
             // Arrange
             command = command with { Room = command.Room with { Number = guid.ToString() } };
-            var rule = new RoomNumberMustUnique(HotelRepoFactory);
+            var check = new RoomNumberMustUnique(HotelRepoFactory);
 
             // Act, Assert
-            (await rule.IsSatisfiedAsync(command))
+            (await check.IsSatisfiedAsync(command))
                 .Should().BeTrue();
         }
 
         /// <summary>
-        ///     Бизнес-правило <see cref="RoomNumberMustUnique" /> соблюдается при обновлении
+        ///     бизнес-ограничение <see cref="RoomNumberMustUnique" /> соблюдается при обновлении
         /// </summary>
         /// <returns></returns>
         [Theory]
@@ -41,15 +41,15 @@ public partial class PropertyManagementTests {
             var existRoomId = FakeHotel.Hotel.Rooms.First().Id;
             command = command with { Id = existRoomId };
 
-            var rule = new RoomNumberMustUnique(HotelRepoFactory);
+            var check = new RoomNumberMustUnique(HotelRepoFactory);
 
             // Act, Assert
-            (await rule.IsSatisfiedAsync(command))
+            (await check.IsSatisfiedAsync(command))
                 .Should().BeTrue();
         }
 
         /// <summary>
-        ///     Бизнес-правило <see cref="RoomNumberMustUnique" /> соблюдается при обновлении несуществующей сущности
+        ///     бизнес-ограничение <see cref="RoomNumberMustUnique" /> соблюдается при обновлении несуществующей сущности
         /// </summary>
         /// <returns></returns>
         [Theory]
@@ -58,15 +58,15 @@ public partial class PropertyManagementTests {
             // Arrange
             command = command with { Id = -1 };
 
-            var rule = new RoomNumberMustUnique(HotelRepoFactory);
+            var check = new RoomNumberMustUnique(HotelRepoFactory);
 
             // Act, Assert
-            (await rule.IsSatisfiedAsync(command))
+            (await check.IsSatisfiedAsync(command))
                 .Should().BeTrue();
         }
 
         /// <summary>
-        ///     Бизнес-правило <see cref="RoomNumberMustUnique" /> нарушается при добавлении
+        ///     бизнес-ограничение <see cref="RoomNumberMustUnique" /> нарушается при добавлении
         /// </summary>
         /// <returns></returns>
         [Theory]
@@ -75,15 +75,15 @@ public partial class PropertyManagementTests {
             // Arrange
             var existRoomNumber = FakeHotel.Hotel.Rooms.First().RoomDetails.Number;
             command = command with { Room = command.Room with { Number = existRoomNumber } };
-            var rule = new RoomNumberMustUnique(HotelRepoFactory);
+            var check = new RoomNumberMustUnique(HotelRepoFactory);
 
             // Act, Assert
-            (await rule.IsSatisfiedAsync(command))
+            (await check.IsSatisfiedAsync(command))
                 .Should().BeFalse();
         }
 
         /// <summary>
-        ///     Бизнес-правило <see cref="RoomNumberMustUnique" /> нарушается при обновлении
+        ///     бизнес-ограничение <see cref="RoomNumberMustUnique" /> нарушается при обновлении
         /// </summary>
         /// <returns></returns>
         [Theory]
@@ -96,15 +96,15 @@ public partial class PropertyManagementTests {
                 Id = existRoomId,
                 RoomUpdate = command.RoomUpdate with { Number = existRoomNumber }
             };
-            var rule = new RoomNumberMustUnique(HotelRepoFactory);
+            var check = new RoomNumberMustUnique(HotelRepoFactory);
 
             // Act, Assert
-            (await rule.IsSatisfiedAsync(command))
+            (await check.IsSatisfiedAsync(command))
                 .Should().BeFalse();
         }
 
         /// <summary>
-        ///     Бизнес-правило <see cref="RemoveRoomsMustFree" /> соблюдается
+        ///     бизнес-ограничение <see cref="RemoveRoomsMustFree" /> соблюдается
         /// </summary>
         /// <returns></returns>
         /// <exception cref="NotSupportedException">если оказалось слишком мало свободных номеров для теста</exception>
@@ -116,16 +116,16 @@ public partial class PropertyManagementTests {
 
             var command = new RemoveRoomsCommand(freeRooms.Select(room => room.Id).ToArray());
 
-            var rule = new RemoveRoomsMustFree(HotelRepoFactory);
+            var check = new RemoveRoomsMustFree(HotelRepoFactory);
 
             // Act, Assert
-            (await rule.IsSatisfiedAsync(command))
+            (await check.IsSatisfiedAsync(command))
                 .Should().BeTrue();
         }
 
 
         /// <summary>
-        ///     Бизнес-правило <see cref="RemoveRoomsMustFree" /> нарушается
+        ///     бизнес-ограничение <see cref="RemoveRoomsMustFree" /> нарушается
         /// </summary>
         /// <returns></returns>
         /// <exception cref="NotSupportedException">если оказалось слишком мало свободных номеров для теста</exception>
@@ -138,10 +138,10 @@ public partial class PropertyManagementTests {
 
             var command = new RemoveRoomsCommand(freeRooms.Append(busyRoom).Select(room => room.Id).ToArray());
 
-            var rule = new RemoveRoomsMustFree(HotelRepoFactory);
+            var check = new RemoveRoomsMustFree(HotelRepoFactory);
 
             // Act, Assert
-            (await rule.IsSatisfiedAsync(command))
+            (await check.IsSatisfiedAsync(command))
                 .Should().BeFalse();
         }
     }

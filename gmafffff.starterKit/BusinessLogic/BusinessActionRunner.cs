@@ -11,7 +11,7 @@ namespace gmafffff.starterKit.BusinessLogic;
 
 /// <summary>
 ///     Проверяет команду <see cref="BusinessCommand" /> на соответствие формальным требованиями
-///     и при условии соблюдения бизнес-правил <see cref="IBusinessRule{TCommand}"/> отправляет её на исполнение,
+///     и при условии соблюдения бизнес-правил <see cref="IBusinessConstraintCheck{TCommand}"/> отправляет её на исполнение,
 ///     запуская команды, соответствующие (<see cref="ITriggerEventToCommandTranslator{TTrigger}"/>)
 ///     сигнальным событиям <see cref="TriggerEvent" />.
 /// </summary>
@@ -30,13 +30,13 @@ public class BusinessActionRunner<TCommand>(IServiceProvider serviceProvider)
     public bool IncludeFormalValidationError { get; set; } = false;
 
     /// <summary>
-    ///     Продолжить проверку на соответствие бизнес правилам
+    ///     Продолжить проверку на соответствие бизнес-ограничениям
     ///     после выявления первого несоответствия
     /// </summary>
     /// <remarks>
     ///     Установка в true повышает производительность, т.к. правила проверяются параллельно, а не последовательно
     /// </remarks>
-    public bool ContinueValidateBusinessRulesAfterFirstError { get; set; } = true;
+    public bool ContinueCheckBusinessConstraintsAfterFirstError { get; set; } = true;
 
     /// <summary>
     ///     Выполнить команду
@@ -46,14 +46,14 @@ public class BusinessActionRunner<TCommand>(IServiceProvider serviceProvider)
         var handler = ServiceProvider.GetRequiredService<IBusinessCommandHandler<TCommand>>();
 
         var validate = (TCommand cmd) => IsFormalValid(cmd).ToFin();
-        var violateRule = (TCommand cmd) => IO.liftAsync(async env =>
-            (await IsBusinessRulesSatisfyAsync(cmd, env.Token).ConfigureAwait(false)).ToFin());
+        var checkConstraint = (TCommand cmd) => IO.liftAsync(async env =>
+            (await IsBusinessConstraintsSatisfyAsync(cmd, env.Token).ConfigureAwait(false)).ToFin());
         var handle = (TCommand cmd) =>
             IO.liftAsync(async env => await handler.ExecuteAsync(cmd, env.Token).ConfigureAwait(false));
 
         var steps =
             from _1 in FinT<IO, Unit>.Lift(validate(command))
-            from _2 in FinT<IO, Unit>.LiftIO(violateRule(command))
+            from _2 in FinT<IO, Unit>.LiftIO(checkConstraint(command))
             from primaryEvents in FinT<IO, IList<BusinessEvent>>.LiftIO(handle(command))
             from events in ProcessTriggerEvents(primaryEvents)
             select events;
@@ -90,22 +90,22 @@ public class BusinessActionRunner<TCommand>(IServiceProvider serviceProvider)
     }
 
     /// <summary>
-    ///     Выполнены ли бизнес требования
+    ///     Выполнены ли бизнес-ограничения
     /// </summary>
     /// <returns>Возвращает true или коды ошибок</returns>
-    /// <remarks> Исключение, возникшее при проверке бизнес-правила считается его невыполнением</remarks>
-    protected async Task<Validation<Error, Unit>> IsBusinessRulesSatisfyAsync(TCommand command,
+    /// <remarks> Исключение, возникшее при проверке бизнес-ограничения считается его невыполнением</remarks>
+    protected async Task<Validation<Error, Unit>> IsBusinessConstraintsSatisfyAsync(TCommand command,
         CancellationToken cancel = default) {
         var error = Error.Empty;
 
-        if (ContinueValidateBusinessRulesAfterFirstError)
+        if (ContinueCheckBusinessConstraintsAfterFirstError)
             // В функциональном стиле уродливый код сократился в 2 раза, параллельность исполнения обеспечена «из коробки»
-            error += await ServiceProvider.GetServices<IBusinessRule<TCommand>>()
+            error += await ServiceProvider.GetServices<IBusinessConstraintCheck<TCommand>>()
                 // Загруженный список правил трансформируем в аналог IEnumerable
                 .AsIterable()
                 // Запускаем проверку каждого правила так же как и в Select, но IO станет внешней монадой,
                 // а не внутренней: IO<Iterable<Error>>, а не Iterable<IO<Error>>>
-                .Traverse(rule => CheckRule(rule, command))
+                .Traverse(constraint => CheckConstraint(constraint, command))
                 // Собираем ошибки в одну ошибку
                 .Map(errors => errors.Fold())
                 // Запуск
@@ -113,13 +113,13 @@ public class BusinessActionRunner<TCommand>(IServiceProvider serviceProvider)
                 .ConfigureAwait(false);
 
         else
-            foreach (var rule in ServiceProvider.GetServices<IBusinessRule<TCommand>>()) {
+            foreach (var constraint in ServiceProvider.GetServices<IBusinessConstraintCheck<TCommand>>()) {
                 cancel.ThrowIfCancellationRequested();
-                var test = await CheckRule(rule, command).RunAsync(EnvIO.New(token: cancel));
+                var test = await CheckConstraint(constraint, command).RunAsync(EnvIO.New(token: cancel));
 
                 if (test.IsEmpty) continue;
 
-                error += AppErrorHelper.NewError(rule.ErrorCode);
+                error += AppErrorHelper.NewError(constraint.ErrorCode);
                 break;
             }
 
@@ -128,17 +128,18 @@ public class BusinessActionRunner<TCommand>(IServiceProvider serviceProvider)
             : error;
 
 
-        static IO<bool> CallRule(IBusinessRule<TCommand> rule, TCommand command) {
-            return IO.liftAsync(async env => await rule.IsSatisfiedAsync(command, env.Token).ConfigureAwait(false));
+        static IO<bool> CallCheck(IBusinessConstraintCheck<TCommand> constraint, TCommand command) {
+            return IO.liftAsync(
+                async env => await constraint.IsSatisfiedAsync(command, env.Token).ConfigureAwait(false));
         }
 
-        static IO<Error> CheckRule(IBusinessRule<TCommand> rule, TCommand command) {
-            return (from test in CallRule(rule, command)
+        static IO<Error> CheckConstraint(IBusinessConstraintCheck<TCommand> constraint, TCommand command) {
+            return (from test in CallCheck(constraint, command)
                     let er = test
                         ? Error.Empty
-                        : AppErrorHelper.NewError(rule.ErrorCode)
+                        : AppErrorHelper.NewError(constraint.ErrorCode)
                     select er)
-                // Если обработка бизнес-правил вызвала исключение, то считаем, что проверка не пройдена
+                // Если обработка бизнес-ограничений вызвала исключение, то считаем, что проверка не пройдена
                 .IfFail(x => x);
         }
     }

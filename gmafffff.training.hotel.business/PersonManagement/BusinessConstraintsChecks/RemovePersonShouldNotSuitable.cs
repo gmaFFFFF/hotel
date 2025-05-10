@@ -5,14 +5,14 @@ using gmafffff.training.hotel.business.PersonManagement.Commands;
 using gmafffff.training.hotel.domain.Contracts.Repositories;
 using gmafffff.training.hotel.domain.Model;
 
-namespace gmafffff.training.hotel.business.PersonManagement.BusinessRules;
+namespace gmafffff.training.hotel.business.PersonManagement.BusinessConstraintsChecks;
 
 /// <summary>
 ///     Удаляемая персона не должна проживать в гостинице
 /// </summary>
 public class RemovePersonShouldNotSuitable(IHotelBlocksRepositoryFactory<int, Guid> repositoryFactory)
-    : IBusinessRule<RemovePersonsCommand> {
-    public Enum ErrorCode => ErrorBusinessRules.RulePersonLivesInHotel;
+    : IBusinessConstraintCheck<RemovePersonsCommand> {
+    public Enum ErrorCode => ErrorBusinessConstraintCheck.CheckPersonLivesInHotel;
 
     public async Task<bool> IsSatisfiedAsync(RemovePersonsCommand command, CancellationToken cancel = default) {
         var repository = repositoryFactory.CreateTransient();

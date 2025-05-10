@@ -3,14 +3,14 @@ using gmafffff.training.hotel.business.Error;
 using gmafffff.training.hotel.business.SettlementManagement.Commands;
 using gmafffff.training.hotel.domain.Contracts.Repositories;
 
-namespace gmafffff.training.hotel.business.SettlementManagement.BusinessRules;
+namespace gmafffff.training.hotel.business.SettlementManagement.BusinessConstraintsChecks;
 
 /// <summary>
 ///     Число посетителей не превышает вместимость номера
 /// </summary>
 public class NumberVisitorsNotExceedCapacityRoom(IHotelBlocksRepositoryFactory<int, Guid> repositoryFactory)
-    : IBusinessRule<SettleInCommand> {
-    public Enum ErrorCode => ErrorBusinessRules.RulePersonLivesInHotel;
+    : IBusinessConstraintCheck<SettleInCommand> {
+    public Enum ErrorCode => ErrorBusinessConstraintCheck.CheckPersonLivesInHotel;
 
     public async Task<bool> IsSatisfiedAsync(SettleInCommand command, CancellationToken cancel = default) {
         var repository = repositoryFactory.CreateTransient();

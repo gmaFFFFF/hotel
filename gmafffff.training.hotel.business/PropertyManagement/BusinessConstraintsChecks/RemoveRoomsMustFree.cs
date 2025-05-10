@@ -5,11 +5,11 @@ using gmafffff.training.hotel.business.PropertyManagement.Commands;
 using gmafffff.training.hotel.domain.Contracts.Repositories;
 using gmafffff.training.hotel.domain.Model;
 
-namespace gmafffff.training.hotel.business.PropertyManagement.BusinessRules;
+namespace gmafffff.training.hotel.business.PropertyManagement.BusinessConstraintsChecks;
 
 public class RemoveRoomsMustFree(IHotelBlocksRepositoryFactory<int, Guid> repositoryFactory)
-    : IBusinessRule<RemoveRoomsCommand> {
-    public Enum ErrorCode => ErrorBusinessRules.RuleRoomBusy;
+    : IBusinessConstraintCheck<RemoveRoomsCommand> {
+    public Enum ErrorCode => ErrorBusinessConstraintCheck.CheckRoomBusy;
 
     public async Task<bool> IsSatisfiedAsync(RemoveRoomsCommand command, CancellationToken cancel = default) {
         var repository = repositoryFactory.CreateTransient();

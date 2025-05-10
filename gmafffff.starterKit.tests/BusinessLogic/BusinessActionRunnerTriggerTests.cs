@@ -38,8 +38,8 @@ public partial class BusinessActionRunnerTests {
                 .Returns(_ => new BusinessActionRunner<CommandWithTrigger>(_provider));
             _provider.GetService(typeof(IValidator<CommandWithTrigger>))
                 .Returns(null);
-            _provider.GetService(typeof(IEnumerable<IBusinessRule<CommandWithTrigger>>))
-                .Returns(Array.Empty<IBusinessRule<CommandWithTrigger>>());
+            _provider.GetService(typeof(IEnumerable<IBusinessConstraintCheck<CommandWithTrigger>>))
+                .Returns(Array.Empty<IBusinessConstraintCheck<CommandWithTrigger>>());
             _provider.GetService(typeof(IBusinessCommandHandler<CommandWithTrigger>))
                 .Returns(_handler);
             _provider.GetService(typeof(IEnumerable<ITriggerEventToCommandTranslator<MyTrigger>>))

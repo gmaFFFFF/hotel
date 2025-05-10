@@ -13,17 +13,17 @@ namespace gmafffff.starterKit.tests.BusinessLogic;
 [TestSubject(typeof(BusinessActionRunner<>))]
 public partial class BusinessActionRunnerTests {
     public class BusinessActionRunnerRun {
-        private readonly IBusinessRule<BusinessActionCommand> _exceptionRule1 =
-            Substitute.For<IBusinessRule<BusinessActionCommand>>();
+        private readonly IBusinessConstraintCheck<BusinessActionCommand> _exceptionCheck1 =
+            Substitute.For<IBusinessConstraintCheck<BusinessActionCommand>>();
 
-        private readonly IBusinessRule<BusinessActionCommand> _exceptionRule2 =
-            Substitute.For<IBusinessRule<BusinessActionCommand>>();
+        private readonly IBusinessConstraintCheck<BusinessActionCommand> _exceptionCheck2 =
+            Substitute.For<IBusinessConstraintCheck<BusinessActionCommand>>();
 
-        private readonly IBusinessRule<BusinessActionCommand> _failRule1 =
-            Substitute.For<IBusinessRule<BusinessActionCommand>>();
+        private readonly IBusinessConstraintCheck<BusinessActionCommand> _failCheck1 =
+            Substitute.For<IBusinessConstraintCheck<BusinessActionCommand>>();
 
-        private readonly IBusinessRule<BusinessActionCommand> _failRule2 =
-            Substitute.For<IBusinessRule<BusinessActionCommand>>();
+        private readonly IBusinessConstraintCheck<BusinessActionCommand> _failCheck2 =
+            Substitute.For<IBusinessConstraintCheck<BusinessActionCommand>>();
 
         private readonly IBusinessCommandHandler<BusinessActionCommand> _handler =
             Substitute.For<IBusinessCommandHandler<BusinessActionCommand>>();
@@ -33,11 +33,11 @@ public partial class BusinessActionRunnerTests {
 
         private readonly BusinessActionRunner<BusinessActionCommand> _runner;
 
-        private readonly IBusinessRule<BusinessActionCommand> _successRule1 =
-            Substitute.For<IBusinessRule<BusinessActionCommand>>();
+        private readonly IBusinessConstraintCheck<BusinessActionCommand> _successCheck1 =
+            Substitute.For<IBusinessConstraintCheck<BusinessActionCommand>>();
 
-        private readonly IBusinessRule<BusinessActionCommand> _successRule2 =
-            Substitute.For<IBusinessRule<BusinessActionCommand>>();
+        private readonly IBusinessConstraintCheck<BusinessActionCommand> _successCheck2 =
+            Substitute.For<IBusinessConstraintCheck<BusinessActionCommand>>();
 
         private readonly IValidator<BusinessActionCommand> _validator =
             Substitute.For<IValidator<BusinessActionCommand>>();
@@ -52,21 +52,21 @@ public partial class BusinessActionRunnerTests {
                 .Returns(GetFakeValidationResult());
 
 
-            // Бизнес-правила
-            _successRule1.IsSatisfiedAsync(Arg.Any<BusinessActionCommand>(), Arg.Any<CancellationToken>())
+            // Бизнес-ограничения
+            _successCheck1.IsSatisfiedAsync(Arg.Any<BusinessActionCommand>(), Arg.Any<CancellationToken>())
                 .Returns(true);
-            _successRule2.IsSatisfiedAsync(Arg.Any<BusinessActionCommand>(), Arg.Any<CancellationToken>())
+            _successCheck2.IsSatisfiedAsync(Arg.Any<BusinessActionCommand>(), Arg.Any<CancellationToken>())
                 .Returns(true);
 
-            _failRule1.IsSatisfiedAsync(Arg.Any<BusinessActionCommand>(), Arg.Any<CancellationToken>()).Returns(false);
-            _failRule1.ErrorCode.Returns(ValidationErrorCode.ValidationRoomCapacityNo);
-            _failRule2.IsSatisfiedAsync(Arg.Any<BusinessActionCommand>(), Arg.Any<CancellationToken>()).Returns(false);
-            _failRule2.ErrorCode.Returns(ValidationErrorCode.ValidationRoomNumberNo);
+            _failCheck1.IsSatisfiedAsync(Arg.Any<BusinessActionCommand>(), Arg.Any<CancellationToken>()).Returns(false);
+            _failCheck1.ErrorCode.Returns(ValidationErrorCode.ValidationRoomCapacityNo);
+            _failCheck2.IsSatisfiedAsync(Arg.Any<BusinessActionCommand>(), Arg.Any<CancellationToken>()).Returns(false);
+            _failCheck2.ErrorCode.Returns(ValidationErrorCode.ValidationRoomNumberNo);
 
-            _exceptionRule1.IsSatisfiedAsync(Arg.Any<BusinessActionCommand>(), Arg.Any<CancellationToken>())
-                .ThrowsAsync(new Exception(nameof(_exceptionRule1)));
-            _exceptionRule2.IsSatisfiedAsync(Arg.Any<BusinessActionCommand>(), Arg.Any<CancellationToken>())
-                .ThrowsAsync(new Exception(nameof(_exceptionRule2)));
+            _exceptionCheck1.IsSatisfiedAsync(Arg.Any<BusinessActionCommand>(), Arg.Any<CancellationToken>())
+                .ThrowsAsync(new Exception(nameof(_exceptionCheck1)));
+            _exceptionCheck2.IsSatisfiedAsync(Arg.Any<BusinessActionCommand>(), Arg.Any<CancellationToken>())
+                .ThrowsAsync(new Exception(nameof(_exceptionCheck2)));
 
 
             // Обработчик команды
@@ -129,14 +129,16 @@ public partial class BusinessActionRunnerTests {
         }
 
         /// <summary>
-        ///     Невозможно выполнить действие, если нарушается хотя бы одно бизнес-правило
+        ///     Невозможно выполнить действие, если нарушается хотя бы одно бизнес-ограничение
         /// </summary>
         [Fact]
-        public async Task ImpossibleToPerformActionWithViolationBusinessRuleAsync() {
+        public async Task ImpossibleToPerformActionWithViolationBusinessConstraintAsync() {
             // Arrange
-            IBusinessRule<BusinessActionCommand>[] rules = [_successRule1, _successRule2, _failRule1, _failRule2];
-            _provider.Configure().GetService(typeof(IEnumerable<IBusinessRule<BusinessActionCommand>>)).Returns(rules);
-            _runner.ContinueValidateBusinessRulesAfterFirstError = false;
+            IBusinessConstraintCheck<BusinessActionCommand>[] checks =
+                [_successCheck1, _successCheck2, _failCheck1, _failCheck2];
+            _provider.Configure().GetService(typeof(IEnumerable<IBusinessConstraintCheck<BusinessActionCommand>>))
+                .Returns(checks);
+            _runner.ContinueCheckBusinessConstraintsAfterFirstError = false;
 
             // Act
             var result = await _runner.Execute(_validCommand);
@@ -144,25 +146,27 @@ public partial class BusinessActionRunnerTests {
             // Assert
             result.IsFail.Should().BeTrue();
             result.IfFail(e =>
-                e.Code.Should().Be((int)Convert.ChangeType(_failRule1.ErrorCode, _failRule1.ErrorCode.GetTypeCode())));
+                e.Code.Should()
+                    .Be((int)Convert.ChangeType(_failCheck1.ErrorCode, _failCheck1.ErrorCode.GetTypeCode())));
             _validator.Received().IsValid(Arg.Any<BusinessActionCommand>());
-            await _successRule1.Received().IsSatisfiedAsync(_validCommand, Arg.Any<CancellationToken>());
-            await _successRule2.Received().IsSatisfiedAsync(_validCommand, Arg.Any<CancellationToken>());
-            await _failRule1.Received().IsSatisfiedAsync(_validCommand, Arg.Any<CancellationToken>());
-            await _failRule2.DidNotReceiveWithAnyArgs()
+            await _successCheck1.Received().IsSatisfiedAsync(_validCommand, Arg.Any<CancellationToken>());
+            await _successCheck2.Received().IsSatisfiedAsync(_validCommand, Arg.Any<CancellationToken>());
+            await _failCheck1.Received().IsSatisfiedAsync(_validCommand, Arg.Any<CancellationToken>());
+            await _failCheck2.DidNotReceiveWithAnyArgs()
                 .IsSatisfiedAsync(Arg.Any<BusinessActionCommand>(), Arg.Any<CancellationToken>());
         }
 
         /// <summary>
-        ///     Собирает информацию обо всех нарушенных бизнес-правилах
+        ///     Собирает информацию обо всех нарушенных бизнес-ограничениях
         /// </summary>
         [Fact]
-        public async Task CollectsInformationAboutAllViolatedBusinessRulesAsync() {
+        public async Task CollectsInformationAboutAllViolatedBusinessConstraintsAsync() {
             // Arrange
-            IBusinessRule<BusinessActionCommand>[] rules =
-                [_successRule1, _successRule2, _failRule1, _failRule2, _exceptionRule1, _exceptionRule2];
-            _provider.Configure().GetService(typeof(IEnumerable<IBusinessRule<BusinessActionCommand>>)).Returns(rules);
-            _runner.ContinueValidateBusinessRulesAfterFirstError = true;
+            IBusinessConstraintCheck<BusinessActionCommand>[] checks =
+                [_successCheck1, _successCheck2, _failCheck1, _failCheck2, _exceptionCheck1, _exceptionCheck2];
+            _provider.Configure().GetService(typeof(IEnumerable<IBusinessConstraintCheck<BusinessActionCommand>>))
+                .Returns(checks);
+            _runner.ContinueCheckBusinessConstraintsAfterFirstError = true;
 
             // Act
             var result = await _runner.Execute(_validCommand);
@@ -173,22 +177,22 @@ public partial class BusinessActionRunnerTests {
                 .AsEnumerable()
                 .Should()
                 .Contain(e =>
-                    e.Code == (int)Convert.ChangeType(_failRule1.ErrorCode, _failRule1.ErrorCode.GetTypeCode()))
+                    e.Code == (int)Convert.ChangeType(_failCheck1.ErrorCode, _failCheck1.ErrorCode.GetTypeCode()))
                 .And
                 .Contain(e =>
-                    e.Code == (int)Convert.ChangeType(_failRule1.ErrorCode, _failRule2.ErrorCode.GetTypeCode()))
+                    e.Code == (int)Convert.ChangeType(_failCheck1.ErrorCode, _failCheck2.ErrorCode.GetTypeCode()))
                 .And
                 .Contain(e =>
-                    e.IsExceptional && e.Exception.Map(exc => exc.Message == nameof(_exceptionRule1)).IfNone(false))
+                    e.IsExceptional && e.Exception.Map(exc => exc.Message == nameof(_exceptionCheck1)).IfNone(false))
                 .And
                 .Contain(e =>
-                    e.IsExceptional && e.Exception.Map(exc => exc.Message == nameof(_exceptionRule2)).IfNone(false))
+                    e.IsExceptional && e.Exception.Map(exc => exc.Message == nameof(_exceptionCheck2)).IfNone(false))
             );
             _validator.Received().IsValid(Arg.Any<BusinessActionCommand>());
-            await _successRule1.Received().IsSatisfiedAsync(_validCommand, Arg.Any<CancellationToken>());
-            await _successRule2.Received().IsSatisfiedAsync(_validCommand, Arg.Any<CancellationToken>());
-            await _failRule1.Received().IsSatisfiedAsync(_validCommand, Arg.Any<CancellationToken>());
-            await _failRule2.Received().IsSatisfiedAsync(_validCommand, Arg.Any<CancellationToken>());
+            await _successCheck1.Received().IsSatisfiedAsync(_validCommand, Arg.Any<CancellationToken>());
+            await _successCheck2.Received().IsSatisfiedAsync(_validCommand, Arg.Any<CancellationToken>());
+            await _failCheck1.Received().IsSatisfiedAsync(_validCommand, Arg.Any<CancellationToken>());
+            await _failCheck2.Received().IsSatisfiedAsync(_validCommand, Arg.Any<CancellationToken>());
         }
 
         /// <summary>
@@ -197,8 +201,9 @@ public partial class BusinessActionRunnerTests {
         [Fact]
         public async Task RunSuccessActionAsync() {
             // Arrange
-            IBusinessRule<BusinessActionCommand>[] rules = [_successRule1, _successRule2];
-            _provider.Configure().GetService(typeof(IEnumerable<IBusinessRule<BusinessActionCommand>>)).Returns(rules);
+            IBusinessConstraintCheck<BusinessActionCommand>[] checks = [_successCheck1, _successCheck2];
+            _provider.Configure().GetService(typeof(IEnumerable<IBusinessConstraintCheck<BusinessActionCommand>>))
+                .Returns(checks);
 
             // Act
             var result = await _runner.Execute(_validCommand);
@@ -206,8 +211,8 @@ public partial class BusinessActionRunnerTests {
             // Assert
             result.IsSucc.Should().BeTrue();
             _validator.Received().IsValid(Arg.Any<BusinessActionCommand>());
-            await _successRule1.Received().IsSatisfiedAsync(_validCommand, Arg.Any<CancellationToken>());
-            await _successRule2.Received().IsSatisfiedAsync(_validCommand, Arg.Any<CancellationToken>());
+            await _successCheck1.Received().IsSatisfiedAsync(_validCommand, Arg.Any<CancellationToken>());
+            await _successCheck2.Received().IsSatisfiedAsync(_validCommand, Arg.Any<CancellationToken>());
             await _handler.Received().ExecuteAsync(Arg.Any<BusinessActionCommand>(), Arg.Any<CancellationToken>());
         }
     }

@@ -12,20 +12,20 @@ namespace gmafffff.starterKit.tests.Di;
 [TestSubject(typeof(RegisterServicesExtensions))]
 public class RegisterServicesTests {
     /// <summary>
-    ///     Регистрирует бизнес-правила
+    ///     Регистрирует проверки бизнес-ограничений
     /// </summary>
     [Fact]
-    public void RegisterBusinessRules() {
+    public void RegisterBusinessConstraintsChecks() {
         // Arrange
         var provider = Substitute.For<IServiceCollection>();
 
         // Act
-        provider.AddBusinessRules(typeof(RegisterServicesTests).Assembly);
+        provider.AddBusinessConstraintsChecks(typeof(RegisterServicesTests).Assembly);
 
         // Assert
         provider.Received().Add(Arg.Is<ServiceDescriptor>(descriptor =>
-            descriptor.ServiceType == typeof(IBusinessRule<BusinessCommand>) &&
-            descriptor.ImplementationType == typeof(TestBusinessRule) &&
+            descriptor.ServiceType == typeof(IBusinessConstraintCheck<BusinessCommand>) &&
+            descriptor.ImplementationType == typeof(TestBusinessConstraintCheck) &&
             descriptor.Lifetime == ServiceLifetime.Scoped));
     }
 

@@ -3,14 +3,14 @@
 ## Помощники CRUD
 
 * [Ошибки приложения](./crud/errors.md)
-* [Валидация](./crud/validations.md)
 * Шестерёнки для моделирования домена
   * [Сущность](./crud/domain/entity.md)
   * [Оперативный склад](./crud/domain/repository.md)
-* [Автоматическое преобразование сущность ⟷ DTO](./crud/mappers.md)
-* [Обмен сообщениями: команды и запросы](./crud/messaging.md)
+  * [Автоматическое преобразование сущность ⟷ DTO](./crud/domain/mappers.md)
+* [Бизнес-логика через обмен сообщениями: команды и запросы](./crud/businessLogic/messaging.md)
+  * [Запуск команд на исполнение](./crud/businessLogic/runner.md)
+  * [Валидация](./crud/businessLogic/validations.md)
+  * [Проверка бизнес-ограничений](./crud/businessLogic/constraints.md)
   * [Обработчики команд и запросов](./crud/businessLogic/handlers.md)
-  * [Бизнес-правила](./crud/businessLogic/rules.md)
-  * [Бизнес-логика](./crud/businessLogic/runner.md)
   * [События интеграции ограниченных контекстов](./crud/businessLogic/eventTriggers.md)
 * [Конвенции EF Core](./crud/entityFrameworkCore/conventions.md)

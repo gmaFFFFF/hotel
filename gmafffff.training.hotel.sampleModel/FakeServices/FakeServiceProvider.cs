@@ -1,5 +1,5 @@
 ﻿using gmafffff.starterKit.Di;
-using gmafffff.training.hotel.business.PropertyManagement.BusinessRules;
+using gmafffff.training.hotel.business.PropertyManagement.BusinessConstraintsChecks;
 using gmafffff.training.hotel.business.PropertyManagement.Handlers;
 using gmafffff.training.hotel.business.SettlementManagement.Validations;
 using gmafffff.training.hotel.domain.Validation;
@@ -33,7 +33,7 @@ public class FakeServiceProvider : IDisposable {
         ServiceCollection.AddRepositories(typeof(HotelBlocksRepository).Assembly);
 
         ServiceCollection.AddValidotValidators([typeof(RoomSpec).Assembly, typeof(SettleInCommandSpec).Assembly]);
-        ServiceCollection.AddBusinessRules(typeof(RoomNumberMustUnique).Assembly);
+        ServiceCollection.AddBusinessConstraintsChecks(typeof(RoomNumberMustUnique).Assembly);
         ServiceCollection.AddEntityMappersWithConfig(typeof(IPropertyManagementMapperMapster).Assembly);
         ServiceCollection.AddBusinessCommandDbHandlers(typeof(AddRoomCommandHandler).Assembly);
         ServiceCollection.AddQueryHandlers(typeof(GetRoomsQueryHandler).Assembly);
