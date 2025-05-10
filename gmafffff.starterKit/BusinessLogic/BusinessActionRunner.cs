@@ -5,6 +5,8 @@ using LanguageExt;
 using LanguageExt.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Validot;
 
 namespace gmafffff.starterKit.BusinessLogic;
@@ -15,9 +17,14 @@ namespace gmafffff.starterKit.BusinessLogic;
 ///     запуская команды, соответствующие (<see cref="ITriggerEventToCommandTranslator{TTrigger}"/>)
 ///     сигнальным событиям <see cref="TriggerEvent" />.
 /// </summary>
-public class BusinessActionRunner<TCommand>(IServiceProvider serviceProvider)
+public class BusinessActionRunner<TCommand>(IServiceProvider serviceProvider, ILogger? logger = null)
     : IBusinessActionRunner<TCommand>
     where TCommand : BusinessCommand {
+    /// <summary>
+    ///     Журнал
+    /// </summary>
+    private readonly ILogger _logger = logger ?? NullLogger.Instance;
+
     /// <summary>
     ///     Контейнер DI
     /// </summary>
@@ -43,18 +50,12 @@ public class BusinessActionRunner<TCommand>(IServiceProvider serviceProvider)
     /// </summary>
     public virtual async Task<Fin<IList<BusinessEvent>>> Execute(TCommand command,
         CancellationToken cancel = default) {
-        var handler = ServiceProvider.GetRequiredService<IBusinessCommandHandler<TCommand>>();
-
-        var validate = (TCommand cmd) => IsFormalValid(cmd).ToFin();
-        var checkConstraint = (TCommand cmd) => IO.liftAsync(async env =>
-            (await IsBusinessConstraintsSatisfyAsync(cmd, env.Token).ConfigureAwait(false)).ToFin());
-        var handle = (TCommand cmd) =>
-            IO.liftAsync(async env => await handler.ExecuteAsync(cmd, env.Token).ConfigureAwait(false));
+        using var _ = _logger.BeginScope("На исполнение поступила {@BusinessCommand}", command);
 
         var steps =
-            from _1 in FinT<IO, Unit>.Lift(validate(command))
-            from _2 in FinT<IO, Unit>.LiftIO(checkConstraint(command))
-            from primaryEvents in FinT<IO, IList<BusinessEvent>>.LiftIO(handle(command))
+            from _1 in Validate(command)
+            from _2 in CheckConstraint(command)
+            from primaryEvents in Handle(command)
             from events in ProcessTriggerEvents(primaryEvents)
             select events;
 
@@ -70,6 +71,28 @@ public class BusinessActionRunner<TCommand>(IServiceProvider serviceProvider)
         catch (DbUpdateConcurrencyException concurrencyException) {
             return AppErrorHelper.NewError(AppErrorCode.DbConcurrentWrite, concurrencyException);
         }
+
+        FinT<IO, Unit> Validate(TCommand command) {
+            return IsFormalValid(command).ToFin();
+        }
+
+        FinT<IO, Unit> CheckConstraint(TCommand cmd) {
+            return IO.liftAsync(async env =>
+                (await IsBusinessConstraintsSatisfyAsync(cmd, env.Token).ConfigureAwait(false)).ToFin());
+        }
+
+        FinT<IO, IList<BusinessEvent>> Handle(TCommand cmd) {
+            return IO.liftAsync(async env => {
+                var handler = ServiceProvider.GetRequiredService<IBusinessCommandHandler<TCommand>>();
+
+                var result = await handler.ExecuteAsync(cmd, env.Token).ConfigureAwait(false);
+
+                result.IfSucc(e => _logger.LogTrace("Результат исполнения команды: {@Events}", e));
+                result.IfFail(e => _logger.LogTrace("Невозможно выполнить команду: {@Errors}", e));
+
+                return result;
+            });
+        }
     }
 
     /// <summary>
@@ -82,7 +105,11 @@ public class BusinessActionRunner<TCommand>(IServiceProvider serviceProvider)
         if (validator is null)
             return Unit.Default;
 
-        return validator.IsValid(command)
+        var result = validator.IsValid(command);
+
+        _logger.LogTrace("Команда прошла форматно-логический контроль: {IsValid}", result);
+
+        return result
             ? Unit.Default
             : IncludeFormalValidationError
                 ? validator.Validate(command).ToExceptedError()
@@ -105,7 +132,7 @@ public class BusinessActionRunner<TCommand>(IServiceProvider serviceProvider)
                 .AsIterable()
                 // Запускаем проверку каждого правила так же как и в Select, но IO станет внешней монадой,
                 // а не внутренней: IO<Iterable<Error>>, а не Iterable<IO<Error>>>
-                .Traverse(constraint => CheckConstraint(constraint, command))
+                .Traverse(constraint => CheckConstraint(constraint, command, _logger))
                 // Собираем ошибки в одну ошибку
                 .Map(errors => errors.Fold())
                 // Запуск
@@ -115,7 +142,7 @@ public class BusinessActionRunner<TCommand>(IServiceProvider serviceProvider)
         else
             foreach (var constraint in ServiceProvider.GetServices<IBusinessConstraintCheck<TCommand>>()) {
                 cancel.ThrowIfCancellationRequested();
-                var test = await CheckConstraint(constraint, command).RunAsync(EnvIO.New(token: cancel));
+                var test = await CheckConstraint(constraint, command, _logger).RunAsync(EnvIO.New(token: cancel));
 
                 if (test.IsEmpty) continue;
 
@@ -123,18 +150,26 @@ public class BusinessActionRunner<TCommand>(IServiceProvider serviceProvider)
                 break;
             }
 
+        _logger.LogTrace("Бизнес-ограничения соблюдаются: {IsSatisfied}", error.IsEmpty);
+
         return error.IsEmpty
             ? Unit.Default
             : error;
 
 
-        static IO<bool> CallCheck(IBusinessConstraintCheck<TCommand> constraint, TCommand command) {
+        static IO<bool> CallCheck(IBusinessConstraintCheck<TCommand> constraint, TCommand command, ILogger logger) {
             return IO.liftAsync(
-                async env => await constraint.IsSatisfiedAsync(command, env.Token).ConfigureAwait(false));
+                async env => {
+                    var result = await constraint.IsSatisfiedAsync(command, env.Token).ConfigureAwait(false);
+                    logger.LogTrace("Команда соответствует бизнес-ограничению {BusinessConstraintCheck}: {IsValid}",
+                        constraint.ErrorCode, result);
+                    return result;
+                });
         }
 
-        static IO<Error> CheckConstraint(IBusinessConstraintCheck<TCommand> constraint, TCommand command) {
-            return (from test in CallCheck(constraint, command)
+        static IO<Error> CheckConstraint(IBusinessConstraintCheck<TCommand> constraint, TCommand command,
+            ILogger logger) {
+            return (from test in CallCheck(constraint, command, logger)
                     let er = test
                         ? Error.Empty
                         : AppErrorHelper.NewError(constraint.ErrorCode)
@@ -175,20 +210,33 @@ public class BusinessActionRunner<TCommand>(IServiceProvider serviceProvider)
     /// <param name="trigger">событие—триггер</param>
     /// <returns></returns>
     private FinT<IO, IEnumerable<BusinessEvent>> RunTrigger(TriggerEvent trigger) {
-        var commands = FindTriggerToCommandsTranslators(trigger).Bind(translator => translator.Translate(trigger));
+        var commands = FindTriggerToCommandsTranslators(trigger)
+            .Bind(translator => translator.Translate(trigger))
+            .ToList();
 
-        var runCommand = commands
+        _logger.LogWarning("{@EventTrigger} сигнализирует о необходимости выполнить {@BusinessCommands}",
+            trigger, commands);
+
+        var runCommands = commands
+            .AsIterable()
             .Traverse(RunCommand)
             .As()
             .Select(e => e.Flatten());
 
-        return runCommand;
-
+        // TODO: Может быть в команду нужно добавить ссылку на родительское событие?
+        return runCommands;
 
         Iterable<ITriggerEventToCommandTranslator> FindTriggerToCommandsTranslators(TriggerEvent trigger) {
             var translatorType = typeof(ITriggerEventToCommandTranslator<>).MakeGenericType(trigger.GetType());
-            var translators = ServiceProvider.GetServices(translatorType).Cast<ITriggerEventToCommandTranslator>();
-            return translators.AsIterable();
+            var translators = ServiceProvider
+                .GetServices(translatorType)
+                .Cast<ITriggerEventToCommandTranslator>()
+                .AsIterable();
+
+            if (translators.IsEmpty())
+                _logger.LogWarning("Не найден транслятор в команду для {@EventTrigger}", trigger);
+
+            return translators;
         }
 
         FinT<IO, IList<BusinessEvent>> RunCommand(BusinessCommand cmd) {
