@@ -1,4 +1,4 @@
-using gmafffff.starterKit.Db;
+using gmafffff.starterKit.EntityFrameworkCore;
 using gmafffff.training.hotel.SampleModel.FakeDb;
 using gmafffff.training.hotel.sampleModel.FakeModel.AutoFixture;
 using JetBrains.Annotations;

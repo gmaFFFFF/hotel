@@ -1,4 +1,4 @@
-﻿using gmafffff.starterKit.Db;
+﻿using gmafffff.starterKit.EntityFrameworkCore;
 using gmafffff.training.hotel.domain.Dto.PersonManagement;
 using gmafffff.training.hotel.infrastructure.data.Sessions;
 

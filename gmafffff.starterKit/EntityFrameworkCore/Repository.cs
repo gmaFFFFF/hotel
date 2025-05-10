@@ -5,7 +5,7 @@ using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 
-namespace gmafffff.starterKit.Db;
+namespace gmafffff.starterKit.EntityFrameworkCore;
 
 /// <summary>
 ///     Реализация <see cref="IRepository{T,TId}" /> для EF Core
