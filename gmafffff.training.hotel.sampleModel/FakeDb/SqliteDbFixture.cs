@@ -1,6 +1,7 @@
 using gmafffff.training.hotel.infrastructure.data.Sessions;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
 
 namespace gmafffff.training.hotel.SampleModel.FakeDb;
@@ -48,6 +49,7 @@ public class SqliteDbFixture : IDisposable {
             .LogTo(LogAction, new[] { DbLoggerCategory.Database.Command.Name }, LogLevel.Information)
             .EnableSensitiveDataLogging()
             .EnableDetailedErrors()
+            .ConfigureWarnings(builder => builder.Log(RelationalEventId.AmbientTransactionWarning))
             .Options;
     }
 

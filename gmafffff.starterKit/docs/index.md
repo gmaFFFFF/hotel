@@ -12,4 +12,5 @@
   * [Обработчики команд и запросов](./crud/businessLogic/handlers.md)
   * [Бизнес-правила](./crud/businessLogic/rules.md)
   * [Бизнес-логика](./crud/businessLogic/runner.md)
+  * [События интеграции ограниченных контекстов](./crud/businessLogic/eventTriggers.md)
 * [Конвенции EF Core](./crud/entityFrameworkCore/conventions.md)

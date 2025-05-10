@@ -1,3 +1,4 @@
+using System.Transactions;
 using gmafffff.starterKit.AppError;
 using gmafffff.starterKit.Messaging;
 using LanguageExt;
@@ -9,10 +10,13 @@ using Validot;
 namespace gmafffff.starterKit.BusinessLogic;
 
 /// <summary>
-///     Обеспечивает выполнение команд, при условии соблюдения бизнес-правил
+///     Проверяет команду <see cref="BusinessCommand" /> на соответствие формальным требованиями
+///     и при условии соблюдения бизнес-правил <see cref="IBusinessRule{TCommand}"/> отправляет её на исполнение,
+///     запуская команды, соответствующие (<see cref="ITriggerEventToCommandTranslator{TTrigger}"/>)
+///     сигнальным событиям <see cref="TriggerEvent" />.
 /// </summary>
 public class BusinessActionRunner<TCommand>(IServiceProvider serviceProvider)
-    : IBusinessActionRunner
+    : IBusinessActionRunner<TCommand>
     where TCommand : BusinessCommand {
     /// <summary>
     ///     Контейнер DI
@@ -34,9 +38,38 @@ public class BusinessActionRunner<TCommand>(IServiceProvider serviceProvider)
     /// </remarks>
     public bool ContinueValidateBusinessRulesAfterFirstError { get; set; } = true;
 
-    Task<Fin<IList<BusinessEvent>>> IBusinessActionRunner.Execute(BusinessCommand command,
-        CancellationToken cancel) {
-        return Execute((TCommand)command, cancel);
+    /// <summary>
+    ///     Выполнить команду
+    /// </summary>
+    public virtual async Task<Fin<IList<BusinessEvent>>> Execute(TCommand command,
+        CancellationToken cancel = default) {
+        var handler = ServiceProvider.GetRequiredService<IBusinessCommandHandler<TCommand>>();
+
+        var validate = (TCommand cmd) => IsFormalValid(cmd).ToFin();
+        var violateRule = (TCommand cmd) => IO.liftAsync(async env =>
+            (await IsBusinessRulesSatisfyAsync(cmd, env.Token).ConfigureAwait(false)).ToFin());
+        var handle = (TCommand cmd) =>
+            IO.liftAsync(async env => await handler.ExecuteAsync(cmd, env.Token).ConfigureAwait(false));
+
+        var steps =
+            from _1 in FinT<IO, Unit>.Lift(validate(command))
+            from _2 in FinT<IO, Unit>.LiftIO(violateRule(command))
+            from primaryEvents in FinT<IO, IList<BusinessEvent>>.LiftIO(handle(command))
+            from events in ProcessTriggerEvents(primaryEvents)
+            select events;
+
+        try {
+            using var transaction = new TransactionScope(TransactionScopeOption.Required);
+            var result = await steps.Run().RunAsync(EnvIO.New(token: cancel)).ConfigureAwait(false);
+            result.IfSucc(_ => transaction.Complete());
+            return result;
+        }
+        catch (OperationCanceledException) {
+            return AppErrorHelper.NewError(AppErrorCode.OperationCancel);
+        }
+        catch (DbUpdateConcurrencyException concurrencyException) {
+            return AppErrorHelper.NewError(AppErrorCode.DbConcurrentWrite, concurrencyException);
+        }
     }
 
     /// <summary>
@@ -111,33 +144,60 @@ public class BusinessActionRunner<TCommand>(IServiceProvider serviceProvider)
     }
 
     /// <summary>
-    ///     Выполнить команду
+    ///     Заменяет события типа с <see cref="TriggerEvent" /> результатом выполнения связанных с ними команд
     /// </summary>
-    public virtual async Task<Fin<IList<BusinessEvent>>> Execute(TCommand command,
-        CancellationToken cancel = default) {
-        var handler = ServiceProvider.GetRequiredService<IBusinessCommandHandler<TCommand>>();
+    /// <param name="events"></param>
+    /// <returns></returns>
+    private FinT<IO, IList<BusinessEvent>> ProcessTriggerEvents(IList<BusinessEvent> events) {
+        var groupByTypeEvent = events.GroupBy(@event => @event is TriggerEvent);
 
-        var validate = (TCommand cmd) => IsFormalValid(cmd).ToFin();
-        var violateRule = (TCommand cmd) => IO.liftAsync(async env =>
-            (await IsBusinessRulesSatisfyAsync(cmd, env.Token).ConfigureAwait(false)).ToFin());
-        var handle = (TCommand cmd) =>
-            IO.liftAsync(async env => await handler.ExecuteAsync(cmd, env.Token).ConfigureAwait(false));
+        var simpleEvent = groupByTypeEvent
+            .Where(group => !group.Key)
+            .SelectMany(e => e.AsEnumerable());
+
+        var triggerResultsEvent = groupByTypeEvent.Where(group => group.Key)
+            .SelectMany(e => e.AsEnumerable())
+            .Cast<TriggerEvent>()
+            .AsIterable()
+            .Traverse(RunTrigger)
+            .As()
+            .Select(e => e.Flatten());
+
+        return triggerResultsEvent
+            .Select(newEvent => simpleEvent.Concat(newEvent))
+            .Select(events => (IList<BusinessEvent>)events.ToList());
+    }
+
+    /// <summary>
+    ///     Находит и запускает команды, связанные с <paramref name="trigger" />
+    /// </summary>
+    /// <param name="trigger">событие—триггер</param>
+    /// <returns></returns>
+    private FinT<IO, IEnumerable<BusinessEvent>> RunTrigger(TriggerEvent trigger) {
+        var commands = FindTriggerToCommandsTranslators(trigger).Bind(translator => translator.Translate(trigger));
+
+        var runCommand = commands
+            .Traverse(RunCommand)
+            .As()
+            .Select(e => e.Flatten());
+
+        return runCommand;
 
 
-        var steps =
-            from _1 in FinT<IO, Unit>.Lift(validate(command))
-            from _2 in FinT<IO, Unit>.LiftIO(violateRule(command))
-            from events in FinT<IO, IList<BusinessEvent>>.LiftIO(handle(command))
-            select events;
-
-        try {
-            return await steps.Run().RunAsync(EnvIO.New(token: cancel)).ConfigureAwait(false);
+        Iterable<ITriggerEventToCommandTranslator> FindTriggerToCommandsTranslators(TriggerEvent trigger) {
+            var translatorType = typeof(ITriggerEventToCommandTranslator<>).MakeGenericType(trigger.GetType());
+            var translators = ServiceProvider.GetServices(translatorType).Cast<ITriggerEventToCommandTranslator>();
+            return translators.AsIterable();
         }
-        catch (OperationCanceledException) {
-            return AppErrorHelper.NewError(AppErrorCode.OperationCancel);
-        }
-        catch (DbUpdateConcurrencyException concurrencyException) {
-            return AppErrorHelper.NewError(AppErrorCode.DbConcurrentWrite, concurrencyException);
+
+        FinT<IO, IList<BusinessEvent>> RunCommand(BusinessCommand cmd) {
+            var runnerType = typeof(IBusinessActionRunner<>).MakeGenericType(cmd.GetType());
+            var runner = (IBusinessActionRunner)ServiceProvider.GetRequiredService(runnerType);
+
+            var execute = (BusinessCommand cmd) =>
+                IO.liftAsync(async env => await runner.Execute(cmd, env.Token).ConfigureAwait(false));
+            var result = FinT<IO, IList<BusinessEvent>>.LiftIO(execute(cmd));
+            return result;
         }
     }
 }

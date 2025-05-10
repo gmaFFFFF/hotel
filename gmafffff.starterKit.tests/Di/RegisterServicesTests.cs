@@ -151,4 +151,47 @@ public class RegisterServicesTests {
             descriptor.ImplementationType == typeof(TestQueryHandler) &&
             descriptor.Lifetime == ServiceLifetime.Transient));
     }
+
+    /// <summary>
+    ///     Регистрирует трансляторы <see cref="ITriggerEventToCommandTranslator" />
+    ///     сигнальных событий <see cref="TriggerEvent" /> в команды <see cref="BusinessCommand" />
+    /// </summary>
+    [Fact]
+    public void RegisterTriggerEventToCommandTranslator() {
+        // Arrange
+        var provider = Substitute.For<IServiceCollection>();
+
+        // Act
+        provider.AddTriggerEventToCommandTranslators(typeof(TestQueryHandler).Assembly);
+
+        // Assert
+        provider.Received(1);
+
+        provider.Received().Add(Arg.Is<ServiceDescriptor>(descriptor =>
+            descriptor.ServiceType.IsGenericType &&
+            descriptor.ServiceType.GetGenericTypeDefinition() == typeof(ITriggerEventToCommandTranslator<>) &&
+            descriptor.ImplementationType == typeof(TestTriggerEventToCommandTranslator) &&
+            descriptor.Lifetime == ServiceLifetime.Transient));
+    }
+
+    /// <summary>
+    ///     Регистрирует исполнитель команды <see cref="IBusinessActionRunner{TCommand}" />
+    /// </summary>
+    [Fact]
+    public void RegisterBusinessActionRunner() {
+        // Arrange
+        var provider = Substitute.For<IServiceCollection>();
+
+        // Act
+        provider.AddBusinessActionRunner();
+
+        // Assert
+        provider.Received(1);
+
+        provider.Received().Add(Arg.Is<ServiceDescriptor>(descriptor =>
+            descriptor.ServiceType.IsGenericType &&
+            descriptor.ServiceType.GetGenericTypeDefinition() == typeof(IBusinessActionRunner<>) &&
+            descriptor.ImplementationType == typeof(BusinessActionRunner<>) &&
+            descriptor.Lifetime == ServiceLifetime.Transient));
+    }
 }

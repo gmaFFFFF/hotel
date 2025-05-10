@@ -2,6 +2,7 @@
 using gmafffff.starterKit.BusinessLogic;
 using gmafffff.starterKit.Domain;
 using gmafffff.starterKit.Mappers;
+using gmafffff.starterKit.Messaging;
 using Mapster;
 using Microsoft.Extensions.DependencyInjection;
 using Scrutor;
@@ -83,6 +84,15 @@ public static class RegisterServicesExtensions {
     }
 
     /// <summary>
+    ///     Регистрирует в сервисе внедрения зависимостей исполнитель команд <see cref="IBusinessActionRunner{TCommand}" />
+    /// </summary>
+    /// <param name="this"></param>
+    /// <returns></returns>
+    public static IServiceCollection AddBusinessActionRunner(this IServiceCollection @this) {
+        return @this.AddTransient(typeof(IBusinessActionRunner<>), typeof(BusinessActionRunner<>));
+    }
+
+    /// <summary>
     ///     Регистрирует в сервисе внедрения зависимостей обработчики бизнес команд,
     ///     реализующие класс <see cref="BusinessCommandDbHandler{TCommand,TEntity,TId,TRepo,TLoad,TResult}" />
     /// </summary>
@@ -129,6 +139,32 @@ public static class RegisterServicesExtensions {
                 .WithTransientLifetime();
         });
     }
+
+
+    /// <summary>
+    ///     Регистрирует в сервисе внедрения зависимостей конверторы <see cref="TriggerEvent" />,
+    ///     реализующие интерфейс <see cref="ITriggerEventToCommandTranslator{T}" />
+    /// </summary>
+    /// <param name="this">Описание служб</param>
+    /// <param name="assemblies">Сборки для поиска. Если аргумент опущен, то поиск по всем сборкам домена приложения</param>
+    /// <returns></returns>
+    public static IServiceCollection AddTriggerEventToCommandTranslators(this IServiceCollection @this,
+        params Assembly[] assemblies) {
+        return @this.Scan(scan => {
+            var selector = assemblies.Length == 0
+                ? scan.FromApplicationDependencies()
+                : scan.FromAssemblies(assemblies);
+
+            selector
+                .AddClasses(@class => @class.AssignableTo(typeof(ITriggerEventToCommandTranslator<>)))
+                .AsImplementedInterfaces(predicate: @interface =>
+                    @interface.IsGenericType
+                        ? !IgnoreInterfaces.Contains(@interface.GetGenericTypeDefinition())
+                        : !IgnoreInterfaces.Contains(@interface))
+                .WithTransientLifetime();
+        });
+    }
+
 
     /// <summary>
     ///     Регистрирует в сервисе внедрения зависимостей преобразователи,
