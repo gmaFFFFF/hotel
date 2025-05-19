@@ -428,10 +428,6 @@ public class Repository<T, TId> : IRepository<T, TId>
         DefineQuery();
     }
 
-    public void Dispose() {
-        Context.Dispose();
-    }
-
     #endregion
 
     #region Предварительно сформулированные запросы

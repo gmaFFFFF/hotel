@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using gmafffff.starterKit.Messaging;
 
 namespace gmafffff.starterKit.BusinessLogic;
@@ -5,6 +6,7 @@ namespace gmafffff.starterKit.BusinessLogic;
 /// <summary>
 ///     Преобразует <see cref="TriggerEvent" /> в список команд, которые нужно выполнить
 /// </summary>
+[EditorBrowsable(EditorBrowsableState.Never)]
 public interface ITriggerEventToCommandTranslator {
     /// <summary>
     ///     Преобразовать <paramref name="trigger" /> в команды для выполнения

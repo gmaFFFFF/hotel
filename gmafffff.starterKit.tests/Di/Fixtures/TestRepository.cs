@@ -5,10 +5,6 @@ using gmafffff.starterKit.Domain;
 namespace gmafffff.starterKit.tests.Di.Fixtures;
 
 public class TestRepository : ITestRepository {
-    public void Dispose() {
-        throw new NotImplementedException();
-    }
-
     public IImmutableList<TestEntity> Find(IEnumerable<int> ids) {
         throw new NotImplementedException();
     }

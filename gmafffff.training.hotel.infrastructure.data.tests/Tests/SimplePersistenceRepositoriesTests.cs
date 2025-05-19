@@ -29,8 +29,8 @@ public class SimplePersistenceRepositoriesTests : IClassFixture<SqliteDbFixture>
     [Fact]
     public async Task CanSaveHotelBlock() {
         // Arrange
-        using var repoInit = new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!);
-        using var repoTest = new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!);
+        var repoInit = new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!);
+        var repoTest = new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!);
         IList<HotelBlock<int, Guid>>? saved = null;
 
         repoInit.Add(_fakeHotel.Hotel);
@@ -49,8 +49,8 @@ public class SimplePersistenceRepositoriesTests : IClassFixture<SqliteDbFixture>
     [Fact]
     public async Task CanSavePersons() {
         // Arrange
-        using var repoInit = new PersonsRepository(_sqliteDbFixture.CreateDbContext(), null!);
-        using var repoTest = new PersonsRepository(_sqliteDbFixture.CreateDbContext(), null!);
+        var repoInit = new PersonsRepository(_sqliteDbFixture.CreateDbContext(), null!);
+        var repoTest = new PersonsRepository(_sqliteDbFixture.CreateDbContext(), null!);
         IList<Person<Guid>>? saved = null;
 
         repoInit.Add(_fakeHotel.Persons);
@@ -72,8 +72,8 @@ public class SimplePersistenceRepositoriesTests : IClassFixture<SqliteDbFixture>
     [Fact]
     public async Task CanSaveAccommodationReports() {
         // Arrange
-        using var repoInit = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
-        using var repoTest = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
+        var repoInit = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
+        var repoTest = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
         IList<AccommodationReport<Guid>>? saved = null;
 
         repoInit.Add(_fakeHotel.Reports);

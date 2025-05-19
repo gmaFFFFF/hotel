@@ -32,10 +32,10 @@ public class RepositoryTests : IClassFixture<SqliteDbFixture> {
     [Fact]
     public async Task CanRetrieveDetachedAndAttachedEntities() {
         // Arrange
-        using var repoInit = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
-        using var repoEditAttach = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
-        using var repoEditDetach = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
-        using var repoTest = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
+        var repoInit = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
+        var repoEditAttach = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
+        var repoEditDetach = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
+        var repoTest = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
 
         repoInit.Add(_fakeHotel.Reports);
         await repoInit.SaveChangesAsync();
@@ -65,9 +65,9 @@ public class RepositoryTests : IClassFixture<SqliteDbFixture> {
     [Fact]
     public async Task CanLoadEntitiesByPredicate() {
         // Arrange
-        using var repoInit = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
-        using var repoTest1 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
-        using var repoTest2 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
+        var repoInit = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
+        var repoTest1 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
+        var repoTest2 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
 
         repoInit.Add(_fakeHotel.Reports);
         await repoInit.SaveChangesAsync();
@@ -89,9 +89,9 @@ public class RepositoryTests : IClassFixture<SqliteDbFixture> {
     [Fact]
     public async Task CanFindEntities() {
         // Arrange
-        using var repoInit = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
-        using var repoTest1 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
-        using var repoTest2 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
+        var repoInit = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
+        var repoTest1 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
+        var repoTest2 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
 
         repoInit.Add(_fakeHotel.Reports);
         await repoInit.SaveChangesAsync();
@@ -122,11 +122,11 @@ public class RepositoryTests : IClassFixture<SqliteDbFixture> {
     [Fact]
     public async Task CanLoadEntities() {
         // Arrange
-        using var repoInit = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
-        using var repoTest1 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
-        using var repoTest2 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
-        using var repoTest3 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
-        using var repoTest4 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
+        var repoInit = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
+        var repoTest1 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
+        var repoTest2 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
+        var repoTest3 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
+        var repoTest4 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
 
         repoInit.Add(_fakeHotel.Reports);
         await repoInit.SaveChangesAsync();
@@ -155,8 +155,8 @@ public class RepositoryTests : IClassFixture<SqliteDbFixture> {
     [HotelAutodata]
     public async Task CanAddEntities(Person<Guid> person, IEnumerable<Person<Guid>> persons) {
         // Arrange
-        using var repoInit = new PersonsRepository(_sqliteDbFixture.CreateDbContext(), null!);
-        using var repoTest = new PersonsRepository(_sqliteDbFixture.CreateDbContext(), null!);
+        var repoInit = new PersonsRepository(_sqliteDbFixture.CreateDbContext(), null!);
+        var repoTest = new PersonsRepository(_sqliteDbFixture.CreateDbContext(), null!);
 
         // Act
         repoInit.Add(person);
@@ -177,9 +177,9 @@ public class RepositoryTests : IClassFixture<SqliteDbFixture> {
         var allRoom = rooms.Append(room);
 
         // Arrange
-        using var repoInit = new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!);
-        using var repoDel = new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!);
-        using var repoTest = new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!);
+        var repoInit = new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!);
+        var repoDel = new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!);
+        var repoTest = new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!);
 
         hotel.Rooms = allRoom.ToList();
         repoInit.Add(hotel);
@@ -202,9 +202,9 @@ public class RepositoryTests : IClassFixture<SqliteDbFixture> {
         var allRoom = rooms.Append(room);
 
         // Arrange
-        using var repoInit = new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!);
-        using var repoDel = new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!);
-        using var repoTest = new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!);
+        var repoInit = new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!);
+        var repoDel = new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!);
+        var repoTest = new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!);
 
         hotel.Rooms = allRoom.ToList();
         repoInit.Add(hotel);
@@ -224,9 +224,9 @@ public class RepositoryTests : IClassFixture<SqliteDbFixture> {
     [HotelAutodata]
     public async Task CanDeleteEntitiesById(Person<Guid> person, IEnumerable<Person<Guid>> persons) {
         // Arrange
-        using var repoInit = new PersonsRepository(_sqliteDbFixture.CreateDbContext(), null!);
-        using var repoDelete = new PersonsRepository(_sqliteDbFixture.CreateDbContext(), null!);
-        using var repoTest = new PersonsRepository(_sqliteDbFixture.CreateDbContext(), null!);
+        var repoInit = new PersonsRepository(_sqliteDbFixture.CreateDbContext(), null!);
+        var repoDelete = new PersonsRepository(_sqliteDbFixture.CreateDbContext(), null!);
+        var repoTest = new PersonsRepository(_sqliteDbFixture.CreateDbContext(), null!);
 
         // Act
         repoInit.Add(person);
@@ -251,9 +251,9 @@ public class RepositoryTests : IClassFixture<SqliteDbFixture> {
     [HotelAutodata]
     public async Task CanUpdateEntity(Person<Guid> person, Person<Guid> personUpdate) {
         // Arrange
-        using var repoInit = new PersonsRepository(_sqliteDbFixture.CreateDbContext(), null!);
-        using var repoMod = new PersonsRepository(_sqliteDbFixture.CreateDbContext(), null!);
-        using var repoTest = new PersonsRepository(_sqliteDbFixture.CreateDbContext(), null!);
+        var repoInit = new PersonsRepository(_sqliteDbFixture.CreateDbContext(), null!);
+        var repoMod = new PersonsRepository(_sqliteDbFixture.CreateDbContext(), null!);
+        var repoTest = new PersonsRepository(_sqliteDbFixture.CreateDbContext(), null!);
 
         repoInit.Add(person);
         await repoInit.SaveChangesAsync();
@@ -276,9 +276,9 @@ public class RepositoryTests : IClassFixture<SqliteDbFixture> {
     [Fact]
     public async Task CanGetEntities() {
         // Arrange
-        using var repoInit = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
-        using var repoTest1 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
-        using var repoTest2 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
+        var repoInit = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
+        var repoTest1 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
+        var repoTest2 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
 
         repoInit.Add(_fakeHotel.Reports);
         await repoInit.SaveChangesAsync();
@@ -308,9 +308,9 @@ public class RepositoryTests : IClassFixture<SqliteDbFixture> {
     [Fact]
     public async Task CanGetEntitiesWithProjection() {
         // Arrange
-        using var repoInit = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
-        using var repoTest1 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
-        using var repoTest2 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
+        var repoInit = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
+        var repoTest1 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
+        var repoTest2 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
 
         repoInit.Add(_fakeHotel.Reports);
         await repoInit.SaveChangesAsync();
@@ -345,11 +345,11 @@ public class RepositoryTests : IClassFixture<SqliteDbFixture> {
     [Fact]
     public async Task CanGetEntitiesByPage() {
         // Arrange
-        using var repoInit = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
-        using var repoTest1 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
-        using var repoTest2 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
-        using var repoTest3 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
-        using var repoTest4 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
+        var repoInit = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
+        var repoTest1 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
+        var repoTest2 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
+        var repoTest3 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
+        var repoTest4 = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
 
         repoInit.Add(_fakeHotel.Reports);
         await repoInit.SaveChangesAsync();

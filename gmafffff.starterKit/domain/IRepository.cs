@@ -8,7 +8,7 @@ namespace gmafffff.starterKit.Domain;
 /// </summary>
 /// <typeparam name="T">Тип основной единицы хранения (сущности)</typeparam>
 /// <typeparam name="TId">Тип идентификатора сущности</typeparam>
-public interface IRepository<T, in TId> : IDisposable
+public interface IRepository<T, in TId> 
     where T : Entity<TId>
     where TId : struct, IEquatable<TId> {
     #region == Запросы

@@ -31,12 +31,12 @@ public class SettlementTests : IClassFixture<SqliteDbFixture> {
     [HotelAutodata]
     public async Task ConcurrentModificationOfVisitorThrowsException(Person<Guid> person) {
         // Arrange
-        using var initRepo = new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!);
-        using var settledRepo = new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!);
-        using var firstRepo = new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!);
-        using var parallelRepo = new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!);
+        var initRepo = new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!);
+        var settledRepo = new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!);
+        var firstRepo = new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!);
+        var parallelRepo = new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!);
 
-        using var testRepo = new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!);
+        var testRepo = new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!);
 
         // Инициализация хранилища
         initRepo.Add(_fakeHotel.Hotel);

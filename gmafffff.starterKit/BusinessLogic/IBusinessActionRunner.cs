@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using gmafffff.starterKit.Messaging;
 using LanguageExt;
 
@@ -9,6 +10,7 @@ namespace gmafffff.starterKit.BusinessLogic;
 ///     запуская команды, соответствующие (<see cref="ITriggerEventToCommandTranslator{TTrigger}"/>)
 ///     сигнальным событиям <see cref="TriggerEvent" />.
 /// </summary>
+[EditorBrowsable(EditorBrowsableState.Never)]
 public interface IBusinessActionRunner {
     /// <summary>
     ///     Выполнить команду
@@ -24,9 +26,9 @@ public interface IBusinessActionRunner {
 /// </summary>
 public interface IBusinessActionRunner<in TCommand> : IBusinessActionRunner
     where TCommand : BusinessCommand {
-    Task<Fin<IList<BusinessEvent>>> IBusinessActionRunner.Execute(BusinessCommand command,
+    async Task<Fin<IList<BusinessEvent>>> IBusinessActionRunner.Execute(BusinessCommand command,
         CancellationToken cancel) {
-        return Execute((TCommand)command, cancel);
+        return await Execute((TCommand)command, cancel).ConfigureAwait(false);
     }
 
     /// <summary>

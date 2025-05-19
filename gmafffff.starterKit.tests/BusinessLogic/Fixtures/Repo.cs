@@ -91,10 +91,6 @@ public class Repo : IRepository<BusinessEntity, int> {
         throw new NotImplementedException();
     }
 
-    public void Dispose() {
-        throw new NotImplementedException();
-    }
-
     public IImmutableList<BusinessEntity> Find(IEnumerable<int> ids) {
         throw new NotImplementedException();
     }

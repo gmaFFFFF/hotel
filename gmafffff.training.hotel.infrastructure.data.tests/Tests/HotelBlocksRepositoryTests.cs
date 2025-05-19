@@ -27,7 +27,7 @@ public class HotelBlocksRepositoryTests : IClassFixture<SqliteDbFixture> {
         await new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext()).DeleteBulkAsync(_ => true);
         await new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!).DeleteBulkAsync(_ => true);
 
-        using var repoInit = CreateRepo();
+        var repoInit = CreateRepo();
         repoInit.Add(_fakeHotel.Hotel);
         await repoInit.SaveChangesAsync();
     }
@@ -42,7 +42,7 @@ public class HotelBlocksRepositoryTests : IClassFixture<SqliteDbFixture> {
     [Fact]
     public async Task FilterRootRoomsByCondition() {
         // Arrange
-        using var repoTest = CreateRepo();
+        var repoTest = CreateRepo();
 
         // Act 
         var onlyStandardRoom = (await repoTest
@@ -64,7 +64,7 @@ public class HotelBlocksRepositoryTests : IClassFixture<SqliteDbFixture> {
     [Fact]
     public async Task FilterRoomsByConditionAndProject() {
         // Arrange
-        using var repoTest = CreateRepo();
+        var repoTest = CreateRepo();
 
         // Act 
         var onlyStandardRoom = await repoTest
@@ -84,7 +84,7 @@ public class HotelBlocksRepositoryTests : IClassFixture<SqliteDbFixture> {
     [Fact]
     public async Task CountsNumberRoomsByCondition() {
         // Arrange
-        using var repoTest = CreateRepo();
+        var repoTest = CreateRepo();
 
         (await repoTest.CountRoomByAsync(Room<Guid>.IsFreeRoom))
             .Should().Be(
