@@ -6,8 +6,9 @@ namespace gmafffff.starterKit.BusinessLogic;
 
 /// <summary>
 ///     Проверяет команду <see cref="BusinessCommand" /> на соответствие формальным требованиями
-///     и при условии соблюдения бизнес-ограничений <see cref="IBusinessConstraintCheck{TCommand}"/> отправляет её на исполнение,
-///     запуская команды, соответствующие (<see cref="ITriggerEventToCommandTranslator{TTrigger}"/>)
+///     и при условии соблюдения бизнес-правил <see cref="IBusinessConstraintCheck{TCommand}" />
+///     отправляет её на исполнение, запуская команды,
+///     соответствующие (<see cref="ITriggerEventToCommandTranslator{TTrigger}" />)
 ///     сигнальным событиям <see cref="TriggerEvent" />.
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
@@ -20,8 +21,9 @@ public interface IBusinessActionRunner {
 
 /// <summary>
 ///     Проверяет команду <see cref="BusinessCommand" /> на соответствие формальным требованиями
-///     и при условии соблюдения бизнес-ограничений <see cref="IBusinessConstraintCheck{TCommand}" /> отправляет её на исполнение,
-///     запуская команды, соответствующие (<see cref="ITriggerEventToCommandTranslator{TTrigger}" />)
+///     и при условии соблюдения бизнес-ограничений <see cref="IBusinessConstraintCheck{TCommand}" />
+///     отправляет её на исполнение, запуская команды,
+///     соответствующие (<see cref="ITriggerEventToCommandTranslator{TTrigger}" />)
 ///     сигнальным событиям <see cref="TriggerEvent" />.
 /// </summary>
 public interface IBusinessActionRunner<in TCommand> : IBusinessActionRunner

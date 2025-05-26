@@ -6,7 +6,7 @@ public class RoomConfig : IEntityTypeConfiguration<Room<Guid>> {
     public const string RoomVisitTable = "RoomVisit";
     public const string RowVersionCol = "rowVersion";
 
-    public void Configure(EntityTypeBuilder<Room<Guid>> builder) {        
+    public void Configure(EntityTypeBuilder<Room<Guid>> builder) {
         // Наименования
         builder.ToTable($"{EntityName}s");
 

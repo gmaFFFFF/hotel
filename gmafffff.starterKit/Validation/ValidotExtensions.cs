@@ -39,10 +39,10 @@ public static class ValidotExtensions {
     /// </summary>
     /// <param name="this"></param>
     /// <returns></returns>
-    public static IEnumerable<Enum> ToErrorCodes(this IValidationResult @this){
+    public static IEnumerable<Enum> ToErrorCodes(this IValidationResult @this) {
         return @this.Codes
             .Where(code => code.StartsWith(PrefixAppInnerCode))
-            .Select(code => code.Remove(0, PrefixAppInnerCode.Length))
+            .Select(code => code.Remove(startIndex: 0, PrefixAppInnerCode.Length))
             .Select(Base64Decode)
             .Select(AppErrorHelper.String2ErrorCode)
             .OfType<Enum>();

@@ -73,7 +73,7 @@ public class AppErrorHelper {
                 var mapToInterface = kv.holderType.GetInterfaceMap(kv.@interface);
                 var get_prop_method = mapToInterface.InterfaceMethods
                     .Single(m => m.Name == $"get_{nameof(IErrorMessage<Enum>.Messages)}");
-                var value = (IDictionary)get_prop_method.Invoke(holder, null)!;
+                var value = (IDictionary)get_prop_method.Invoke(holder, parameters: null)!;
 
                 var outerKeys = value.Keys.Cast<string>();
                 var outerValues = value.Values.Cast<IDictionary>()

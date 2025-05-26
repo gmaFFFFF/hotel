@@ -7,7 +7,7 @@ public enum AppErrorCode {
     ValidationGeneral = Errors.ValidationFailedCode,
     TimedOut = Errors.TimedOutCode,
     OperationCancel = Errors.CancelledCode,
-    NotSupported = -0xbf7b,    // CRC16 gmafffff.starterKit.AppError.AppErrorCode
+    NotSupported = -0xbf7b, // CRC16 gmafffff.starterKit.AppError.AppErrorCode
     DbNotFound,
     DbConcurrentWrite
 }

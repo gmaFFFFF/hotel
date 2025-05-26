@@ -1,6 +1,6 @@
 using gmafffff.starterKit.Utils;
 
-namespace gmafffff.starterKit.Tests.Utils;
+namespace gmafffff.starterKit.tests.Utils;
 
 [TestSubject(typeof(Activator<>))]
 public class ActivatorTests {
