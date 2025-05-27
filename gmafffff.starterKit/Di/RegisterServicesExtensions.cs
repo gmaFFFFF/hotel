@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using gmafffff.starterKit.BusinessLogic;
 using gmafffff.starterKit.Domain;
+using gmafffff.starterKit.Domain.Events;
 using gmafffff.starterKit.Mappers;
 using gmafffff.starterKit.Messaging;
 using Mapster;
@@ -22,6 +23,7 @@ public static class RegisterServicesExtensions {
         typeof(IEntityMapperForwardExpression<,,>),
         typeof(IRepository<,>),
         typeof(IRepositoryFactory<,,>),
+        typeof(IDomainEventHandler),
         typeof(IDisposable),
         typeof(IAsyncDisposable)
     ];
@@ -116,6 +118,30 @@ public static class RegisterServicesExtensions {
             : AppDomain.CurrentDomain.GetAssemblies();
 
         TypeAdapterConfig.GlobalSettings.Scan(assembliesToScan);
+    }    
+
+    /// <summary>
+    ///     Регистрирует в сервисе внедрения зависимостей обработчики событий домена <see cref="DomainEvent{TEntity}" />,
+    ///     реализующие интерфейс <see cref="IDomainEventHandler{TDomainEvent}" />
+    /// </summary>
+    /// <param name="this">Описание служб</param>
+    /// <param name="assemblies">Сборки для поиска. Если аргумент опущен, то поиск по всем сборкам домена приложения</param>
+    /// <returns></returns>
+    public static IServiceCollection AddDomainEventHandlers(this IServiceCollection @this,
+        params Assembly[] assemblies) {
+        return @this.Scan(scan => {
+            var selector = assemblies.Length == 0
+                ? scan.FromApplicationDependencies()
+                : scan.FromAssemblies(assemblies);
+
+            selector
+                .AddClasses(@class => @class.AssignableTo(typeof(IDomainEventHandler<>)))
+                .AsImplementedInterfaces(predicate: @interface =>
+                    @interface.IsGenericType
+                        ? !IgnoreInterfaces.Contains(@interface.GetGenericTypeDefinition())
+                        : !IgnoreInterfaces.Contains(@interface))
+                .WithTransientLifetime();
+        });
     }
 
     #endregion

@@ -1,5 +1,6 @@
 using gmafffff.starterKit.Messaging;
 
-namespace gmafffff.starterKit.Tests.BusinessLogic.Fixtures;
+namespace gmafffff.starterKit.tests.BusinessLogic.Fixtures;
 
-public record CommandWithTrigger(int number, bool Error = false) : BusinessCommand;
+public record CommandWithTrigger(int Number, bool ThrowException = false, bool Error = false, bool Cancel = false)
+    : BusinessCommand;

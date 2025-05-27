@@ -1,5 +1,5 @@
 using gmafffff.starterKit.Messaging;
 
-namespace gmafffff.starterKit.Tests.BusinessLogic.Fixtures;
+namespace gmafffff.starterKit.tests.BusinessLogic.Fixtures;
 
 public record EndEventForTrigger(int Number, BusinessCommand Command) : BusinessEvent(Command);

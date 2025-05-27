@@ -1,8 +1,8 @@
-﻿using AutoFixture;
-using FluentAssertions.Execution;
+﻿using FluentAssertions.Execution;
 using gmafffff.starterKit.BusinessLogic;
 using gmafffff.starterKit.Messaging;
-using gmafffff.starterKit.Tests.BusinessLogic.Fixtures;
+using gmafffff.starterKit.tests.BusinessLogic.Fixtures;
+using LanguageExt.Common;
 using NSubstitute.ExceptionExtensions;
 using Validot;
 
@@ -11,14 +11,15 @@ namespace gmafffff.starterKit.tests.BusinessLogic;
 [TestSubject(typeof(BusinessActionRunner<>))]
 public partial class BusinessActionRunnerTests {
     public class BusinessActionRunnerTrigger {
-        private const string ExceptionMessage = "Обработка прервана";
+        private const string ErrorMessage = "Обработка прервана";
         private readonly Dictionary<CommandWithTrigger, IList<BusinessEvent>> _cmdToEvents = [];
 
         private readonly List<CommandWithTrigger> _commands;
+
+        private readonly CancellationTokenSource _cts = new();
         private readonly MyTrigger _errorTrigger;
         private readonly Dictionary<TriggerEvent, CommandWithTrigger> _eventToCmd = [];
-        private readonly Exception _exception = new(ExceptionMessage);
-        private readonly Fixture _fixture = new();
+        private readonly Exception _exception = new(ErrorMessage);
 
         private readonly IBusinessCommandHandler<CommandWithTrigger> _handler =
             Substitute.For<IBusinessCommandHandler<CommandWithTrigger>>();
@@ -46,8 +47,9 @@ public partial class BusinessActionRunnerTests {
                 .Returns(_ => Enumerable.Repeat(_translator, count: 1));
 
             // Образцы данных
-            _commands = _fixture.CreateMany<CommandWithTrigger>(8)
-                .Select((c, i) => c with { number = i }).ToList();
+            _commands = Enumerable.Range(start: 0, count: 8)
+                .Select(i => new CommandWithTrigger(Number: i)).ToList();
+
             IList<BusinessEvent> step0 = [
                 new EndEventForTrigger(Number: 1, _commands[0]),
                 new MyTrigger(Number: 100, _commands[0]),
@@ -80,7 +82,7 @@ public partial class BusinessActionRunnerTests {
             IList<BusinessEvent> step3_3 = [];
 
             // Команда с ошибкой
-            _commands[7] = _commands[7] with { Error = true };
+            _commands[7] = _commands[7] with { ThrowException = true };
             _errorTrigger = new MyTrigger(Number: -1, _commands[6]);
 
             // Транслятор команд
@@ -108,8 +110,18 @@ public partial class BusinessActionRunnerTests {
             _handler.ExecuteAsync(default!)
                 .ReturnsForAnyArgs(x => Fin<IList<BusinessEvent>>.Succ(_cmdToEvents[x.Arg<CommandWithTrigger>()]));
 
-            _handler.ExecuteAsync(Arg.Is<CommandWithTrigger>(trigger => trigger.Error), Arg.Any<CancellationToken>())
+            _handler.ExecuteAsync(Arg.Is<CommandWithTrigger>(trigger => trigger.ThrowException),
+                    Arg.Any<CancellationToken>())
                 .Throws(_exception);
+
+            _handler.ExecuteAsync(Arg.Is<CommandWithTrigger>(trigger => trigger.Error), Arg.Any<CancellationToken>())
+                .Returns(Fin<IList<BusinessEvent>>.Fail(ErrorMessage));
+
+            _handler.ExecuteAsync(Arg.Is<CommandWithTrigger>(trigger => trigger.Cancel), Arg.Any<CancellationToken>())
+                .Returns(x => {
+                    _cts.Cancel();
+                    return Fin<IList<BusinessEvent>>.Succ(_cmdToEvents[x.Arg<CommandWithTrigger>()]);
+                });
         }
 
         /// <summary>
@@ -127,31 +139,14 @@ public partial class BusinessActionRunnerTests {
             result.SuccSpan().ToArray().SelectMany(x => x).Should()
                 .BeEquivalentTo(_cmdToEvents.Values.SelectMany(x => x).OfType<EndEventForTrigger>().ToArray());
             Received.InOrder(async () => {
-                await _handler.Received().ExecuteAsync(_commands[0], Arg.Any<CancellationToken>());
-                await _handler.Received().ExecuteAsync(_commands[1], Arg.Any<CancellationToken>());
-                await _handler.Received().ExecuteAsync(_commands[4], Arg.Any<CancellationToken>());
-                await _handler.Received().ExecuteAsync(_commands[2], Arg.Any<CancellationToken>());
-                await _handler.Received().ExecuteAsync(_commands[5], Arg.Any<CancellationToken>());
-                await _handler.Received().ExecuteAsync(_commands[3], Arg.Any<CancellationToken>());
-                await _handler.Received().ExecuteAsync(_commands[6], Arg.Any<CancellationToken>());
+                await _handler.ExecuteAsync(_commands[0], Arg.Any<CancellationToken>());
+                await _handler.ExecuteAsync(_commands[1], Arg.Any<CancellationToken>());
+                await _handler.ExecuteAsync(_commands[4], Arg.Any<CancellationToken>());
+                await _handler.ExecuteAsync(_commands[2], Arg.Any<CancellationToken>());
+                await _handler.ExecuteAsync(_commands[5], Arg.Any<CancellationToken>());
+                await _handler.ExecuteAsync(_commands[3], Arg.Any<CancellationToken>());
+                await _handler.ExecuteAsync(_commands[6], Arg.Any<CancellationToken>());
             });
-        }
-
-        /// <summary>
-        ///     Обработка команды прерывается, если обработчик события-сигналы типа <see cref="TriggerEvent" />
-        ///     выборосил исключение
-        /// </summary>
-        [Fact]
-        public async Task ProcessTriggerEventInterruptIfThrow() {
-            // Arrange
-            _cmdToEvents[_commands[6]] = [_errorTrigger];
-
-            // Act
-            var act = async () => await _runner.Execute(_commands[0]);
-
-            // Assert
-            await act.Should().ThrowAsync<Exception>()
-                .WithMessage(ExceptionMessage);
         }
 
         /// <summary>
@@ -170,6 +165,84 @@ public partial class BusinessActionRunnerTests {
             result.IsSucc.Should().BeTrue();
             result.SuccSpan().ToArray().SelectMany(x => x).Should()
                 .Equal(_cmdToEvents[_commands[0]].OfType<EndEventForTrigger>());
+        }
+
+        /// <summary>
+        ///     Обработка событий-сигналов может завершиться ошибкой
+        /// </summary>
+        [Fact]
+        public async Task ProcessTriggerEventCanEndWithError() {
+            // Arrange
+            var errorCmd = new CommandWithTrigger(Number: -1, Error: true);
+            _cmdToEvents[errorCmd] = _cmdToEvents[_commands[0]];
+
+            // Act
+            var result = await _runner.Execute(errorCmd);
+
+            // Assert
+            using var _ = new AssertionScope();
+            result.IsFail.Should().BeTrue();
+            result.FailSpan()[0].Message.Should().Be(ErrorMessage);
+            await _handler.Received().ExecuteAsync(errorCmd, Arg.Any<CancellationToken>());
+            await _handler.DidNotReceive().ExecuteAsync(_commands[1], Arg.Any<CancellationToken>());
+            await _handler.DidNotReceive().ExecuteAsync(_commands[4], Arg.Any<CancellationToken>());
+            await _handler.DidNotReceive().ExecuteAsync(_commands[2], Arg.Any<CancellationToken>());
+            await _handler.DidNotReceive().ExecuteAsync(_commands[5], Arg.Any<CancellationToken>());
+            await _handler.DidNotReceive().ExecuteAsync(_commands[3], Arg.Any<CancellationToken>());
+            await _handler.DidNotReceive().ExecuteAsync(_commands[6], Arg.Any<CancellationToken>());
+        }
+
+        /// <summary>
+        ///     Обработка команды прерывается, если обработчик события-сигналы типа <see cref="TriggerEvent" />
+        ///     выбросил исключение
+        /// </summary>
+        [Fact]
+        public async Task ProcessTriggerEventInterruptIfThrow() {
+            // Arrange
+            _cmdToEvents[_commands[6]] = [_errorTrigger];
+
+            // Act
+            var act = async () => await _runner.Execute(_commands[0]);
+
+            // Assert
+            using var _ = new AssertionScope();
+            await act.Should().ThrowAsync<Exception>()
+                .WithMessage(ErrorMessage);
+            Received.InOrder(async () => {
+                await _handler.ExecuteAsync(_commands[0], Arg.Any<CancellationToken>());
+                await _handler.ExecuteAsync(_commands[1], Arg.Any<CancellationToken>());
+                await _handler.ExecuteAsync(_commands[4], Arg.Any<CancellationToken>());
+                await _handler.ExecuteAsync(_commands[2], Arg.Any<CancellationToken>());
+                await _handler.ExecuteAsync(_commands[5], Arg.Any<CancellationToken>());
+                await _handler.ExecuteAsync(_commands[3], Arg.Any<CancellationToken>());
+                await _handler.ExecuteAsync(_commands[6], Arg.Any<CancellationToken>());
+            });
+        }
+
+        /// <summary>
+        ///     Обработка команды прерывается, если если запрошена отмена
+        /// </summary>
+        [Fact]
+        public async Task ProcessTriggerEventInterruptIfCancelRequest() {
+            // Arrange
+            var cancelCmd = new CommandWithTrigger(Number: -1, Cancel: true);
+            _cmdToEvents[cancelCmd] = _cmdToEvents[_commands[0]];
+
+            // Act
+            var result = await _runner.Execute(cancelCmd, _cts.Token);
+
+            // Assert
+            using var _ = new AssertionScope();
+            result.IsFail.Should().BeTrue();
+            result.FailSpan()[0].Code.Should().Be(Errors.CancelledCode);
+
+            await _handler.Received().ExecuteAsync(cancelCmd, Arg.Any<CancellationToken>());
+            await _handler.DidNotReceive().ExecuteAsync(_commands[1], Arg.Any<CancellationToken>());
+            await _handler.DidNotReceive().ExecuteAsync(_commands[4], Arg.Any<CancellationToken>());
+            await _handler.DidNotReceive().ExecuteAsync(_commands[2], Arg.Any<CancellationToken>());
+            await _handler.DidNotReceive().ExecuteAsync(_commands[5], Arg.Any<CancellationToken>());
+            await _handler.DidNotReceive().ExecuteAsync(_commands[3], Arg.Any<CancellationToken>());
+            await _handler.DidNotReceive().ExecuteAsync(_commands[6], Arg.Any<CancellationToken>());
         }
     }
 }

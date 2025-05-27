@@ -1,0 +1,11 @@
+# События домена
+
+## Общие сведения
+
+## Механизм работы
+
+![Схема подключения сборщика событий](https://www.plantuml.com/plantuml/svg/bPB1RjGm48RlVehPssv3Tk-HjggqxHsnN3auzcZNQc87Ux9GJWKE227n1e1uWrQYKbj4dy5v8-mOXNIN2oV7_yna_kzFJXnnIsrTiKbZ-QRcG6ZU0DaM6HEcgb2GCjh16krE2NngpKv9jC0Tk8QzRB55EDkXfhNIvxqQJjPmIqgeXck2qt9bDE5hYbLPCic9bzmXFCF6E4N6NiIA3JU6cXHTm5awWXe4naNeWLMbmYLgedzYRBa4_yLVTM-xTzsbV_1t_jvVmNB9N0FvSMy4ZewW08slaXRMxojnxQ1D1v8dVstF68jDmokph0XJ6-K8xNJKrHVJZW9SMpfXLOFJvvQBSvIFwda-xbWJ9rnjkTx4jiJrBV3y23m_ky_T1t_ZV_bRVmF-7WBj--vZk3z4RdyRUUVpEKkX34G5j0u7txBCCeYkfR8eYFKMZarCDx0NmALSS28kjelASCbImy2Rvs7Ow3ya0qYSxaiEwTJKNEaXlYbjbPibbE_-EfYz3Cu3qtNtARhsTtk-5uly1GGZWjIE4uvmuf5eaf1C5O2r6c_z_udaxckmin_pFp8-p5TYdvV42WcdwO-TZH8FkHqa3YcwFClwGCSV_b6gamd4sSDS6Jj1BTkw-Wq0 "Схема подключения сборщика событий")
+
+## Использование
+
+## DI

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Linq.Expressions;
 using gmafffff.starterKit.Domain;
+using gmafffff.starterKit.Domain.Events;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
@@ -405,6 +406,11 @@ public class Repository<T, TId> : IRepository<T, TId>
     #region Инициализация и очистка
 
     /// <summary>
+    ///     Приемник событий домена
+    /// </summary>
+    public IDomainEventSink? DomainEventSink { get; }
+
+    /// <summary>
     ///     Определяет немедленно загружаемые подчиненные сущности
     /// </summary>
     protected Func<IQueryable<T>, IIncludableQueryable<T, object>>? AutoInclude { get; set; }
@@ -412,15 +418,23 @@ public class Repository<T, TId> : IRepository<T, TId>
     protected readonly DbContext Context;
     protected readonly DbSet<T> Entities;
 
+    public Repository(DbContext dbContext)
+        : this(dbContext, domainEventSink: null, autoInclude: null) { }
 
-    public Repository(DbContext dbContext) : this(dbContext, autoInclude: null) { }
+    public Repository(DbContext dbContext, IDomainEventSink domainEventSink)
+        : this(dbContext, domainEventSink, autoInclude: null) { }
+
+    public Repository(DbContext dbContext, Func<IQueryable<T>, IIncludableQueryable<T, object>> autoInclude)
+        : this(dbContext, domainEventSink: null, autoInclude) { }
 
     public Repository(DbContext dbContext,
+        IDomainEventSink? domainEventSink,
         Func<IQueryable<T>, IIncludableQueryable<T, object>>? autoInclude = null) {
         Context = dbContext;
         Entities = dbContext.Set<T>();
+        DomainEventSink = domainEventSink;
+        DomainEventSink?.RegisterDbContext(Context);
         AutoInclude = autoInclude;
-
 
         LoadAll = QueryBuilder(Entities, include: AutoInclude);
         GetAll = QueryBuilder(LoadAll, options: QueryTune.ChangeTrackingIdentityResolution);

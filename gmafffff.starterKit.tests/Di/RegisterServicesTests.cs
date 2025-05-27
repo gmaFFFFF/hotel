@@ -1,9 +1,11 @@
 ﻿using gmafffff.starterKit.BusinessLogic;
 using gmafffff.starterKit.Di;
+using gmafffff.starterKit.Domain.Events;
 using gmafffff.starterKit.Mappers;
 using gmafffff.starterKit.Messaging;
 using gmafffff.starterKit.tests.Di.Fixtures;
 using gmafffff.starterKit.tests.Validation.Fixtures;
+using gmafffff.starterKit.Tests.Di.Fixtures;
 using Microsoft.Extensions.DependencyInjection;
 using Validot;
 
@@ -108,6 +110,28 @@ public class RegisterServicesTests {
             descriptor.ServiceType == typeof(ITestRepositoryFactory) &&
             descriptor.ImplementationType == typeof(TestRepositoryFactory) &&
             descriptor.Lifetime == ServiceLifetime.Singleton));
+    }
+
+    /// <summary>
+    ///     Регистрирует обработчики событий домена <see cref="DomainEvent{TEntity}" />,
+    ///     реализующие интерфейс <see cref="IDomainEventHandler{TDomainEvent}" />
+    /// </summary>
+    [Fact]
+    public void RegisterDomainEventHandlers() {
+        // Arrange
+        var provider = Substitute.For<IServiceCollection>();
+
+        // Act
+        provider.AddDomainEventHandlers(typeof(TestEvent).Assembly);
+
+        // Assert
+        provider.Received(1);
+
+        provider.Received().Add(Arg.Is<ServiceDescriptor>(descriptor =>
+            descriptor.ServiceType.IsGenericType &&
+            descriptor.ServiceType.GetGenericTypeDefinition() == typeof(IDomainEventHandler<>) &&
+            descriptor.ImplementationType == typeof(TestDomainEventHandler) &&
+            descriptor.Lifetime == ServiceLifetime.Transient));
     }
 
     /// <summary>

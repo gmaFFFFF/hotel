@@ -1,14 +1,21 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
 using JetBrains.Annotations;
 
 namespace gmafffff.starterKit.Domain;
+
+/// <summary>
+///     Маркерный интерфейс, предназначенный для использования внутри библиотеки
+/// </summary>
+[EditorBrowsable(EditorBrowsableState.Never)]
+public interface IEntity;
 
 /// <summary>
 ///     Сущность, предназначенная для длительного хранения.
 ///     Переопределяет семантику сравнения на основе значения идентификатора
 /// </summary>
 /// <typeparam name="TId"></typeparam>
-public abstract class Entity<TId>
+public abstract class Entity<TId> : IEntity
     where TId : struct, IEquatable<TId> {
     protected Entity(TId id) : this() {
         Id = id;
