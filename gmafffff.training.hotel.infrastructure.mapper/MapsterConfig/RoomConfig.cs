@@ -5,11 +5,7 @@ using gmafffff.training.hotel.domain.Model;
 namespace gmafffff.training.hotel.infrastructure.mapper.MapsterConfig;
 
 public class RoomConfig : StandardMapsterConfig {
-    protected override void Configure(TypeAdapterConfig config) {
-        ForOuterConfigure(config);
-    }
-
-    public static void ForOuterConfigure(TypeAdapterConfig config) {
+    public override void Register(TypeAdapterConfig config) {
         // RoomDto
         config.NewConfig<Room<Guid>, RoomDto>()
             .TwoWays()

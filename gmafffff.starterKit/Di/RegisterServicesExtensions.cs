@@ -28,7 +28,7 @@ public static class RegisterServicesExtensions {
         typeof(IAsyncDisposable)
     ];
 
-    #region Данные
+    #region Домен
 
     /// <summary>
     ///     Регистрирует в сервисе внедрения зависимостей оперативные склады,
@@ -91,6 +91,9 @@ public static class RegisterServicesExtensions {
         });
     }
 
+    #endregion
+
+    #region Mapster
     /// <summary>
     ///     Регистрирует в сервисе внедрения зависимостей преобразователи,
     ///     реализующие интерфейс <see cref="IEntityMapper{TMainEntity,TId,TDto}" />,
@@ -136,20 +139,39 @@ public static class RegisterServicesExtensions {
     ///     <see cref="TypeAdapterConfig.GlobalSettings" />
     /// </summary>
     /// <remarks>
-    ///     Конфигурация будет проверена скомпилирована
+    ///     Конфигурация будет проверена (RequireDestinationMemberSource == true) и скомпилирована
     /// </remarks>
     internal static void RegisterMapsterConfigs(params Assembly[] assemblies) {
+        if(_isMapsterConfigured) return;
+
         var assembliesToScan = assemblies.Length > 0
             ? assemblies
             : AppDomain.CurrentDomain.GetAssemblies();
 
-        TypeAdapterConfig.GlobalSettings.Scan(assembliesToScan);
+        lock(_mapsterLock){
+            if(_isMapsterConfigured) return;
+
+            var configs = TypeAdapterConfig.GlobalSettings.Scan(assembliesToScan);
+            
+            // Конфигурация должна охватывать все свойства назначаемого типа
+            TypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = true;
+
+            TypeAdapterConfig.GlobalSettings.Compile();
+            TypeAdapterConfig.GlobalSettings.CompileProjection();
+
+            _isMapsterConfigured = true;
+        }
     }
 
     /// <summary>
     ///     Блокировка конфигурации Mapster (для параллельно выполняемых тестов)
     /// </summary>
     private static readonly object _mapsterLock = new ();
+
+    /// <summary>
+    ///     Сформирована ли конфигурация Mapster (для параллельно выполняемых тестов)
+    /// </summary>
+    private static bool _isMapsterConfigured = false;
 
     #endregion
 
@@ -285,6 +307,8 @@ public static class RegisterServicesExtensions {
 
     #endregion
 
+    #region Валидация
+
     /// <summary>
     ///     Регистрирует в сервисе внедрения зависимостей проверяющих,
     ///     реализующих интерфейс <see cref="ISpecificationHolder{T}" />
@@ -327,4 +351,6 @@ public static class RegisterServicesExtensions {
 
         return @this;
     }
+
+    #endregion
 }

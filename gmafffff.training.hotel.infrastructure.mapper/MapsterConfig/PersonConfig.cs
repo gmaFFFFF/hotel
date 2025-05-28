@@ -5,7 +5,7 @@ using gmafffff.training.hotel.domain.Model;
 namespace gmafffff.training.hotel.infrastructure.mapper.MapsterConfig;
 
 public class PersonConfig : StandardMapsterConfig {
-    protected override void Configure(TypeAdapterConfig config) {
+    public override void Register(TypeAdapterConfig config) {
         // PersonDto
         config.NewConfig<Person<Guid>, PersonDto>()
             .TwoWays()
