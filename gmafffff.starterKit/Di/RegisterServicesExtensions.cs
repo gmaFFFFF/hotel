@@ -68,59 +68,6 @@ public static class RegisterServicesExtensions {
     }
 
     /// <summary>
-    ///     Регистрирует в сервисе внедрения зависимостей преобразователи,
-    ///     реализующие интерфейс <see cref="IEntityMapper{TMainEntity,TId,TDto}" />
-    /// </summary>
-    /// <param name="this">Описание служб</param>
-    /// <param name="assemblies">Сборки для поиска. Если аргумент опущен, то поиск по всем сборкам домена приложения</param>
-    /// <returns></returns>
-    public static IServiceCollection AddEntityMappers(this IServiceCollection @this, params Assembly[] assemblies) {
-        return @this.Scan(scan => {
-            var selector = assemblies.Length == 0
-                ? scan.FromApplicationDependencies()
-                : scan.FromAssemblies(assemblies);
-
-            selector
-                .AddClasses(@class => @class.AssignableTo(typeof(IEntityMapper<,,>)))
-                .UsingRegistrationStrategy(RegistrationStrategy.Skip)
-                .AsSelfWithInterfaces(predicate: @interface =>
-                    @interface.IsGenericType
-                        ? !IgnoreInterfaces.Contains(@interface.GetGenericTypeDefinition())
-                        : !IgnoreInterfaces.Contains(@interface))
-                .WithSingletonLifetime();
-        });
-    }
-
-    /// <summary>
-    ///     Регистрирует в сервисе внедрения зависимостей преобразователи,
-    ///     реализующие интерфейс <see cref="IEntityMapper{TMainEntity,TId,TDto}" />,
-    ///     а также находит конфигурации mapster и регистрирует их в глобальной конфигурации
-    /// </summary>
-    /// <param name="this">Описание служб</param>
-    /// <param name="assemblies">Сборки для поиска. Если аргумент опущен, то поиск по всем сборкам домена приложения</param>
-    /// <remarks>
-    ///     Комбинация методов <see cref="AddEntityMappers(IServiceCollection, Assembly[])" />
-    ///     и <see cref="RegisterMapsterConfigs(Assembly[])" />
-    /// </remarks>
-    public static IServiceCollection AddEntityMappersWithConfig(this IServiceCollection @this,
-        params Assembly[] assemblies) {
-        RegisterMapsterConfigs(assemblies);
-        return @this.AddEntityMappers(assemblies);
-    }
-
-    /// <summary>
-    ///     Находит конфигурации mapster и регистрирует их в глобальной конфигурации
-    ///     <see cref="TypeAdapterConfig.GlobalSettings" />
-    /// </summary>
-    public static void RegisterMapsterConfigs(params Assembly[] assemblies) {
-        var assembliesToScan = assemblies.Length > 0
-            ? assemblies
-            : AppDomain.CurrentDomain.GetAssemblies();
-
-        TypeAdapterConfig.GlobalSettings.Scan(assembliesToScan);
-    }    
-
-    /// <summary>
     ///     Регистрирует в сервисе внедрения зависимостей обработчики событий домена <see cref="DomainEvent{TEntity}" />,
     ///     реализующие интерфейс <see cref="IDomainEventHandler{TDomainEvent}" />
     /// </summary>
@@ -144,16 +91,102 @@ public static class RegisterServicesExtensions {
         });
     }
 
+    /// <summary>
+    ///     Регистрирует в сервисе внедрения зависимостей преобразователи,
+    ///     реализующие интерфейс <see cref="IEntityMapper{TMainEntity,TId,TDto}" />,
+    ///     а также находит конфигурации mapster и регистрирует их в глобальной конфигурации
+    /// </summary>
+    /// <param name="this">Описание служб</param>
+    /// <param name="assemblies">Сборки для поиска. Если аргумент опущен, то поиск по всем сборкам домена приложения</param>
+    /// <remarks>
+    ///     Конфигурация будет проверена (RequireDestinationMemberSource == true) и скомпилирована
+    /// </remarks>
+    public static IServiceCollection AddEntityMappersAndConfig(this IServiceCollection @this,
+        params Assembly[] assemblies) {
+        RegisterMapsterConfigs(assemblies);
+        return @this.AddEntityMappers(assemblies);
+    }
+
+    /// <summary>
+    ///     Регистрирует в сервисе внедрения зависимостей преобразователи,
+    ///     реализующие интерфейс <see cref="IEntityMapper{TMainEntity,TId,TDto}" />
+    /// </summary>
+    /// <param name="this">Описание служб</param>
+    /// <param name="assemblies">Сборки для поиска. Если аргумент опущен, то поиск по всем сборкам домена приложения</param>
+    /// <returns></returns>
+    internal static IServiceCollection AddEntityMappers(this IServiceCollection @this, params Assembly[] assemblies) {
+        return @this.Scan(scan => {
+            var selector = assemblies.Length == 0
+                ? scan.FromApplicationDependencies()
+                : scan.FromAssemblies(assemblies);
+
+            selector
+                .AddClasses(@class => @class.AssignableTo(typeof(IEntityMapper<,,>)))
+                .UsingRegistrationStrategy(RegistrationStrategy.Skip)
+                .AsSelfWithInterfaces(predicate: @interface =>
+                    @interface.IsGenericType
+                        ? !IgnoreInterfaces.Contains(@interface.GetGenericTypeDefinition())
+                        : !IgnoreInterfaces.Contains(@interface))
+                .WithSingletonLifetime();
+        });
+    }
+
+    /// <summary>
+    ///     Находит конфигурации mapster и регистрирует их в глобальной конфигурации
+    ///     <see cref="TypeAdapterConfig.GlobalSettings" />
+    /// </summary>
+    /// <remarks>
+    ///     Конфигурация будет проверена скомпилирована
+    /// </remarks>
+    internal static void RegisterMapsterConfigs(params Assembly[] assemblies) {
+        var assembliesToScan = assemblies.Length > 0
+            ? assemblies
+            : AppDomain.CurrentDomain.GetAssemblies();
+
+        TypeAdapterConfig.GlobalSettings.Scan(assembliesToScan);
+    }
+
+    /// <summary>
+    ///     Блокировка конфигурации Mapster (для параллельно выполняемых тестов)
+    /// </summary>
+    private static readonly object _mapsterLock = new ();
+
     #endregion
 
     #region Бизнес-логика
+
+    /// <summary>
+    ///     Регистрирует в сервисе внедрения зависимостей элементы бизнес-логики:
+    ///     <list type="bullet">
+    ///         <item>Исполнитель команд <see cref="IBusinessActionRunner{TCommand}" /></item>
+    ///         <item>Проверяющих команд <see cref="ISpecificationHolder{T}" />/item>
+    ///         <item>Проверяющих бизнес-ограничения <see cref="IBusinessConstraintCheck{TCommand}" /></item>
+    ///         <item>Обработчики бизнес команд 
+    ///                 <see cref="BusinessCommandDbHandler{TCommand,TEntity,TId,TRepo,TLoad,TResult}" /></item>
+    ///         <item>Обработчики запросов <see cref="IQueryHandler{TQuery,TResult}" /></item>
+    ///         <item>Конверторы <see cref="ITriggerEventToCommandTranslator{T}" />/item>
+    ///     </list>
+    /// </summary>
+    /// <param name="this">Описание служб</param>
+    /// <param name="assemblies">Сборки для поиска. Если аргумент опущен, то поиск по всем сборкам домена приложения</param>
+    /// <returns></returns>
+    public static IServiceCollection AddBusinessLogic(this IServiceCollection @this,
+        params Assembly[] assemblies) {
+        return @this
+            .AddBusinessActionRunner()
+            .AddValidotValidators(assemblies)
+            .AddBusinessConstraintsChecks(assemblies)
+            .AddBusinessCommandDbHandlers(assemblies)
+            .AddQueryHandlers(assemblies)
+            .AddTriggerEventToCommandTranslators(assemblies);
+    }
 
     /// <summary>
     ///     Регистрирует в сервисе внедрения зависимостей исполнитель команд <see cref="IBusinessActionRunner{TCommand}" />
     /// </summary>
     /// <param name="this"></param>
     /// <returns></returns>
-    public static IServiceCollection AddBusinessActionRunner(this IServiceCollection @this) {
+    internal static IServiceCollection AddBusinessActionRunner(this IServiceCollection @this) {
         return @this.AddTransient(typeof(IBusinessActionRunner<>), typeof(BusinessActionRunner<>));
     }
 
@@ -164,7 +197,7 @@ public static class RegisterServicesExtensions {
     /// <param name="this">Описание служб</param>
     /// <param name="assemblies">Сборки для поиска. Если аргумент опущен, то поиск по всем сборкам домена приложения</param>
     /// <returns></returns>
-    public static IServiceCollection AddBusinessConstraintsChecks(this IServiceCollection @this,
+    internal static IServiceCollection AddBusinessConstraintsChecks(this IServiceCollection @this,
         params Assembly[] assemblies) {
         return @this.Scan(scan => {
             var selector = assemblies.Length == 0
@@ -185,7 +218,7 @@ public static class RegisterServicesExtensions {
     /// <param name="this">Описание служб</param>
     /// <param name="assemblies">Сборки для поиска. Если аргумент опущен, то поиск по всем сборкам домена приложения</param>
     /// <returns></returns>
-    public static IServiceCollection AddBusinessCommandDbHandlers(this IServiceCollection @this,
+    internal static IServiceCollection AddBusinessCommandDbHandlers(this IServiceCollection @this,
         params Assembly[] assemblies) {
         return @this.Scan(scan => {
             var selector = assemblies.Length == 0
@@ -209,7 +242,7 @@ public static class RegisterServicesExtensions {
     /// <param name="this">Описание служб</param>
     /// <param name="assemblies">Сборки для поиска. Если аргумент опущен, то поиск по всем сборкам домена приложения</param>
     /// <returns></returns>
-    public static IServiceCollection AddQueryHandlers(this IServiceCollection @this,
+    internal static IServiceCollection AddQueryHandlers(this IServiceCollection @this,
         params Assembly[] assemblies) {
         return @this.Scan(scan => {
             var selector = assemblies.Length == 0
@@ -233,7 +266,7 @@ public static class RegisterServicesExtensions {
     /// <param name="this">Описание служб</param>
     /// <param name="assemblies">Сборки для поиска. Если аргумент опущен, то поиск по всем сборкам домена приложения</param>
     /// <returns></returns>
-    public static IServiceCollection AddTriggerEventToCommandTranslators(this IServiceCollection @this,
+    internal static IServiceCollection AddTriggerEventToCommandTranslators(this IServiceCollection @this,
         params Assembly[] assemblies) {
         return @this.Scan(scan => {
             var selector = assemblies.Length == 0
@@ -249,6 +282,8 @@ public static class RegisterServicesExtensions {
                 .WithTransientLifetime();
         });
     }
+
+    #endregion
 
     /// <summary>
     ///     Регистрирует в сервисе внедрения зависимостей проверяющих,
@@ -292,6 +327,4 @@ public static class RegisterServicesExtensions {
 
         return @this;
     }
-
-    #endregion
 }

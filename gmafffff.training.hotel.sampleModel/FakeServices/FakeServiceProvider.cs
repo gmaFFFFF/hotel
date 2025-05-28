@@ -31,12 +31,10 @@ public class FakeServiceProvider : IDisposable {
         });
 
         ServiceCollection.AddRepositories(typeof(HotelBlocksRepository).Assembly);
-
         ServiceCollection.AddValidotValidators([typeof(RoomSpec).Assembly, typeof(SettleInCommandSpec).Assembly]);
-        ServiceCollection.AddBusinessConstraintsChecks(typeof(RoomNumberMustUnique).Assembly);
-        ServiceCollection.AddEntityMappersWithConfig(typeof(IPropertyManagementMapperMapster).Assembly);
-        ServiceCollection.AddBusinessCommandDbHandlers(typeof(AddRoomCommandHandler).Assembly);
-        ServiceCollection.AddQueryHandlers(typeof(GetRoomsQueryHandler).Assembly);
+
+        ServiceCollection.AddBusinessLogic(typeof(RoomNumberMustUnique).Assembly);
+        ServiceCollection.AddEntityMappersAndConfig(typeof(IPropertyManagementMapperMapster).Assembly);
 
         Instance = ServiceCollection.BuildServiceProvider(new ServiceProviderOptions {
             ValidateOnBuild = true,
