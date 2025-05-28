@@ -46,7 +46,7 @@ public partial class PersonManagementTests {
                 .Select(person => person.Id)
                 .Except(suitablePersons)
                 .ToArray();
-            if (leavingPersons.Length < 2) throw new NotSupportedException();
+            if (leavingPersons.Length < 2) throw new NotSupportedException("Не сложились условия для теста");
 
             leavingPersons[^1] = suitablePersons[0];
 
