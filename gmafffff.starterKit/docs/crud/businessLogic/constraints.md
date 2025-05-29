@@ -20,5 +20,5 @@
 
 ## DI
 
-Регистрация бизнес-ограничений в контейнере DI осуществляется вызовом `AddBusinessConstraintsChecks` —
-метода расширения `IServiceCollection`.
+Регистрация бизнес-ограничений в контейнере DI осуществляется во время вызова
+метода расширения `IServiceCollection.AddBusinessLogic`.

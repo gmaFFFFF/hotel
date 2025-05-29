@@ -36,3 +36,8 @@
 
 Результат проверки `Validot.Results.IValidationResult` при необходимости можно преобразовать
 в ошибки приложения `LanguageExt.Common.Error` с помощью метода расширения `ToExceptedError`.
+
+## DI
+
+Регистрация проверяющих в контейнере DI осуществляется во время вызова
+метода расширения `IServiceCollection.AddValidotValidators`.

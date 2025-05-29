@@ -34,8 +34,7 @@
 В отдельной инфраструктурной сборке реализуйте `IRepository`, используя для EF Core реализацию по умолчанию —
 `gmafffff.starterKit.EntityFrameworkCore.Repository`, а также `IRepositoryFactory`.
 
+## DI
+
 Зарегистрируйте в контейнере DI оперативные склады и фабрики вызовом `AddRepositories` —
 метода расширения `IServiceCollection`.
-
-
-

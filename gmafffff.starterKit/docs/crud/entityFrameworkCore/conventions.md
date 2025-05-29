@@ -15,7 +15,7 @@
 
 Переопределить в производном классе метод `Microsoft.EntityFrameworkCore.DbContext.ConfigureConventions`:
 
-```
+```C#
 protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder) {
     configurationBuilder.Conventions.Add(_ => new PrimaryKeyNameConventionIsEntityNameId());
     configurationBuilder.Conventions.Add(_ => new ForeignKeyNameConventionIsParentEntityNameParentColumnName());
