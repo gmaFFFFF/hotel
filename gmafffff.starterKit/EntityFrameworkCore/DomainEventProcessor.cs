@@ -57,22 +57,23 @@ public class DomainEventProcessor(IServiceProvider serviceProvider) : IDomainEve
         // Запуск рекурсивной обработки событий
         static StateT<HandleState, FinT<IO>, Unit> HandleEventsRecursive() {
             var steps =
-                from @event in GetEvent()
-                from handlers in FindDomainEventHandlers(@event)
-                from context in CreateDomainEventDispatcherContext()
-                from _1 in RunEventHandlers(@event, context, handlers)
-                from _2 in MarkUnprocessedEventAsProcessed()
-                from hasNextEvent in HasNextUnprocessedEvent()
-                from _3 in hasNextEvent
-                    ? HandleEventsRecursive()
-                    : StateT<HandleState, FinT<IO>, Unit>.LiftIO(IO.pure(Unit.Default))
+                from hasEvent in HasUnprocessedEvent()
+                from _1 in hasEvent
+                    ?   from @event in GetEvent()
+                        from handlers in FindDomainEventHandlers(@event)
+                        from context in CreateDomainEventDispatcherContext()
+                        from _1 in RunEventHandlers(@event, context, handlers)
+                        from _2 in MarkUnprocessedEventAsProcessed()
+                        from _3 in HandleEventsRecursive()
+                        select Unit.Default
+                    :   StateT<HandleState, FinT<IO>, Unit>.LiftIO(IO.pure(Unit.Default))
                 select Unit.Default;
 
             return steps;
         }
 
         // Есть ли ещё необработанные события
-        static StateT<HandleState, FinT<IO>, bool> HasNextUnprocessedEvent() {
+        static StateT<HandleState, FinT<IO>, bool> HasUnprocessedEvent() {
             return from state in StateT.get<FinT<IO>, HandleState>()
                 select state.UnhandledEventIndex < state.Events.Count;
         }

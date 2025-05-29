@@ -5,7 +5,7 @@ using gmafffff.starterKit.Mappers;
 using gmafffff.starterKit.Messaging;
 using gmafffff.starterKit.tests.Di.Fixtures;
 using gmafffff.starterKit.tests.Validation.Fixtures;
-using gmafffff.starterKit.Tests.Di.Fixtures;
+using gmafffff.starterKit.tests.Di.Fixtures;
 using Microsoft.Extensions.DependencyInjection;
 using Validot;
 

@@ -9,7 +9,7 @@
 
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
-        <RootNamespace>gmafffff.starterKit.Tests</RootNamespace>
+        <RootNamespace>gmafffff.starterKit.tests</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

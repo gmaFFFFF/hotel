@@ -1,5 +1,7 @@
 ﻿using gmafffff.starterKit.AppError;
 using gmafffff.starterKit.BusinessLogic;
+using gmafffff.starterKit.Domain.Events;
+using gmafffff.starterKit.EntityFrameworkCore;
 using gmafffff.starterKit.Messaging;
 using gmafffff.starterKit.tests.BusinessLogic.Fixtures;
 using gmafffff.starterKit.tests.Validation.Fixtures;
@@ -44,6 +46,8 @@ public partial class BusinessActionRunnerTests {
 
         private readonly BusinessActionCommand _validCommand = new(true);
 
+        private readonly DomainEventProcessor _domainEventProcessor;
+
         public BusinessActionRunnerRun() {
             // Форматно-логический контроль
             _validator.IsValid(Arg.Any<BusinessActionCommand>())
@@ -73,13 +77,16 @@ public partial class BusinessActionRunnerTests {
             _handler.ExecuteAsync(Arg.Any<BusinessActionCommand>(), Arg.Any<CancellationToken>())
                 .Returns(Fin<IList<BusinessEvent>>.Succ([new BusinessActionResult(_validCommand)]));
 
+            // Обработчик событий домена
+            _domainEventProcessor = new (_provider);
 
             // Контейнер служб
             _provider.GetService(typeof(IValidator<BusinessActionCommand>))
                 .Returns(_validator);
             _provider.GetService(typeof(IBusinessCommandHandler<BusinessActionCommand>))
                 .Returns(_handler);
-
+            _provider.GetService(typeof(IDomainEventDispatcher))
+                .Returns(_domainEventProcessor);
 
             _runner = new BusinessActionRunner<BusinessActionCommand>(_provider);
         }

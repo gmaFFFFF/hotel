@@ -2,6 +2,7 @@
 using gmafffff.starterKit.BusinessLogic;
 using gmafffff.starterKit.Domain;
 using gmafffff.starterKit.Domain.Events;
+using gmafffff.starterKit.EntityFrameworkCore;
 using gmafffff.starterKit.Mappers;
 using gmafffff.starterKit.Messaging;
 using Mapster;
@@ -65,6 +66,17 @@ public static class RegisterServicesExtensions {
                             : !IgnoreInterfaces.Contains(@interface))
                     .WithSingletonLifetime();
             });
+    }
+
+    /// <summary>
+    ///     Регистрирует в сервисе внедрения зависимостей обработчик доменных событий <see cref="DomainEventProcessor" />
+    ///     как реализацию интерфейса <see cref="IDomainEventSink"/> и <see cref="IDomainEventDispatcher"/>
+    /// </summary>
+    /// <param name="this">Описание служб</param>
+    public static IServiceCollection AddDomainEventProcessor(this IServiceCollection @this) {
+        return @this.AddScoped<DomainEventProcessor>()
+                    .AddScoped<IDomainEventSink>(provider => provider.GetRequiredService<DomainEventProcessor>())
+                    .AddScoped<IDomainEventDispatcher>(provider => provider.GetRequiredService<DomainEventProcessor>());
     }
 
     /// <summary>

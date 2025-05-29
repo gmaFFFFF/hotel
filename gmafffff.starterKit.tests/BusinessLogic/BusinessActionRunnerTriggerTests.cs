@@ -1,5 +1,7 @@
 ﻿using FluentAssertions.Execution;
 using gmafffff.starterKit.BusinessLogic;
+using gmafffff.starterKit.Domain.Events;
+using gmafffff.starterKit.EntityFrameworkCore;
 using gmafffff.starterKit.Messaging;
 using gmafffff.starterKit.tests.BusinessLogic.Fixtures;
 using LanguageExt.Common;
@@ -30,9 +32,13 @@ public partial class BusinessActionRunnerTests {
 
         private readonly ITriggerEventToCommandTranslator<MyTrigger> _translator =
             Substitute.For<ITriggerEventToCommandTranslator<MyTrigger>>();
+        private readonly DomainEventProcessor _domainEventProcessor;
 
         public BusinessActionRunnerTrigger() {
             _runner = new BusinessActionRunner<CommandWithTrigger>(_provider);
+
+            // Обработчик событий домена
+            _domainEventProcessor = new (_provider);
 
             // Контейнер служб
             _provider.GetService(typeof(IBusinessActionRunner<CommandWithTrigger>))
@@ -45,6 +51,8 @@ public partial class BusinessActionRunnerTests {
                 .Returns(_handler);
             _provider.GetService(typeof(IEnumerable<ITriggerEventToCommandTranslator<MyTrigger>>))
                 .Returns(_ => Enumerable.Repeat(_translator, count: 1));
+            _provider.GetService(typeof(IDomainEventDispatcher))
+                .Returns(_domainEventProcessor);
 
             // Образцы данных
             _commands = Enumerable.Range(start: 0, count: 8)
