@@ -29,6 +29,53 @@ public static class RegisterServicesExtensions {
         typeof(IAsyncDisposable)
     ];
 
+    #region Валидация
+
+    /// <summary>
+    ///     Регистрирует в сервисе внедрения зависимостей проверяющих,
+    ///     реализующих интерфейс <see cref="ISpecificationHolder{T}" />
+    /// </summary>
+    /// <param name="this">Описание служб</param>
+    /// <param name="assemblies">Сборки для поиска. Если аргумент опущен, то поиск по всем сборкам домена приложения</param>
+    /// <exception cref="ValidotException">
+    ///     Если найдено несколько проверяющих <see cref="IValidator{T}" /> одного и того же
+    ///     типа
+    /// </exception>
+    public static IServiceCollection AddValidotValidators(this IServiceCollection @this, params Assembly[] assemblies) {
+        var assembliesToScan = assemblies.Length > 0
+            ? assemblies
+            : AppDomain.CurrentDomain.GetAssemblies();
+
+        var holders = Validator.Factory.FetchHolders(assembliesToScan)
+            .GroupBy(h => h.SpecifiedType)
+            .Select(v => new {
+                v.First().ValidatorType,
+                ValidatorInstance = v.First().CreateValidator(),
+                ValidatorsCount = v.Count()
+            }).ToArray();
+
+        // Если для одного типа встретилось несколько проверяющих, то лучше об этом громко заявить
+        var errors = holders.Where(h => h.ValidatorsCount > 1)
+            .Select(s => (s.ValidatorType, s.ValidatorsCount))
+            .ToArray();
+        if (errors.Any()) {
+            var exception =
+                new ValidotException(
+                    "Встретилось несколько проверяющих типа IValidator<T>. Количество проверяющих каждого типа занесено в свойство «Data»");
+            foreach (var (key, val) in errors)
+                exception.Data.Add(key, val);
+            throw exception;
+        }
+
+        // Регистрация
+        foreach (var holder in holders)
+            @this.AddSingleton(holder.ValidatorType, holder.ValidatorInstance);
+
+        return @this;
+    }
+
+    #endregion
+
     #region Домен
 
     /// <summary>
@@ -70,13 +117,13 @@ public static class RegisterServicesExtensions {
 
     /// <summary>
     ///     Регистрирует в сервисе внедрения зависимостей обработчик доменных событий <see cref="DomainEventProcessor" />
-    ///     как реализацию интерфейса <see cref="IDomainEventSink"/> и <see cref="IDomainEventDispatcher"/>
+    ///     как реализацию интерфейса <see cref="IDomainEventSink" /> и <see cref="IDomainEventDispatcher" />
     /// </summary>
     /// <param name="this">Описание служб</param>
     public static IServiceCollection AddDomainEventProcessor(this IServiceCollection @this) {
         return @this.AddScoped<DomainEventProcessor>()
-                    .AddScoped<IDomainEventSink>(provider => provider.GetRequiredService<DomainEventProcessor>())
-                    .AddScoped<IDomainEventDispatcher>(provider => provider.GetRequiredService<DomainEventProcessor>());
+            .AddScoped<IDomainEventSink>(provider => provider.GetRequiredService<DomainEventProcessor>())
+            .AddScoped<IDomainEventDispatcher>(provider => provider.GetRequiredService<DomainEventProcessor>());
     }
 
     /// <summary>
@@ -106,6 +153,7 @@ public static class RegisterServicesExtensions {
     #endregion
 
     #region Mapster
+
     /// <summary>
     ///     Регистрирует в сервисе внедрения зависимостей преобразователи,
     ///     реализующие интерфейс <see cref="IEntityMapper{TMainEntity,TId,TDto}" />,
@@ -154,17 +202,17 @@ public static class RegisterServicesExtensions {
     ///     Конфигурация будет проверена (RequireDestinationMemberSource == true) и скомпилирована
     /// </remarks>
     internal static void RegisterMapsterConfigs(params Assembly[] assemblies) {
-        if(_isMapsterConfigured) return;
+        if (_isMapsterConfigured) return;
 
         var assembliesToScan = assemblies.Length > 0
             ? assemblies
             : AppDomain.CurrentDomain.GetAssemblies();
 
-        lock(_mapsterLock){
-            if(_isMapsterConfigured) return;
+        lock (_mapsterLock) {
+            if (_isMapsterConfigured) return;
 
             var configs = TypeAdapterConfig.GlobalSettings.Scan(assembliesToScan);
-            
+
             // Конфигурация должна охватывать все свойства назначаемого типа
             TypeAdapterConfig.GlobalSettings.RequireDestinationMemberSource = true;
 
@@ -178,12 +226,12 @@ public static class RegisterServicesExtensions {
     /// <summary>
     ///     Блокировка конфигурации Mapster (для параллельно выполняемых тестов)
     /// </summary>
-    private static readonly object _mapsterLock = new ();
+    private static readonly object _mapsterLock = new();
 
     /// <summary>
     ///     Сформирована ли конфигурация Mapster (для параллельно выполняемых тестов)
     /// </summary>
-    private static bool _isMapsterConfigured = false;
+    private static bool _isMapsterConfigured;
 
     #endregion
 
@@ -193,12 +241,15 @@ public static class RegisterServicesExtensions {
     ///     Регистрирует в сервисе внедрения зависимостей элементы бизнес-логики:
     ///     <list type="bullet">
     ///         <item>Исполнитель команд <see cref="IBusinessActionRunner{TCommand}" /></item>
-    ///         <item>Проверяющих команд <see cref="ISpecificationHolder{T}" />/item>
-    ///         <item>Проверяющих бизнес-ограничения <see cref="IBusinessConstraintCheck{TCommand}" /></item>
-    ///         <item>Обработчики бизнес команд 
-    ///                 <see cref="BusinessCommandDbHandler{TCommand,TEntity,TId,TRepo,TLoad,TResult}" /></item>
-    ///         <item>Обработчики запросов <see cref="IQueryHandler{TQuery,TResult}" /></item>
-    ///         <item>Конверторы <see cref="ITriggerEventToCommandTranslator{T}" />/item>
+    ///         <item>
+    ///             Проверяющих команд <see cref="ISpecificationHolder{T}" />/item>
+    ///             <item>Проверяющих бизнес-ограничения <see cref="IBusinessConstraintCheck{TCommand}" /></item>
+    ///             <item>
+    ///                 Обработчики бизнес команд
+    ///                 <see cref="BusinessCommandDbHandler{TCommand,TEntity,TId,TRepo,TLoad,TResult}" />
+    ///             </item>
+    ///             <item>Обработчики запросов <see cref="IQueryHandler{TQuery,TResult}" /></item>
+    ///             <item>Конверторы <see cref="ITriggerEventToCommandTranslator{T}" />/item>
     ///     </list>
     /// </summary>
     /// <param name="this">Описание служб</param>
@@ -315,53 +366,6 @@ public static class RegisterServicesExtensions {
                         : !IgnoreInterfaces.Contains(@interface))
                 .WithTransientLifetime();
         });
-    }
-
-    #endregion
-
-    #region Валидация
-
-    /// <summary>
-    ///     Регистрирует в сервисе внедрения зависимостей проверяющих,
-    ///     реализующих интерфейс <see cref="ISpecificationHolder{T}" />
-    /// </summary>
-    /// <param name="this">Описание служб</param>
-    /// <param name="assemblies">Сборки для поиска. Если аргумент опущен, то поиск по всем сборкам домена приложения</param>
-    /// <exception cref="ValidotException">
-    ///     Если найдено несколько проверяющих <see cref="IValidator{T}" /> одного и того же
-    ///     типа
-    /// </exception>
-    public static IServiceCollection AddValidotValidators(this IServiceCollection @this, params Assembly[] assemblies) {
-        var assembliesToScan = assemblies.Length > 0
-            ? assemblies
-            : AppDomain.CurrentDomain.GetAssemblies();
-
-        var holders = Validator.Factory.FetchHolders(assembliesToScan)
-            .GroupBy(h => h.SpecifiedType)
-            .Select(v => new {
-                v.First().ValidatorType,
-                ValidatorInstance = v.First().CreateValidator(),
-                ValidatorsCount = v.Count()
-            }).ToArray();
-
-        // Если для одного типа встретилось несколько проверяющих, то лучше об этом громко заявить
-        var errors = holders.Where(h => h.ValidatorsCount > 1)
-            .Select(s => (s.ValidatorType, s.ValidatorsCount))
-            .ToArray();
-        if (errors.Any()) {
-            var exception =
-                new ValidotException(
-                    "Встретилось несколько проверяющих типа IValidator<T>. Количество проверяющих каждого типа занесено в свойство «Data»");
-            foreach (var (key, val) in errors)
-                exception.Data.Add(key, val);
-            throw exception;
-        }
-
-        // Регистрация
-        foreach (var holder in holders)
-            @this.AddSingleton(holder.ValidatorType, holder.ValidatorInstance);
-
-        return @this;
     }
 
     #endregion

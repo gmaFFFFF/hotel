@@ -19,6 +19,7 @@ public partial class BusinessActionRunnerTests {
         private readonly List<CommandWithTrigger> _commands;
 
         private readonly CancellationTokenSource _cts = new();
+        private readonly DomainEventProcessor _domainEventProcessor;
         private readonly MyTrigger _errorTrigger;
         private readonly Dictionary<TriggerEvent, CommandWithTrigger> _eventToCmd = [];
         private readonly Exception _exception = new(ErrorMessage);
@@ -32,13 +33,12 @@ public partial class BusinessActionRunnerTests {
 
         private readonly ITriggerEventToCommandTranslator<MyTrigger> _translator =
             Substitute.For<ITriggerEventToCommandTranslator<MyTrigger>>();
-        private readonly DomainEventProcessor _domainEventProcessor;
 
         public BusinessActionRunnerTrigger() {
             _runner = new BusinessActionRunner<CommandWithTrigger>(_provider);
 
             // Обработчик событий домена
-            _domainEventProcessor = new (_provider);
+            _domainEventProcessor = new DomainEventProcessor(_provider);
 
             // Контейнер служб
             _provider.GetService(typeof(IBusinessActionRunner<CommandWithTrigger>))

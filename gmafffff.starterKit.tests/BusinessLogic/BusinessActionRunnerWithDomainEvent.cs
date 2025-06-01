@@ -1,11 +1,10 @@
 ﻿using FluentAssertions.Execution;
-using LanguageExt.Common;
-using Validot;
 using gmafffff.starterKit.BusinessLogic;
 using gmafffff.starterKit.Domain.Events;
 using gmafffff.starterKit.EntityFrameworkCore;
 using gmafffff.starterKit.Messaging;
 using gmafffff.starterKit.tests.BusinessLogic.Fixtures;
+using Validot;
 
 namespace gmafffff.starterKit.tests.BusinessLogic;
 
@@ -14,34 +13,35 @@ public partial class BusinessActionRunnerTests {
     public class BusinessActionRunnerWithDomainEvent {
         private const string ErrorMessage = "Обработка прервана";
         private readonly Dictionary<CommandWithTrigger, IList<BusinessEvent>> _cmd2businessEvents = [];
-
-        private readonly List<CommandWithTrigger> _commands;
-
-        private readonly Dictionary<TriggerEvent, CommandWithTrigger> _trigger2cmd = [];
+        private readonly Dictionary<CommandWithTrigger, TestDomainEvent> _cmd2domainEvents = [];
 
         private readonly IBusinessCommandHandler<CommandWithTrigger> _cmdHandler =
             Substitute.For<IBusinessCommandHandler<CommandWithTrigger>>();
+
+        private readonly List<CommandWithTrigger> _commands;
+
+        private readonly IDomainEventHandler<TestDomainEvent> _domainEventHandler =
+            Substitute.For<IDomainEventHandler<TestDomainEvent>>();
+
+        private readonly DomainEventProcessor _domainEventProcessor;
 
         private readonly IServiceProvider _provider = Substitute.For<IServiceProvider>();
 
         private readonly BusinessActionRunner<CommandWithTrigger> _runner;
 
+        private readonly Dictionary<TriggerEvent, CommandWithTrigger> _trigger2cmd = [];
+
         private readonly ITriggerEventToCommandTranslator<MyTrigger> _triggerTranslator =
             Substitute.For<ITriggerEventToCommandTranslator<MyTrigger>>();
-        
-        private readonly DomainEventProcessor _domainEventProcessor;
-        private readonly Dictionary<CommandWithTrigger, TestDomainEvent> _cmd2domainEvents = []; 
-        private readonly IDomainEventHandler<TestDomainEvent> _domainEventHandler = 
-            Substitute.For<IDomainEventHandler<TestDomainEvent>>();
 
         public BusinessActionRunnerWithDomainEvent() {
             _runner = new BusinessActionRunner<CommandWithTrigger>(_provider);
 
             // Обработчик событий домена
-            _domainEventProcessor = new (_provider);
+            _domainEventProcessor = new DomainEventProcessor(_provider);
             _domainEventHandler.HandleAsync(Arg.Any<IDomainEvent>(),
-                                            Arg.Any<DomainEventDispatcherContext>(), 
-                                            Arg.Any<CancellationToken>())
+                    Arg.Any<DomainEventDispatcherContext>(),
+                    Arg.Any<CancellationToken>())
                 .ReturnsForAnyArgs(Fin<Unit>.Succ(Unit.Default));
 
             // Контейнер служб
@@ -92,7 +92,6 @@ public partial class BusinessActionRunnerTests {
                     _domainEventProcessor.AddEvent(_cmd2domainEvents[x.Arg<CommandWithTrigger>()]);
                     return Fin<IList<BusinessEvent>>.Succ(_cmd2businessEvents[x.Arg<CommandWithTrigger>()]);
                 });
-
         }
 
         /// <summary>
@@ -111,13 +110,13 @@ public partial class BusinessActionRunnerTests {
                 .BeEquivalentTo(_cmd2businessEvents.Values.SelectMany(x => x).OfType<EndEventForTrigger>().ToArray());
             Received.InOrder(async () => {
                 await _cmdHandler.ExecuteAsync(_commands[0], Arg.Any<CancellationToken>());
-                await _domainEventHandler.HandleAsync((IDomainEvent)_cmd2domainEvents[_commands[0]], 
-                                                        Arg.Any<DomainEventDispatcherContext>(), 
-                                                        Arg.Any<CancellationToken>());
+                await _domainEventHandler.HandleAsync((IDomainEvent)_cmd2domainEvents[_commands[0]],
+                    Arg.Any<DomainEventDispatcherContext>(),
+                    Arg.Any<CancellationToken>());
                 await _cmdHandler.ExecuteAsync(_commands[1], Arg.Any<CancellationToken>());
-                await _domainEventHandler.HandleAsync((IDomainEvent)_cmd2domainEvents[_commands[1]], 
-                                                        Arg.Any<DomainEventDispatcherContext>(), 
-                                                        Arg.Any<CancellationToken>());
+                await _domainEventHandler.HandleAsync((IDomainEvent)_cmd2domainEvents[_commands[1]],
+                    Arg.Any<DomainEventDispatcherContext>(),
+                    Arg.Any<CancellationToken>());
             });
         }
 
@@ -128,8 +127,8 @@ public partial class BusinessActionRunnerTests {
         public async Task ProcessDomainEventCanEndWithError() {
             // Arrange
             _domainEventHandler.HandleAsync(Arg.Any<IDomainEvent>(),
-                                            Arg.Any<DomainEventDispatcherContext>(), 
-                                            Arg.Any<CancellationToken>())
+                    Arg.Any<DomainEventDispatcherContext>(),
+                    Arg.Any<CancellationToken>())
                 .ReturnsForAnyArgs(Fin<Unit>.Fail(ErrorMessage));
 
             // Act
@@ -141,15 +140,15 @@ public partial class BusinessActionRunnerTests {
             result.FailSpan()[0].Message.Should().Be(ErrorMessage);
             Received.InOrder(async () => {
                 await _cmdHandler.ExecuteAsync(_commands[0], Arg.Any<CancellationToken>());
-                await _domainEventHandler.HandleAsync((IDomainEvent)_cmd2domainEvents[_commands[0]], 
-                                                        Arg.Any<DomainEventDispatcherContext>(), 
-                                                        Arg.Any<CancellationToken>());
+                await _domainEventHandler.HandleAsync((IDomainEvent)_cmd2domainEvents[_commands[0]],
+                    Arg.Any<DomainEventDispatcherContext>(),
+                    Arg.Any<CancellationToken>());
             });
 
             await _cmdHandler.DidNotReceive().ExecuteAsync(_commands[1], Arg.Any<CancellationToken>());
-            await _domainEventHandler.DidNotReceive().HandleAsync((IDomainEvent)_cmd2domainEvents[_commands[1]], 
-                                                    Arg.Any<DomainEventDispatcherContext>(), 
-                                                    Arg.Any<CancellationToken>());
+            await _domainEventHandler.DidNotReceive().HandleAsync((IDomainEvent)_cmd2domainEvents[_commands[1]],
+                Arg.Any<DomainEventDispatcherContext>(),
+                Arg.Any<CancellationToken>());
         }
     }
 }

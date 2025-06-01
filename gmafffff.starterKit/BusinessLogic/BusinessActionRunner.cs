@@ -88,11 +88,11 @@ public class BusinessActionRunner<TCommand>(IServiceProvider serviceProvider, IL
             var dispatcher = ServiceProvider.GetRequiredService<IDomainEventDispatcher>();
 
             var execute = FinT<IO, IList<BusinessEvent>>.LiftIO(IO.liftAsync(
-                                    async env => await handler.ExecuteAsync(cmd, env.Token).ConfigureAwait(false)));
+                async env => await handler.ExecuteAsync(cmd, env.Token).ConfigureAwait(false)));
             var dispatch = FinT<IO, Unit>.LiftIO(IO.liftAsync(
-                                    async env => await dispatcher.DispatchAsync(env.Token).ConfigureAwait(false)));
+                async env => await dispatcher.DispatchAsync(env.Token).ConfigureAwait(false)));
 
-            var steps = 
+            var steps =
                 from events in execute
                 from _2 in dispatch
                 select events;

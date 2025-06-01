@@ -1,5 +1,4 @@
 using gmafffff.starterKit.Domain.Events;
-using gmafffff.starterKit.tests.Di.Fixtures;
 
 namespace gmafffff.starterKit.tests.Di.Fixtures;
 

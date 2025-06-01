@@ -15,6 +15,8 @@ namespace gmafffff.starterKit.tests.BusinessLogic;
 [TestSubject(typeof(BusinessActionRunner<>))]
 public partial class BusinessActionRunnerTests {
     public class BusinessActionRunnerRun {
+        private readonly DomainEventProcessor _domainEventProcessor;
+
         private readonly IBusinessConstraintCheck<BusinessActionCommand> _exceptionCheck1 =
             Substitute.For<IBusinessConstraintCheck<BusinessActionCommand>>();
 
@@ -46,8 +48,6 @@ public partial class BusinessActionRunnerTests {
 
         private readonly BusinessActionCommand _validCommand = new(true);
 
-        private readonly DomainEventProcessor _domainEventProcessor;
-
         public BusinessActionRunnerRun() {
             // Форматно-логический контроль
             _validator.IsValid(Arg.Any<BusinessActionCommand>())
@@ -78,7 +78,7 @@ public partial class BusinessActionRunnerTests {
                 .Returns(Fin<IList<BusinessEvent>>.Succ([new BusinessActionResult(_validCommand)]));
 
             // Обработчик событий домена
-            _domainEventProcessor = new (_provider);
+            _domainEventProcessor = new DomainEventProcessor(_provider);
 
             // Контейнер служб
             _provider.GetService(typeof(IValidator<BusinessActionCommand>))
