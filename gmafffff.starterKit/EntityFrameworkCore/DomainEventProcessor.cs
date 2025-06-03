@@ -5,10 +5,19 @@ using Light.GuardClauses.FrameworkExtensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace gmafffff.starterKit.EntityFrameworkCore;
 
-public class DomainEventProcessor(IServiceProvider serviceProvider) : IDomainEventSink, IDomainEventDispatcher {
+public class DomainEventProcessor(
+    IServiceProvider serviceProvider,
+    ILogger<DomainEventProcessor>? logger = null) : IDomainEventSink, IDomainEventDispatcher {
+    /// <summary>
+    ///     Журнал
+    /// </summary>
+    private readonly ILogger<DomainEventProcessor> _logger = logger ?? NullLogger<DomainEventProcessor>.Instance;
+
     #region Реализация IDomainEventDispatcher
 
     /// <summary>
@@ -45,7 +54,7 @@ public class DomainEventProcessor(IServiceProvider serviceProvider) : IDomainEve
 
     public async Task<Fin<Unit>> DispatchAsync(CancellationToken cancel = default) {
         HandleState initialState = new(Events, _unhandledEventIndex, ServiceProvider);
-        var steps = await HandleEventsRecursive()
+        var steps = await HandleEventsRecursive(_logger)
             .Run(initialState).As()
             .Run().As()
             .RunAsync(EnvIO.New(token: cancel)).ConfigureAwait(false);
@@ -55,18 +64,18 @@ public class DomainEventProcessor(IServiceProvider serviceProvider) : IDomainEve
         return steps.Map(Unit.Default).As();
 
         // Запуск рекурсивной обработки событий
-        static StateT<HandleState, FinT<IO>, Unit> HandleEventsRecursive() {
+        static StateT<HandleState, FinT<IO>, Unit> HandleEventsRecursive(ILogger<DomainEventProcessor> logger) {
             var steps =
                 from hasEvent in HasUnprocessedEvent()
                 from _1 in hasEvent
-                    ?   from @event in GetEvent()
-                        from handlers in FindDomainEventHandlers(@event)
-                        from context in CreateDomainEventDispatcherContext()
-                        from _1 in RunEventHandlers(@event, context, handlers)
-                        from _2 in MarkUnprocessedEventAsProcessed()
-                        from _3 in HandleEventsRecursive()
-                        select Unit.Default
-                    :   StateT<HandleState, FinT<IO>, Unit>.LiftIO(IO.pure(Unit.Default))
+                    ? from @event in GetEvent()
+                    from handlers in FindDomainEventHandlers(@event)
+                    from context in CreateDomainEventDispatcherContext()
+                    from _1 in RunEventHandlers(@event, context, handlers, logger)
+                    from _2 in MarkUnprocessedEventAsProcessed()
+                    from _3 in HandleEventsRecursive(logger)
+                    select Unit.Default
+                    : StateT<HandleState, FinT<IO>, Unit>.LiftIO(IO.pure(Unit.Default))
                 select Unit.Default;
 
             return steps;
@@ -114,11 +123,21 @@ public class DomainEventProcessor(IServiceProvider serviceProvider) : IDomainEve
 
         // Запустить все обработчики для данного типа события
         static FinT<IO, Unit> RunEventHandlers(IDomainEvent @event, DomainEventDispatcherContext context,
-            Iterable<IDomainEventHandler> handlers) {
+            Iterable<IDomainEventHandler> handlers, ILogger<DomainEventProcessor> logger) {
             return handlers
                 .Traverse(handler => RunEventHandler(@event, context, handler))
                 .As()
-                .Map(x => x.FirstOrDefault(result => result.IsFail) ?? Fin<Unit>.Succ(Unit.Default));
+                .Map(x => x.FirstOrDefault(result => result.IsFail) ?? Fin<Unit>.Succ(Unit.Default))
+                .Map(fin =>
+                    fin.BiMap(
+                        Succ: _ => {
+                            logger.LogTrace("Событие {@Event} успешно обработано", @event);
+                            return Unit.Default;
+                        }, Fail: error => {
+                            logger.LogTrace("Обработка события {@Event} завершилась с ошибкой {@Error}",
+                                @event, error);
+                            return error;
+                        }));
         }
 
         // Запустить обработчик события
@@ -146,6 +165,7 @@ public class DomainEventProcessor(IServiceProvider serviceProvider) : IDomainEve
     public IReadOnlyList<IDomainEvent> Events => _events.AsReadOnlyList();
 
     public IDomainEventSink AddEvent(IDomainEvent @event) {
+        _logger.LogTrace("Возникло событие домена {@DomainEvent}", @event);
         if (!_events.Contains(@event))
             _events.Add(@event);
 

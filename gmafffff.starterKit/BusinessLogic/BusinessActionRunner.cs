@@ -19,13 +19,16 @@ namespace gmafffff.starterKit.BusinessLogic;
 ///     соответствующие (<see cref="ITriggerEventToCommandTranslator{TTrigger}" />)
 ///     сигнальным событиям <see cref="TriggerEvent" />.
 /// </summary>
-public class BusinessActionRunner<TCommand>(IServiceProvider serviceProvider, ILogger? logger = null)
+public class BusinessActionRunner<TCommand>(
+    IServiceProvider serviceProvider,
+    ILogger<BusinessActionRunner<TCommand>>? logger = null)
     : IBusinessActionRunner<TCommand>
     where TCommand : BusinessCommand {
     /// <summary>
     ///     Журнал
     /// </summary>
-    private readonly ILogger _logger = logger ?? NullLogger.Instance;
+    private readonly ILogger<BusinessActionRunner<TCommand>> _logger =
+        logger ?? NullLogger<BusinessActionRunner<TCommand>>.Instance;
 
     /// <summary>
     ///     Контейнер DI
@@ -97,8 +100,8 @@ public class BusinessActionRunner<TCommand>(IServiceProvider serviceProvider, IL
                 from _2 in dispatch
                 select events;
 
-            steps.IfSucc(error => _logger.LogTrace("Невозможно выполнить команду: {@Errors}", error));
-            steps.IfFail(events => _logger.LogTrace("Результат исполнения команды: {@Events}", events));
+            steps.IfSucc(events => _logger.LogTrace("Результат исполнения команды: {@Events}", events));
+            steps.IfFail(error => _logger.LogTrace("Невозможно выполнить команду: {@Errors}", error));
 
             return steps;
         }
@@ -166,7 +169,8 @@ public class BusinessActionRunner<TCommand>(IServiceProvider serviceProvider, IL
             : error;
 
 
-        static IO<bool> CallCheck(IBusinessConstraintCheck<TCommand> constraint, TCommand command, ILogger logger) {
+        static IO<bool> CallCheck(IBusinessConstraintCheck<TCommand> constraint, TCommand command,
+            ILogger<BusinessActionRunner<TCommand>> logger) {
             return IO.liftAsync(
                 async env => {
                     var result = await constraint.IsSatisfiedAsync(command, env.Token).ConfigureAwait(false);
@@ -177,7 +181,7 @@ public class BusinessActionRunner<TCommand>(IServiceProvider serviceProvider, IL
         }
 
         static IO<Error> CheckConstraint(IBusinessConstraintCheck<TCommand> constraint, TCommand command,
-            ILogger logger) {
+            ILogger<BusinessActionRunner<TCommand>> logger) {
             return (from test in CallCheck(constraint, command, logger)
                     let er = test
                         ? Error.Empty
