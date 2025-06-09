@@ -20,7 +20,7 @@ public partial class SettlementTests {
             hotel.SettledIn([person.Id], room, departureDatePlanned: departureDate);
 
             // Assert
-            var _ = new AssertionScope();
+            using var _ = new AssertionScope();
 
             room.IsFree.Should().BeFalse();
 
@@ -64,7 +64,7 @@ public partial class SettlementTests {
             hotel.SettledIn(persons.Select(x => x.Id), room, yesterday, departureDate);
 
             // Assert
-            var _ = new AssertionScope();
+            using var _ = new AssertionScope();
 
             room.IsFree.Should().BeFalse();
 
@@ -110,7 +110,7 @@ public partial class SettlementTests {
             hotel.SettledIn(latestPersons.Select(x => x.Id), room, yesterday, departureDate);
 
             // Assert
-            var _ = new AssertionScope();
+            using var _ = new AssertionScope();
 
             room.IsFree.Should().BeFalse();
 

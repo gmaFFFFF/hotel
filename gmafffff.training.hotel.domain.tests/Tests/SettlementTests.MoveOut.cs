@@ -10,20 +10,25 @@ public partial class SettlementTests {
         /// </summary>
         [Theory]
         [HotelAutodata]
-        public void AfterCheckOutRoomAvailableForCheckIn(Person<Guid> person, HotelBlock<int, Guid> hotel) {
+        public void AfterCheckOutRoomAvailableForCheckIn(Person<Guid> person, HotelBlock<int, Guid> hotel, byte duration) {
             // Arrange
-            var room = hotel.FindSuitable(RoomType.None, capacity: 1).First();
+            var arrivalDate = DateOnly.FromDateTime(DateTime.Today).AddDays(-duration);
+            var departureDate = DateOnly.FromDateTime(DateTime.Today);
+
+            var room = hotel.FindSuitable(RoomType.None, capacity: 1).MinBy(r => r.RoomDetails.Type);
+            hotel.SettledIn([person.Id], room, arrivalDate: arrivalDate,  departureDatePlanned: departureDate);
 
             // Act
-            hotel.SettledIn([person.Id], room);
+            hotel.MoveOut(room, null);
 
             // Assert
-            var _ = new AssertionScope();
+            using var _ = new AssertionScope();
 
             room.IsFree.Should().BeTrue();
 
             hotel.FindSuitable(RoomType.None, capacity: 1).Should()
                 .Contain(room);
+
         }
 
         /// <summary>
@@ -44,14 +49,14 @@ public partial class SettlementTests {
             var report = hotel.MoveOut(room, departureDate);
 
             // Assert
-            var _ = new AssertionScope();
+            using var _ = new AssertionScope();
             var tariff = hotel.Tariffs.Single(t => t.TariffDetails.Type == room.RoomDetails.Type).TariffDetails;
             var price = tariff.Value;
 
             report.ArrivalDate.Should().Be(arrivalDate);
             report.DepartureDate.Should().Be(departureDate);
             report.Duration.Should().Be(duration);
-            report.Price.Should().Be(price);
+            report.Price.Should().Be(price * duration);
             report.RoomDetails.Should().Be(room.RoomDetails);
             report.TariffDetails.Should().Be(tariff);
             report.Visitors.Should().BeEquivalentTo(persons.Select(x => x.Id));
