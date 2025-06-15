@@ -29,6 +29,15 @@ public interface IDomainEventEmitter {
         DomainEventSink = null;
         return this;
     }
+
+    /// <summary>
+    ///     Испустить событие предметной области
+    /// </summary>
+    /// <param name="event"></param>
+    IDomainEventEmitter EmitDomainEvent(IDomainEvent @event) {
+        DomainEventSink?.AddEvent(@event);
+        return this;
+    }
 }
 
 /// <summary>

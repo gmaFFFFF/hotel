@@ -19,9 +19,8 @@ public interface IDomainEventHandler<in TDomainEvent> : IDomainEventHandler
     where TDomainEvent : IDomainEvent {
     async Task<Fin<Unit>> IDomainEventHandler.HandleAsync(IDomainEvent @event, DomainEventDispatcherContext context,
         CancellationToken cancel) {
-        return await HandleAsync(@event, context, cancel).ConfigureAwait(false);
+        return await HandleAsync((TDomainEvent)@event, context, cancel).ConfigureAwait(false);
     }
-
 
     Task<Fin<Unit>> HandleAsync(TDomainEvent @event, DomainEventDispatcherContext context,
         CancellationToken cancel = default);
