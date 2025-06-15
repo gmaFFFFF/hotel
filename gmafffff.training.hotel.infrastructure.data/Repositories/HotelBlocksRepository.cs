@@ -1,4 +1,5 @@
-﻿using gmafffff.starterKit.EntityFrameworkCore;
+﻿using gmafffff.starterKit.Domain.Events;
+using gmafffff.starterKit.EntityFrameworkCore;
 using gmafffff.training.hotel.domain.Dto.PropertyManagement;
 using gmafffff.training.hotel.infrastructure.data.Sessions;
 
@@ -13,11 +14,14 @@ public class HotelBlocksRepository :
     protected Func<Expression<Func<Room<Guid>, bool>>, IQueryable<Room<Guid>>> GetRoom = null!;
     protected Func<Expression<Func<Room<Guid>, bool>>, IQueryable<HotelBlock<int, Guid>>> LoadWithRoomFilter = null!;
 
-    public HotelBlocksRepository(HotelDbContext context, IPropertyManagementMapper propertyManagementMapper) : base(
+    public HotelBlocksRepository(HotelDbContext context, IPropertyManagementMapper propertyManagementMapper,
+        IDomainEventSink? domainEventSink = null) : base(
         context,
         autoInclude: static hotel => hotel
             .Include(h => h.Tariffs)
-            .Include(h => h.Rooms)) {
+            .Include(h => h.Rooms)
+            .ThenInclude(r => r.RoomCleanings.AsQueryable().Where(cleaning => !cleaning.IsClean)),
+        domainEventSink: domainEventSink) {
         PropertyManagementMapper = propertyManagementMapper;
     }
 
@@ -50,6 +54,7 @@ public class HotelBlocksRepository :
                 spec: h => h.Rooms.AsQueryable().Any(predicate),
                 include: h => h
                     .Include(h => h.Rooms.AsQueryable().Where(predicate))
+                    .ThenInclude(r => r.RoomCleanings.Where(cleaning => !cleaning.IsClean))
                     .Include(h => h.Tariffs)
             );
 

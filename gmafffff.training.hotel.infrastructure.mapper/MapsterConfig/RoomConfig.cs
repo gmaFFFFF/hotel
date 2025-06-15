@@ -14,13 +14,13 @@ public class RoomConfig : StandardMapsterConfig {
             .GenerateMapper(All);
 
         config.ForType<RoomDto, Room<Guid>>()
-            .Ignore(d => d.Visit!)
+            .Ignore(d => d.Visit!, d => d.RoomCleanings)
             .GenerateMapper(Instance);
 
         // RoomUpdateDto
         config.NewConfig<RoomUpdateDto, Room<Guid>>()
             .Map(member: d => d.RoomDetails, source: s => s)
-            .Ignore(d => d.Id, d => d.Visit!)
+            .Ignore(d => d.Id, d => d.Visit!, d => d.RoomCleanings)
             .GenerateMapper(MapType.MapToTarget);
 
         // RoomAddDto

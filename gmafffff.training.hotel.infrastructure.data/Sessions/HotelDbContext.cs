@@ -11,6 +11,7 @@ public sealed class HotelDbContext : DbContext {
     public DbSet<Person<Guid>> Persons { get; set; }
     public DbSet<HotelBlock<int, Guid>> HotelRooms { get; set; }
     public DbSet<AccommodationReport<Guid>> AccommodationReports { get; set; }
+    public DbSet<RoomCleaning> RoomCleanings { get; set; }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder) {
         configurationBuilder

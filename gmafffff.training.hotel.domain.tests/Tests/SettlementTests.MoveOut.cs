@@ -1,4 +1,7 @@
-﻿using JetBrains.Annotations;
+﻿using gmafffff.starterKit.Domain.Events;
+using gmafffff.training.hotel.domain.DomainEvents;
+using JetBrains.Annotations;
+using NSubstitute;
 
 namespace gmafffff.training.hotel.domain.tests.Tests;
 
@@ -10,13 +13,14 @@ public partial class SettlementTests {
         /// </summary>
         [Theory]
         [HotelAutodata]
-        public void AfterCheckOutRoomAvailableForCheckIn(Person<Guid> person, HotelBlock<int, Guid> hotel, byte duration) {
+        public void AfterCheckOutRoomAvailableForCheckIn(Person<Guid> person, HotelBlock<int, Guid> hotel,
+            byte duration) {
             // Arrange
             var arrivalDate = DateOnly.FromDateTime(DateTime.Today).AddDays(-duration);
             var departureDate = DateOnly.FromDateTime(DateTime.Today);
 
             var room = hotel.FindSuitable(RoomType.None, capacity: 1).MinBy(r => r.RoomDetails.Type);
-            hotel.SettledIn([person.Id], room, arrivalDate: arrivalDate,  departureDatePlanned: departureDate);
+            hotel.SettledIn([person.Id], room, arrivalDate: arrivalDate, departureDatePlanned: departureDate);
 
             // Act
             hotel.MoveOut(room, null);
@@ -28,7 +32,32 @@ public partial class SettlementTests {
 
             hotel.FindSuitable(RoomType.None, capacity: 1).Should()
                 .Contain(room);
+        }
 
+        /// <summary>
+        ///     Выселение завершается событием <see cref="MoveOutDomainEvent" />
+        /// </summary>
+        [Theory]
+        [HotelAutodata]
+        public void CheckOutEndsWithMoveOutDomainEvent(Person<Guid> person, HotelBlock<int, Guid> hotel,
+            byte duration) {
+            // Arrange
+            var arrivalDate = DateOnly.FromDateTime(DateTime.Today).AddDays(-duration);
+            var departureDate = DateOnly.FromDateTime(DateTime.Today);
+            var room = hotel.FindSuitable(RoomType.None, capacity: 1).MinBy(r => r.RoomDetails.Type);
+
+            var eventSink = Substitute.For<IDomainEventSink>();
+            ((IDomainEventEmitter<Room<Guid>>)room).SetDomainEventSink(eventSink);
+
+            hotel.SettledIn([person.Id], room, arrivalDate, departureDate);
+
+            // Act
+            hotel.MoveOut(room, departureDate: null);
+
+            // Assert
+            eventSink.Received().AddEvent(Arg.Is<MoveOutDomainEvent>(@event => @event.Sender == room &&
+                                                                               @event.Visit.Visitors
+                                                                                   .Contains(person.Id)));
         }
 
         /// <summary>

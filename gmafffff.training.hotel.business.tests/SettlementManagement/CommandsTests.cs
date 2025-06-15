@@ -136,5 +136,30 @@ public partial class SettlementManagementTests {
             res2.Map(be => be.OfType<MovedOutEvent>().ToArray()).SuccSpan()[0][0].Report.DepartureDate.Should()
                 .Be(DateOnly.FromDateTime(DateTime.Today));
         }
+
+        /// <summary>
+        ///     После выезда из номера требуется его уборка
+        /// </summary>
+        [Fact]
+        public async Task AfterMoveOutRequiresCleaningRoom() {
+            // Arrange
+            var room = FakeHotel.Hotel.Rooms.Where(Room<Guid>.IsFreeRoom.Not().Compile())
+                .First();
+            var command = new MoveOutCommand(room.Id);
+
+            var runner = new BusinessActionRunner<MoveOutCommand>(Scope.ServiceProvider);
+
+            // Act
+            var res = await runner.Execute(command);
+
+            // Assert
+            using var _ = new AssertionScope();
+            res.IsSucc.Should().BeTrue();
+
+            var dirtyRoom = (await HotelRepo.LoadAsync())
+                .Single()
+                .Rooms.Single(Room<Guid>.IsCleanRoom.Not().Compile());
+            dirtyRoom.Id.Should().Be(room.Id);
+        }
     }
 }
