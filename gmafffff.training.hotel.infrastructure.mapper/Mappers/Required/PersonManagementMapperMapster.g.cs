@@ -2,6 +2,7 @@ using System;
 using System.Linq.Expressions;
 using gmafffff.training.hotel.domain.Dto.PersonManagement;
 using gmafffff.training.hotel.domain.Model;
+using gmafffff.training.hotel.infrastructure.mapper.MapsterConfig;
 using gmafffff.training.hotel.infrastructure.mapper.Required;
 
 namespace gmafffff.training.hotel.infrastructure.mapper.Required
@@ -37,7 +38,16 @@ namespace gmafffff.training.hotel.infrastructure.mapper.Required
         }
         public Person<Guid> Map(PersonAddDto p5)
         {
-            return p5 == null ? null : new Person<Guid>() {FullName = p5 == null ? null : new PersonFullName(p5.SurName, p5.FirstName, p5.Patronymic) {}};
+            if (p5 == null)
+            {
+                return null;
+            }
+            Person<Guid> result = new Person<Guid>();
+            
+            result.FullName = p5 == null ? null : new PersonFullName(p5.SurName, p5.FirstName, p5.Patronymic) {};
+            PersonConfig.SetInitialPersonHistory(result);
+            return result;
+            
         }
         public Person<Guid> Update(PersonAddDto p6, Person<Guid> p7)
         {
@@ -48,12 +58,22 @@ namespace gmafffff.training.hotel.infrastructure.mapper.Required
             Person<Guid> result = p7 ?? new Person<Guid>();
             
             result.FullName = funcMain1(p6, result.FullName);
+            PersonConfig.SetInitialPersonHistory(result);
             return result;
             
         }
         public Person<Guid> Map(PersonUpdateDto p10)
         {
-            return p10 == null ? null : new Person<Guid>() {FullName = (PersonAddDto)p10 == null ? null : new PersonFullName(((PersonAddDto)p10).SurName, ((PersonAddDto)p10).FirstName, ((PersonAddDto)p10).Patronymic) {}};
+            if (p10 == null)
+            {
+                return null;
+            }
+            Person<Guid> result = new Person<Guid>();
+            
+            result.FullName = p10 == null ? null : new PersonFullName(p10.SurName, p10.FirstName, p10.Patronymic) {};
+            PersonConfig.SetInitialPersonHistory(result);
+            return result;
+            
         }
         public Person<Guid> Update(PersonUpdateDto p11, Person<Guid> p12)
         {
@@ -63,7 +83,8 @@ namespace gmafffff.training.hotel.infrastructure.mapper.Required
             }
             Person<Guid> result = p12 ?? new Person<Guid>();
             
-            result.FullName = funcMain2((PersonAddDto)p11, result.FullName);
+            result.FullName = funcMain2(p11, result.FullName);
+            PersonConfig.SetInitialPersonHistory(result);
             return result;
             
         }
@@ -79,7 +100,7 @@ namespace gmafffff.training.hotel.infrastructure.mapper.Required
             
         }
         
-        private PersonFullName funcMain2(PersonAddDto p13, PersonFullName p14)
+        private PersonFullName funcMain2(PersonUpdateDto p13, PersonFullName p14)
         {
             if (p13 == null)
             {

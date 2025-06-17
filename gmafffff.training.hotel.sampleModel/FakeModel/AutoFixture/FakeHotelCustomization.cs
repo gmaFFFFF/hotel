@@ -12,6 +12,7 @@ public class FakeHotelCustomization : ICustomization {
         fixture.Customizations.Add(new TariffGenerator());
 
         fixture.Customize<Room<Guid>>(c => c.Without(room => room.Visit).Without(room => room.RoomCleanings));
+        fixture.Customize<Person<Guid>>(c => c.With(person => person.History, new VisitorHistory(Count: 0, Duration: 0)));
 
         var hotelBlockId = 1;
         fixture.Customize<HotelBlock<int, Guid>>(c =>

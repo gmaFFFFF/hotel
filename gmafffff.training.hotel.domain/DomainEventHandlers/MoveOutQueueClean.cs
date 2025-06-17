@@ -4,6 +4,9 @@ using LanguageExt;
 
 namespace gmafffff.training.hotel.domain.DomainEventHandlers;
 
+/// <summary>
+///     Событие выселения ставит номер в очередь на уборку
+/// </summary>
 public class MoveOutQueueClean : IDomainEventHandler<MoveOutDomainEvent> {
     public Task<Fin<Unit>> HandleAsync(MoveOutDomainEvent @event, DomainEventDispatcherContext context,
         CancellationToken cancel = default) {

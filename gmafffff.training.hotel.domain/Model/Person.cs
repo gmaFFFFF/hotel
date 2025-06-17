@@ -10,4 +10,9 @@ public class Person<TId> : Entity<TId> where TId : struct, IEquatable<TId> {
     ///     ФИО
     /// </summary>
     public PersonFullName FullName { get; set; }
+
+    /// <summary>
+    ///     История проживания в гостинице
+    /// </summary>
+    public VisitorHistory History { get; set; }
 }

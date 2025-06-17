@@ -1,6 +1,7 @@
 using System;
 using gmafffff.training.hotel.domain.Dto.PersonManagement;
 using gmafffff.training.hotel.domain.Model;
+using gmafffff.training.hotel.infrastructure.mapper.MapsterConfig;
 
 namespace gmafffff.training.hotel.domain.Dto.PersonManagement
 {
@@ -14,12 +15,13 @@ namespace gmafffff.training.hotel.domain.Dto.PersonManagement
             }
             Person<Guid> result = p2 ?? new Person<Guid>();
             
-            result.FullName = funcMain1((PersonAddDto)p1, result.FullName);
+            result.FullName = funcMain1(p1, result.FullName);
+            PersonConfig.SetInitialPersonHistory(result);
             return result;
             
         }
         
-        private static PersonFullName funcMain1(PersonAddDto p3, PersonFullName p4)
+        private static PersonFullName funcMain1(PersonUpdateDto p3, PersonFullName p4)
         {
             if (p3 == null)
             {

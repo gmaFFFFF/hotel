@@ -8,5 +8,6 @@ public class PersonConfig : IEntityTypeConfiguration<Person<Guid>> {
 
         // Комплексные свойства
         builder.ComplexProperty(x => x.FullName);
+        builder.ComplexProperty(x => x.History);
     }
 }

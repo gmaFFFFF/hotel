@@ -14,17 +14,23 @@ public class PersonConfig : StandardMapsterConfig {
             .GenerateMapper(All);
 
         config.ForType<PersonDto, Person<Guid>>()
+            .Ignore(d => d.History)
             .GenerateMapper(Instance);
 
         // PersonAddDto
         config.ForType<PersonAddDto, Person<Guid>>()
             .Map(member: d => d.FullName, source: s => s)
-            .Ignore(d => d.Id)
+            .Ignore(d => d.Id, d => d.History)
+            .AfterMappingInline(person => SetInitialPersonHistory(person))
             .GenerateMapper(MapType.Map);
 
         // PersonUpdateDto
         config.ForType<PersonUpdateDto, Person<Guid>>()
-            .Inherits<PersonAddDto, Person<Guid>>()
+            .Map(member: d => d.FullName, source: s => s)
+            .Ignore(d => d.Id, d => d.History)
             .GenerateMapper(MapType.MapToTarget);
+    }
+    public static void SetInitialPersonHistory(Person<Guid> person){
+        person.History ??= new VisitorHistory(0, 0);
     }
 }
