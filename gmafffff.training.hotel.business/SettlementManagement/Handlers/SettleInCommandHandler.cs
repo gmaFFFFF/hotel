@@ -4,15 +4,18 @@ using gmafffff.training.hotel.business.SettlementManagement.Commands;
 using gmafffff.training.hotel.business.SettlementManagement.Events;
 using gmafffff.training.hotel.domain.Contracts.Repositories;
 using gmafffff.training.hotel.domain.Model;
+using Microsoft.Extensions.Logging;
 
 namespace gmafffff.training.hotel.business.SettlementManagement.Handlers;
 
 public class SettleInCommandHandler(
     IHotelBlocksRepository<int, Guid> repo,
-    IPersonsRepository<Guid> personsRepository)
+    IPersonsRepository<Guid> personsRepository,
+    IServiceProvider serviceProvider,
+    ILogger<SettleInCommandHandler>? logger = null)
     : BusinessCommandDbHandler<SettleInCommand,
         HotelBlock<int, Guid>, int, IHotelBlocksRepository<int, Guid>,
-        HotelBlock<int, Guid>, Room<Guid>>(repo) {
+        HotelBlock<int, Guid>, Room<Guid>>(repo, serviceProvider, logger: logger) {
     protected override async Task<Fin<IList<HotelBlock<int, Guid>>>> LoadAsync(IHotelBlocksRepository<int, Guid> repo,
         CancellationToken cancel = default) {
         var found = (await repo

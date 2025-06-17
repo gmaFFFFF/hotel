@@ -5,6 +5,7 @@ using gmafffff.starterKit.Messaging;
 using gmafffff.starterKit.Messaging.Crud;
 using gmafffff.starterKit.Utils;
 using LanguageExt;
+using Microsoft.Extensions.Logging;
 
 namespace gmafffff.starterKit.BusinessLogic.Crud;
 
@@ -12,11 +13,13 @@ public class UpdateDbCommandHandler<
     TUpdateCommand, TDto, TUpdatedEvent,
     TEntity, TEntityId>(
     IRepository<TEntity, TEntityId> repository,
-    IEntityMapperBackward<TEntity, TEntityId, TDto> mapper)
+    IEntityMapperBackward<TEntity, TEntityId, TDto> mapper,
+    IServiceProvider serviceProvider,
+    ILogger<IBusinessCommandHandler<TUpdateCommand>>? logger = null)
     : BusinessCommandDbHandler<TUpdateCommand,
             TEntity, TEntityId, IRepository<TEntity, TEntityId>,
             TEntity, TEntity>
-        (repository, isSaveToDbSeparately: true)
+        (repository, serviceProvider, isSaveToDbSeparately: true, logger)
     where TUpdateCommand : UpdateBusinessCommand<TEntityId, TDto>
     where TUpdatedEvent : UpdatedBusinessEvent<TEntityId>
     where TEntityId : struct, IEquatable<TEntityId>

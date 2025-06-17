@@ -1,8 +1,12 @@
 using gmafffff.starterKit.Domain;
+using gmafffff.starterKit.Domain.Events;
 using gmafffff.starterKit.Messaging;
 using LanguageExt;
 using LanguageExt.Common;
 using Light.GuardClauses;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace gmafffff.starterKit.BusinessLogic;
 
@@ -19,12 +23,27 @@ namespace gmafffff.starterKit.BusinessLogic;
 public abstract class BusinessCommandDbHandler<
     TCommand,
     TEntity, TId, TRepo,
-    TLoad, TResult>(TRepo repository, bool isSaveToDbSeparately = true) :
+    TLoad, TResult>(
+    TRepo repository,
+    IServiceProvider serviceProvider,
+    bool isSaveToDbSeparately = true,
+    ILogger<IBusinessCommandHandler<TCommand>>? logger = null) :
     IBusinessCommandHandler<TCommand>
     where TCommand : BusinessCommand
     where TEntity : Entity<TId>
     where TId : struct, IEquatable<TId>
     where TRepo : IRepository<TEntity, TId> {
+    /// <summary>
+    ///     Журнал
+    /// </summary>
+    private readonly ILogger<IBusinessCommandHandler<TCommand>> _logger =
+        logger ?? NullLogger<IBusinessCommandHandler<TCommand>>.Instance;
+
+    /// <summary>
+    ///     Контейнер DI
+    /// </summary>
+    protected readonly IServiceProvider ServiceProvider = serviceProvider;
+
     /// <summary>
     ///     Выполнение команды происходит отдельно от сохранения её результата в БД?
     /// </summary>
@@ -79,9 +98,10 @@ public abstract class BusinessCommandDbHandler<
         var steps =
             from loaded in load(repository)
             from res in act(loaded)
+            from _ in DispatchDomainEvent()
             from count in saveSeparate(res, repository)
-            from events in pack(res)
-            select events;
+            from businessEvents in pack(res)
+            select businessEvents;
 
         var run = await steps
             .Run()
@@ -146,6 +166,17 @@ public abstract class BusinessCommandDbHandler<
     ///     Упаковывает результат в событие и сохраняет в <see cref="Result" />
     /// </summary>
     protected abstract IList<BusinessEvent> PackResultToEvent(IList<TResult> result);
+
+    private FinT<IO, Unit> DispatchDomainEvent() {
+        var dispatcher = serviceProvider.GetRequiredService<IDomainEventDispatcher>();
+        var dispatch = FinT<IO, Unit>.LiftIO(IO.liftAsync(
+            async env => await dispatcher.DispatchAsync(env.Token).ConfigureAwait(false)));
+
+        dispatch.IfSucc(_ => _logger.LogTrace("Успешно обработаны доменные события"));
+        dispatch.IfFail(error => _logger.LogTrace("При обработке доменных ошибок возникли ошибки: {@Errors}", error));
+
+        return dispatch;
+    }
 
     /// <summary>
     ///     Аргументы события, вызываемого перед сохранением результатов выполнения команды

@@ -3,13 +3,17 @@ using gmafffff.starterKit.Messaging.Crud;
 using gmafffff.training.hotel.business.PropertyManagement.Commands;
 using gmafffff.training.hotel.domain.Contracts.Repositories;
 using gmafffff.training.hotel.domain.Model;
+using Microsoft.Extensions.Logging;
 
 namespace gmafffff.training.hotel.business.PropertyManagement.Handlers;
 
-public class RemoveRoomCommandHandler(IHotelBlocksRepository<int, Guid> repo)
+public class RemoveRoomCommandHandler(
+    IHotelBlocksRepository<int, Guid> repo,
+    IServiceProvider serviceProvider,
+    ILogger<RemoveRoomCommandHandler>? logger = null)
     : BusinessCommandDbHandler<RemoveRoomsCommand,
         HotelBlock<int, Guid>, int, IHotelBlocksRepository<int, Guid>,
-        HotelBlock<int, Guid>, Room<Guid>>(repo) {
+        HotelBlock<int, Guid>, Room<Guid>>(repo, serviceProvider, logger: logger) {
     protected override async Task<Fin<IList<HotelBlock<int, Guid>>>> LoadAsync(IHotelBlocksRepository<int, Guid> repo,
         CancellationToken cancel = default) {
         var load = await repo

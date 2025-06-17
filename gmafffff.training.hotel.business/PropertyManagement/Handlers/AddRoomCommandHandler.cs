@@ -5,13 +5,18 @@ using gmafffff.training.hotel.business.PropertyManagement.Commands;
 using gmafffff.training.hotel.domain.Contracts.Mappers;
 using gmafffff.training.hotel.domain.Contracts.Repositories;
 using gmafffff.training.hotel.domain.Model;
+using Microsoft.Extensions.Logging;
 
 namespace gmafffff.training.hotel.business.PropertyManagement.Handlers;
 
-public class AddRoomCommandHandler(IHotelBlocksRepository<int, Guid> repo, IPropertyManagementMapper mapper)
+public class AddRoomCommandHandler(
+    IHotelBlocksRepository<int, Guid> repo,
+    IPropertyManagementMapper mapper,
+    IServiceProvider serviceProvider,
+    ILogger<AddRoomCommandHandler>? logger = null)
     : BusinessCommandDbHandler<AddRoomCommand,
         HotelBlock<int, Guid>, int, IHotelBlocksRepository<int, Guid>,
-        HotelBlock<int, Guid>, Room<Guid>>(repo) {
+        HotelBlock<int, Guid>, Room<Guid>>(repo, serviceProvider, logger: logger) {
     protected override async Task<Fin<IList<HotelBlock<int, Guid>>>> LoadAsync(IHotelBlocksRepository<int, Guid> repo,
         CancellationToken cancel = default) {
         var loaded = await repo

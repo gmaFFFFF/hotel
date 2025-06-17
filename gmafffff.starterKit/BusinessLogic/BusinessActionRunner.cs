@@ -1,6 +1,5 @@
 using System.Transactions;
 using gmafffff.starterKit.AppError;
-using gmafffff.starterKit.Domain.Events;
 using gmafffff.starterKit.Messaging;
 using LanguageExt;
 using LanguageExt.Common;
@@ -88,22 +87,14 @@ public class BusinessActionRunner<TCommand>(
 
         FinT<IO, IList<BusinessEvent>> Handle(TCommand cmd) {
             var handler = ServiceProvider.GetRequiredService<IBusinessCommandHandler<TCommand>>();
-            var dispatcher = ServiceProvider.GetRequiredService<IDomainEventDispatcher>();
 
             var execute = FinT<IO, IList<BusinessEvent>>.LiftIO(IO.liftAsync(
                 async env => await handler.ExecuteAsync(cmd, env.Token).ConfigureAwait(false)));
-            var dispatch = FinT<IO, Unit>.LiftIO(IO.liftAsync(
-                async env => await dispatcher.DispatchAsync(env.Token).ConfigureAwait(false)));
 
-            var steps =
-                from events in execute
-                from _2 in dispatch
-                select events;
+            execute.IfSucc(events => _logger.LogTrace("Результат исполнения команды: {@Events}", events));
+            execute.IfFail(error => _logger.LogTrace("Невозможно выполнить команду: {@Errors}", error));
 
-            steps.IfSucc(events => _logger.LogTrace("Результат исполнения команды: {@Events}", events));
-            steps.IfFail(error => _logger.LogTrace("Невозможно выполнить команду: {@Errors}", error));
-
-            return steps;
+            return execute;
         }
     }
 

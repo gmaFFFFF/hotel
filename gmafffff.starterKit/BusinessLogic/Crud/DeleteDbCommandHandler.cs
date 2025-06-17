@@ -3,15 +3,19 @@ using gmafffff.starterKit.Messaging;
 using gmafffff.starterKit.Messaging.Crud;
 using gmafffff.starterKit.Utils;
 using LanguageExt;
+using Microsoft.Extensions.Logging;
 
 namespace gmafffff.starterKit.BusinessLogic.Crud;
 
 public class DeleteDbCommandHandler<
     TDeleteCommand, TDeletedEvent,
-    TEntity, TEntityId>(IRepository<TEntity, TEntityId> repository)
+    TEntity, TEntityId>(
+    IRepository<TEntity, TEntityId> repository,
+    IServiceProvider serviceProvider,
+    ILogger<IBusinessCommandHandler<TDeleteCommand>>? logger = null)
     : BusinessCommandDbHandler<TDeleteCommand,
         TEntity, TEntityId, IRepository<TEntity, TEntityId>,
-        TEntity, TEntity>(repository, isSaveToDbSeparately: true)
+        TEntity, TEntity>(repository, serviceProvider, isSaveToDbSeparately: true, logger)
     where TDeleteCommand : DeleteBusinessCommand<TEntityId>
     where TDeletedEvent : DeletedBusinessEvent<TEntityId>
     where TEntityId : struct, IEquatable<TEntityId>

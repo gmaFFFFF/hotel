@@ -6,7 +6,7 @@ namespace gmafffff.starterKit.tests.Di.Fixtures;
 
 public class TestBusinessCommandDbHandler() : BusinessCommandDbHandler<DbHandlerCommand,
     BusinessEntity, int, Repo, DbHandlerStatus,
-    DbHandlerStatus>(new Repo()) {
+    DbHandlerStatus>(new Repo(), null!) {
     protected override IList<BusinessEvent> PackResultToEvent(IList<DbHandlerStatus> result) {
         throw new NotImplementedException();
     }
