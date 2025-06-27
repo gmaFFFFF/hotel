@@ -3,6 +3,7 @@ using System.Linq.Expressions;
 using gmafffff.starterKit.Domain;
 using gmafffff.starterKit.Domain.Events;
 using JetBrains.Annotations;
+using Light.GuardClauses;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 
@@ -421,16 +422,13 @@ public class Repository<T, TId> : IRepository<T, TId>
     public Repository(DbContext dbContext)
         : this(dbContext, domainEventSink: null, autoInclude: null) { }
 
-    public Repository(DbContext dbContext, IDomainEventSink domainEventSink)
-        : this(dbContext, domainEventSink, autoInclude: null) { }
-
     public Repository(DbContext dbContext, Func<IQueryable<T>, IIncludableQueryable<T, object>> autoInclude)
         : this(dbContext, domainEventSink: null, autoInclude) { }
 
     public Repository(DbContext dbContext,
         IDomainEventSink? domainEventSink,
         Func<IQueryable<T>, IIncludableQueryable<T, object>>? autoInclude = null) {
-        Context = dbContext;
+        Context = dbContext.MustNotBeNull();
         Entities = dbContext.Set<T>();
         DomainEventSink = domainEventSink;
         DomainEventSink?.RegisterDbContext(Context);

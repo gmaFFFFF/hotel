@@ -31,7 +31,6 @@ public abstract class Entity<TId> : IEntity
     /// </summary>
     public TId Id { get; set; }
 
-
     #region Поддержка сравнения
 
     /// <summary>

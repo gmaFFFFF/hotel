@@ -1,6 +1,7 @@
 ﻿using gmafffff.starterKit.Domain;
 using gmafffff.starterKit.Domain.Events;
 using LanguageExt;
+using Light.GuardClauses;
 using Light.GuardClauses.FrameworkExtensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -23,7 +24,7 @@ public class DomainEventProcessor(
     /// <summary>
     ///     Контейнер DI
     /// </summary>
-    protected readonly IServiceProvider ServiceProvider = serviceProvider;
+    protected readonly IServiceProvider ServiceProvider = serviceProvider.MustNotBeNull();
 
     /// <summary>
     ///     Индекс первого необработанного события
@@ -117,7 +118,8 @@ public class DomainEventProcessor(
             return from state in StateT.get<FinT<IO>, HandleState>()
                 select new DomainEventDispatcherContext(
                     state.Events.Skip(state.UnhandledEventIndex).Skip(1).ToArray(),
-                    state.Events.Take(state.UnhandledEventIndex).ToArray()
+                    state.Events.Take(state.UnhandledEventIndex).ToArray(),
+                    state.ServiceProvider
                 );
         }
 

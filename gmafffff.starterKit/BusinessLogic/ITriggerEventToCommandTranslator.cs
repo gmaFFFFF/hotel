@@ -23,7 +23,7 @@ public interface ITriggerEventToCommandTranslator {
 public interface ITriggerEventToCommandTranslator<in TTrigger> : ITriggerEventToCommandTranslator
     where TTrigger : TriggerEvent {
     IEnumerable<BusinessCommand> ITriggerEventToCommandTranslator.Translate(TriggerEvent trigger) {
-        return Translate(trigger);
+        return Translate((TTrigger)trigger);
     }
 
     /// <summary>

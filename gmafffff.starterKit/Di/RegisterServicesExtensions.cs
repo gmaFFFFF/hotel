@@ -7,6 +7,7 @@ using gmafffff.starterKit.Mappers;
 using gmafffff.starterKit.Messaging;
 using Mapster;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Scrutor;
 using Validot;
 
@@ -121,9 +122,10 @@ public static class RegisterServicesExtensions {
     /// </summary>
     /// <param name="this">Описание служб</param>
     public static IServiceCollection AddDomainEventProcessor(this IServiceCollection @this) {
-        return @this.AddScoped<DomainEventProcessor>()
-            .AddScoped<IDomainEventSink>(provider => provider.GetRequiredService<DomainEventProcessor>())
-            .AddScoped<IDomainEventDispatcher>(provider => provider.GetRequiredService<DomainEventProcessor>());
+        @this.TryAddScoped<DomainEventProcessor>();
+        @this.TryAddScoped<IDomainEventSink>(provider => provider.GetRequiredService<DomainEventProcessor>());
+        @this.TryAddScoped<IDomainEventDispatcher>(provider => provider.GetRequiredService<DomainEventProcessor>());
+        return @this;
     }
 
     /// <summary>
@@ -208,7 +210,7 @@ public static class RegisterServicesExtensions {
             ? assemblies
             : AppDomain.CurrentDomain.GetAssemblies();
 
-        lock (_mapsterLock) {
+        lock (MapsterLock) {
             if (_isMapsterConfigured) return;
 
             var configs = TypeAdapterConfig.GlobalSettings.Scan(assembliesToScan);
@@ -226,7 +228,7 @@ public static class RegisterServicesExtensions {
     /// <summary>
     ///     Блокировка конфигурации Mapster (для параллельно выполняемых тестов)
     /// </summary>
-    private static readonly object _mapsterLock = new();
+    private static readonly object MapsterLock = new();
 
     /// <summary>
     ///     Сформирована ли конфигурация Mapster (для параллельно выполняемых тестов)
@@ -241,15 +243,14 @@ public static class RegisterServicesExtensions {
     ///     Регистрирует в сервисе внедрения зависимостей элементы бизнес-логики:
     ///     <list type="bullet">
     ///         <item>Исполнитель команд <see cref="IBusinessActionRunner{TCommand}" /></item>
+    ///         <item>Проверяющих команд <see cref="ISpecificationHolder{T}" /></item>
+    ///         <item>Проверяющих бизнес-ограничения <see cref="IBusinessConstraintCheck{TCommand}" /></item>
     ///         <item>
-    ///             Проверяющих команд <see cref="ISpecificationHolder{T}" />/item>
-    ///             <item>Проверяющих бизнес-ограничения <see cref="IBusinessConstraintCheck{TCommand}" /></item>
-    ///             <item>
-    ///                 Обработчики бизнес команд
-    ///                 <see cref="BusinessCommandDbHandler{TCommand,TEntity,TId,TRepo,TLoad,TResult}" />
-    ///             </item>
-    ///             <item>Обработчики запросов <see cref="IQueryHandler{TQuery,TResult}" /></item>
-    ///             <item>Конверторы <see cref="ITriggerEventToCommandTranslator{T}" />/item>
+    ///             Обработчики бизнес команд
+    ///             <see cref="BusinessCommandDbHandler{TCommand,TEntity,TId,TRepo,TLoad,TResult}" />
+    ///         </item>
+    ///         <item>Обработчики запросов <see cref="IQueryHandler{TQuery,TResult}" /></item>
+    ///         <item>Конверторы <see cref="ITriggerEventToCommandTranslator{T}" /></item>
     ///     </list>
     /// </summary>
     /// <param name="this">Описание служб</param>
@@ -272,7 +273,8 @@ public static class RegisterServicesExtensions {
     /// <param name="this"></param>
     /// <returns></returns>
     internal static IServiceCollection AddBusinessActionRunner(this IServiceCollection @this) {
-        return @this.AddTransient(typeof(IBusinessActionRunner<>), typeof(BusinessActionRunner<>));
+        @this.TryAddTransient(typeof(IBusinessActionRunner<>), typeof(BusinessActionRunner<>));
+        return @this;
     }
 
     /// <summary>

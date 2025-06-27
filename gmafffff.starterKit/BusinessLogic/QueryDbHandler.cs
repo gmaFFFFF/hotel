@@ -1,6 +1,7 @@
 using gmafffff.starterKit.AppError;
 using gmafffff.starterKit.Messaging;
 using LanguageExt;
+using Light.GuardClauses;
 
 namespace gmafffff.starterKit.BusinessLogic;
 
@@ -12,12 +13,13 @@ namespace gmafffff.starterKit.BusinessLogic;
 public abstract class QueryDbHandler<TQuery, TResult> : IQueryHandler<TQuery, TResult>
     where TQuery : Query<TResult> {
     public async Task<Fin<IList<TResult>>> RunQueryAsync(TQuery query, CancellationToken cancel = default) {
+        query.MustNotBeNull();
         try {
             var result = await CreateDbQuery(query, cancel).ConfigureAwait(false);
             return Fin<IList<TResult>>.Succ(result.ToList());
         }
         catch (OperationCanceledException) {
-            throw;
+            return AppErrorHelper.NewError(AppErrorCode.OperationCancel);
         }
         catch (Exception ex) {
             return AppErrorHelper.NewError(ex);

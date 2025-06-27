@@ -14,7 +14,6 @@ namespace gmafffff.starterKit.BusinessLogic;
 ///     Устанавливает типовой порядок выполнения команды, связанной с записью в БД
 /// </summary>
 /// <typeparam name="TCommand">Исполняемая бизнес-команда</typeparam>
-/// <typeparam name="TEvent">Событие в ответ на команду</typeparam>
 /// <typeparam name="TRepo">Оперативный склад, используемый для запроса</typeparam>
 /// <typeparam name="TEntity">Сущность — корень агрегата</typeparam>
 /// <typeparam name="TId">Идентификатор сущности</typeparam>
@@ -42,7 +41,7 @@ public abstract class BusinessCommandDbHandler<
     /// <summary>
     ///     Контейнер DI
     /// </summary>
-    protected readonly IServiceProvider ServiceProvider = serviceProvider;
+    protected readonly IServiceProvider ServiceProvider = serviceProvider.MustNotBeNull();
 
     /// <summary>
     ///     Выполнение команды происходит отдельно от сохранения её результата в БД?

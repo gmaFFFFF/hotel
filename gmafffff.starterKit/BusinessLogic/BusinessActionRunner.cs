@@ -3,6 +3,7 @@ using gmafffff.starterKit.AppError;
 using gmafffff.starterKit.Messaging;
 using LanguageExt;
 using LanguageExt.Common;
+using Light.GuardClauses;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -32,7 +33,7 @@ public class BusinessActionRunner<TCommand>(
     /// <summary>
     ///     Контейнер DI
     /// </summary>
-    protected readonly IServiceProvider ServiceProvider = serviceProvider;
+    protected readonly IServiceProvider ServiceProvider = serviceProvider.MustNotBeNull();
 
     /// <summary>
     ///     Собрать выявленные ошибки формальной корректности модели (не рекомендуется),
