@@ -6,31 +6,31 @@ namespace gmafffff.training.hotel.infrastructure.data.tests.Tests;
 [TestSubject(typeof(HotelBlock<,>))]
 [TestSubject(typeof(AccommodationReport<>))]
 [TestSubject(typeof(Person<>))]
-public class SimplePersistenceRepositoriesTests : IClassFixture<SqliteDbFixture> {
+public class SimplePersistenceRepositoriesTests : IClassFixture<SqliteHotelDbFixture> {
     private readonly FakeHotel _fakeHotel = new FakeHotelBuilder().Build();
-    private readonly SqliteDbFixture _sqliteDbFixture;
+    private readonly SqliteHotelDbFixture _sqliteHotelDbFixture;
 
-    public SimplePersistenceRepositoriesTests(SqliteDbFixture sqliteDbFixture, ITestOutputHelper output) {
-        _sqliteDbFixture = sqliteDbFixture;
+    public SimplePersistenceRepositoriesTests(SqliteHotelDbFixture sqliteHotelDbFixture, ITestOutputHelper output) {
+        _sqliteHotelDbFixture = sqliteHotelDbFixture;
 
-        _sqliteDbFixture.LogAction = output.WriteLine;
+        _sqliteHotelDbFixture.LogAction = output.WriteLine;
         // Для вывода лога в файл на рабочем столе
-        // _sqliteDbFixture.LogAction = _sqliteDbFixture.DefaultFileLogStream.WriteLine;
+        // _sqliteHotelDbFixture.LogAction = _sqliteHotelDbFixture.DefaultFileLogStream.WriteLine;
 
         ClearDb().Wait();
     }
 
     private async Task ClearDb() {
-        await new PersonsRepository(_sqliteDbFixture.CreateDbContext(), null!).DeleteBulkAsync(_ => true);
-        await new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext()).DeleteBulkAsync(_ => true);
-        await new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!).DeleteBulkAsync(_ => true);
+        await new PersonsRepository(_sqliteHotelDbFixture.CreateDbContext(), null!).DeleteBulkAsync(_ => true);
+        await new AccommodationReportsRepository(_sqliteHotelDbFixture.CreateDbContext()).DeleteBulkAsync(_ => true);
+        await new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext(), null!).DeleteBulkAsync(_ => true);
     }
 
     [Fact]
     public async Task CanSaveHotelBlock() {
         // Arrange
-        var repoInit = new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!);
-        var repoTest = new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!);
+        var repoInit = new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext(), null!);
+        var repoTest = new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext(), null!);
         IList<HotelBlock<int, Guid>>? saved = null;
 
         repoInit.Add(_fakeHotel.Hotel);
@@ -49,8 +49,8 @@ public class SimplePersistenceRepositoriesTests : IClassFixture<SqliteDbFixture>
     [Fact]
     public async Task CanSavePersons() {
         // Arrange
-        var repoInit = new PersonsRepository(_sqliteDbFixture.CreateDbContext(), null!);
-        var repoTest = new PersonsRepository(_sqliteDbFixture.CreateDbContext(), null!);
+        var repoInit = new PersonsRepository(_sqliteHotelDbFixture.CreateDbContext(), null!);
+        var repoTest = new PersonsRepository(_sqliteHotelDbFixture.CreateDbContext(), null!);
         IList<Person<Guid>>? saved = null;
 
         repoInit.Add(_fakeHotel.Persons);
@@ -72,8 +72,8 @@ public class SimplePersistenceRepositoriesTests : IClassFixture<SqliteDbFixture>
     [Fact]
     public async Task CanSaveAccommodationReports() {
         // Arrange
-        var repoInit = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
-        var repoTest = new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext());
+        var repoInit = new AccommodationReportsRepository(_sqliteHotelDbFixture.CreateDbContext());
+        var repoTest = new AccommodationReportsRepository(_sqliteHotelDbFixture.CreateDbContext());
         IList<AccommodationReport<Guid>>? saved = null;
 
         repoInit.Add(_fakeHotel.Reports);

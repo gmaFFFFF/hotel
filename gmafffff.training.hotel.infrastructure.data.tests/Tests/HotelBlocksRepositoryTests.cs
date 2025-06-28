@@ -7,25 +7,25 @@ using JetBrains.Annotations;
 namespace gmafffff.training.hotel.infrastructure.data.tests.Tests;
 
 [TestSubject(typeof(HotelBlocksRepository))]
-public class HotelBlocksRepositoryTests : IClassFixture<SqliteDbFixture> {
+public class HotelBlocksRepositoryTests : IClassFixture<SqliteHotelDbFixture> {
     private readonly FakeHotel _fakeHotel = new FakeHotelBuilder().Build();
     private readonly IPropertyManagementMapper _mapper = new PropertyManagementMapperMapster();
-    private readonly SqliteDbFixture _sqliteDbFixture;
+    private readonly SqliteHotelDbFixture _sqliteHotelDbFixture;
 
-    public HotelBlocksRepositoryTests(SqliteDbFixture sqliteDbFixture, ITestOutputHelper output) {
-        _sqliteDbFixture = sqliteDbFixture;
+    public HotelBlocksRepositoryTests(SqliteHotelDbFixture sqliteHotelDbFixture, ITestOutputHelper output) {
+        _sqliteHotelDbFixture = sqliteHotelDbFixture;
 
-        _sqliteDbFixture.LogAction = output.WriteLine;
+        _sqliteHotelDbFixture.LogAction = output.WriteLine;
         // Для вывода лога в файл на рабочем столе
-        // _sqliteDbFixture.LogAction = _sqliteDbFixture.DefaultFileLogStream.WriteLine;
+        // _sqliteHotelDbFixture.LogAction = _sqliteHotelDbFixture.DefaultFileLogStream.WriteLine;
 
         ClearDb().Wait();
     }
 
     private async Task ClearDb() {
-        await new PersonsRepository(_sqliteDbFixture.CreateDbContext(), null!).DeleteBulkAsync(_ => true);
-        await new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext()).DeleteBulkAsync(_ => true);
-        await new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!).DeleteBulkAsync(_ => true);
+        await new PersonsRepository(_sqliteHotelDbFixture.CreateDbContext(), null!).DeleteBulkAsync(_ => true);
+        await new AccommodationReportsRepository(_sqliteHotelDbFixture.CreateDbContext()).DeleteBulkAsync(_ => true);
+        await new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext(), null!).DeleteBulkAsync(_ => true);
 
         var repoInit = CreateRepo();
         repoInit.Add(_fakeHotel.Hotel);
@@ -33,7 +33,7 @@ public class HotelBlocksRepositoryTests : IClassFixture<SqliteDbFixture> {
     }
 
     private IHotelBlocksRepository<int, Guid> CreateRepo() {
-        return new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), _mapper);
+        return new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext(), _mapper);
     }
 
     /// <summary>

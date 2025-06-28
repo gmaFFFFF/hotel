@@ -8,6 +8,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\gmafffff.training.hotel.domain\gmafffff.training.hotel.domain.csproj"/>
+        <ProjectReference Include="..\gmafffff.training.hotel.domain.pay\gmafffff.training.hotel.domain.pay.csproj"/>
     </ItemGroup>
 
     <ItemGroup>

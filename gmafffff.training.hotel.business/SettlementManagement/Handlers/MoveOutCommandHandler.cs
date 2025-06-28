@@ -36,8 +36,10 @@ public class MoveOutCommandHandler(
 
     protected override IList<BusinessEvent> PackResultToEvent(IList<AccommodationReport<Guid>> result) {
         return result
-            .Select(report => new MovedOutEvent(report, Command))
-            .Cast<BusinessEvent>()
+            .SelectMany(report => new BusinessEvent[] {
+                new MovedOutEvent(report, Command),
+                new CalculatedPriceForAccommodationTrigger(report, Command)
+            })
             .ToList();
     }
 }

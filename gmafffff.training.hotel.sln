@@ -23,6 +23,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gmafffff.starterKit.tests",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gmafffff.training.hotel.sampleModel", "gmafffff.training.hotel.sampleModel\gmafffff.training.hotel.sampleModel.csproj", "{DF1E2FF5-7187-4C02-A633-75692F90DBA0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gmafffff.training.hotel.domain.pay", "gmafffff.training.hotel.domain.pay\gmafffff.training.hotel.domain.pay.csproj", "{6C1255EF-5D55-4A10-8979-7FFF81C991C9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gmafffff.training.hotel.infrastructure.data.pay", "gmafffff.training.hotel.infrastructure.data.pay\gmafffff.training.hotel.infrastructure.data.pay.csproj", "{7F379346-A24E-46FC-8E45-1EB4F4B5F5D3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -72,5 +76,13 @@ Global
 		{DF1E2FF5-7187-4C02-A633-75692F90DBA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DF1E2FF5-7187-4C02-A633-75692F90DBA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DF1E2FF5-7187-4C02-A633-75692F90DBA0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6C1255EF-5D55-4A10-8979-7FFF81C991C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C1255EF-5D55-4A10-8979-7FFF81C991C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C1255EF-5D55-4A10-8979-7FFF81C991C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C1255EF-5D55-4A10-8979-7FFF81C991C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F379346-A24E-46FC-8E45-1EB4F4B5F5D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F379346-A24E-46FC-8E45-1EB4F4B5F5D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F379346-A24E-46FC-8E45-1EB4F4B5F5D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F379346-A24E-46FC-8E45-1EB4F4B5F5D3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

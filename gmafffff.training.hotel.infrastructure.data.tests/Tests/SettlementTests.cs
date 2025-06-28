@@ -5,23 +5,23 @@ using JetBrains.Annotations;
 namespace gmafffff.training.hotel.infrastructure.data.tests.Tests;
 
 [TestSubject(typeof(HotelBlocksRepository))]
-public class SettlementTests : IClassFixture<SqliteDbFixture> {
+public class SettlementTests : IClassFixture<SqliteHotelDbFixture> {
     private readonly FakeHotel _fakeHotel = new FakeHotelBuilder().Build();
-    private readonly SqliteDbFixture _sqliteDbFixture;
+    private readonly SqliteHotelDbFixture _sqliteHotelDbFixture;
 
-    public SettlementTests(SqliteDbFixture sqliteDbFixture, ITestOutputHelper output) {
-        _sqliteDbFixture = sqliteDbFixture;
+    public SettlementTests(SqliteHotelDbFixture sqliteHotelDbFixture, ITestOutputHelper output) {
+        _sqliteHotelDbFixture = sqliteHotelDbFixture;
 
-        _sqliteDbFixture.LogAction = output.WriteLine;
+        _sqliteHotelDbFixture.LogAction = output.WriteLine;
         // Для вывода лога в файл на рабочем столе
-        // _sqliteDbFixture.LogAction = _sqliteDbFixture.DefaultFileLogStream.WriteLine;
+        // _sqliteHotelDbFixture.LogAction = _sqliteHotelDbFixture.DefaultFileLogStream.WriteLine;
         ClearDb().Wait();
     }
 
     private async Task ClearDb() {
-        await new PersonsRepository(_sqliteDbFixture.CreateDbContext(), null!).DeleteBulkAsync(_ => true);
-        await new AccommodationReportsRepository(_sqliteDbFixture.CreateDbContext()).DeleteBulkAsync(_ => true);
-        await new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!).DeleteBulkAsync(_ => true);
+        await new PersonsRepository(_sqliteHotelDbFixture.CreateDbContext(), null!).DeleteBulkAsync(_ => true);
+        await new AccommodationReportsRepository(_sqliteHotelDbFixture.CreateDbContext()).DeleteBulkAsync(_ => true);
+        await new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext(), null!).DeleteBulkAsync(_ => true);
     }
 
     /// <summary>
@@ -31,12 +31,12 @@ public class SettlementTests : IClassFixture<SqliteDbFixture> {
     [HotelAutodata]
     public async Task ConcurrentModificationOfVisitorThrowsException(Person<Guid> person) {
         // Arrange
-        var initRepo = new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!);
-        var settledRepo = new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!);
-        var firstRepo = new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!);
-        var parallelRepo = new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!);
+        var initRepo = new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext(), null!);
+        var settledRepo = new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext(), null!);
+        var firstRepo = new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext(), null!);
+        var parallelRepo = new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext(), null!);
 
-        var testRepo = new HotelBlocksRepository(_sqliteDbFixture.CreateDbContext(), null!);
+        var testRepo = new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext(), null!);
 
         // Инициализация хранилища
         initRepo.Add(_fakeHotel.Hotel);

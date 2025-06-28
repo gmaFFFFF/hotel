@@ -2,6 +2,8 @@
 using gmafffff.training.hotel.business.PropertyManagement.BusinessConstraintsChecks;
 using gmafffff.training.hotel.business.SettlementManagement.Validations;
 using gmafffff.training.hotel.domain.Validation;
+using gmafffff.training.hotel.infrastructure.data.pay.Repositories;
+using gmafffff.training.hotel.infrastructure.data.pay.Sessions;
 using gmafffff.training.hotel.infrastructure.data.Repositories;
 using gmafffff.training.hotel.infrastructure.data.Sessions;
 using gmafffff.training.hotel.infrastructure.mapper.Required;
@@ -16,21 +18,25 @@ public class FakeServiceProvider : IDisposable {
     public readonly ServiceProvider Instance;
 
     public FakeServiceProvider(Action<string>? logAction = null) {
-        var sqliteDbFixture = new SqliteDbFixture();
-        sqliteDbFixture.LogAction = logAction ?? (_ => { });
+        var hotelDbFixture = new SqliteHotelDbFixture();
+        var invoiceDbFixture = new SqliteInvoiceDbFixture();
+        hotelDbFixture.LogAction = logAction ?? (_ => { });
         // Для вывода лога в файл на рабочем столе
         // _sqliteDbFixture.LogAction = _sqliteDbFixture.DefaultFileLogStream.WriteLine;
 
         ServiceCollection = new ServiceCollection();
-        ServiceCollection.AddScoped<HotelDbContext>(_ => sqliteDbFixture.CreateDbContext());
+        ServiceCollection.AddScoped<HotelDbContext>(_ => hotelDbFixture.CreateDbContext());
+        ServiceCollection.AddScoped<InvoiceDbContext>(_ => invoiceDbFixture.CreateDbContext());
         ServiceCollection.AddSingleton<IDbContextFactory<HotelDbContext>>(_ => {
             var factory = Substitute.For<IDbContextFactory<HotelDbContext>>();
-            factory.CreateDbContext().Returns(_ => sqliteDbFixture.CreateDbContext());
+            factory.CreateDbContext().Returns(_ => hotelDbFixture.CreateDbContext());
             return factory;
         });
 
         ServiceCollection
-            .AddRepositories(typeof(HotelBlocksRepository).Assembly)
+            .AddRepositories(
+                typeof(HotelBlocksRepository).Assembly,
+                typeof(InvoiceRepository).Assembly)
             .AddValidotValidators([typeof(RoomSpec).Assembly, typeof(SettleInCommandSpec).Assembly])
             .AddDomainEventProcessor()
             .AddDomainEventHandlers()

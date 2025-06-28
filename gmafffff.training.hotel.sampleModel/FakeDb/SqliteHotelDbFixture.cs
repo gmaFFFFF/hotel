@@ -6,18 +6,18 @@ using Microsoft.Extensions.Logging;
 
 namespace gmafffff.training.hotel.SampleModel.FakeDb;
 
-public class SqliteDbFixture : IDisposable {
+public class SqliteHotelDbFixture : IDisposable {
     private readonly SqliteConnection _connection;
 
     private readonly Lazy<StreamWriter> _logStream = new(() =>
         new StreamWriter(Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
-                $"{typeof(SqliteDbFixture).Assembly.GetName().Name}.log"),
+                $"{typeof(SqliteHotelDbFixture).Assembly.GetName().Name}.log"),
             append: true));
 
     private Action<string> _logAction = _ => { };
     private DbContextOptions<HotelDbContext> _options;
 
-    public SqliteDbFixture() {
+    public SqliteHotelDbFixture() {
         _connection = new SqliteConnection("Filename=:memory:");
         _connection.Open();
         _options = SetOptions();
