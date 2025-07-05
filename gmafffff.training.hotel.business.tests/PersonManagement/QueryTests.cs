@@ -1,10 +1,10 @@
 ﻿using FluentAssertions;
 using gmafffff.starterKit.BusinessLogic;
 using gmafffff.starterKit.Utils;
+using gmafffff.training.hotel.business.PersonManagement.Dto;
 using gmafffff.training.hotel.business.PersonManagement.Handlers;
 using gmafffff.training.hotel.business.PersonManagement.Queries;
 using gmafffff.training.hotel.business.tests.Fixtures;
-using gmafffff.training.hotel.domain.Dto.PersonManagement;
 using gmafffff.training.hotel.domain.Model;
 using JetBrains.Annotations;
 using Mapster;
@@ -27,8 +27,9 @@ public partial class PersonManagementTests {
                 .Where(p => exceptedIds.Contains(p.Id))
                 .Select(person => person.Adapt<PersonDto>())
                 .ToArray();
-            var query = new GetPersonsQuery(p => exceptedIds.Contains(p.PersonId));
-            var handler = Scope.ServiceProvider.GetRequiredService<IQueryHandler<GetPersonsQuery, PersonDto>>();
+            var query = new GetPersonsQuery<PersonDto>(p => exceptedIds.Contains(p.PersonId));
+            var handler =
+                Scope.ServiceProvider.GetRequiredService<IQueryHandler<GetPersonsQuery<PersonDto>, PersonDto>>();
 
             // Act
             var result = await handler.RunQueryAsync(query);

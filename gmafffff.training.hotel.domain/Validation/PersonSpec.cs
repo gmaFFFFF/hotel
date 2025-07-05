@@ -7,11 +7,9 @@ namespace gmafffff.training.hotel.domain.Validation;
 
 public class PersonSpec : LocalizedSpecification,
     ISpecificationHolder<PersonFullName>,
-    ISpecificationHolder<PersonDto>,
     ISpecificationHolder<PersonAddDto>,
     ISpecificationHolder<PersonUpdateDto> {
     private readonly Specification<PersonAddDto> _personAddDtoSpec;
-    private readonly Specification<PersonDto> _personDtoSpec;
 
     private readonly Specification<PersonFullName> _personFullNameSpec;
     private readonly Specification<PersonUpdateDto> _personUpdateDtoSpec;
@@ -33,10 +31,6 @@ public class PersonSpec : LocalizedSpecification,
             .Member(memberSelector: m => m.FirstName, firstName)
             .Member(memberSelector: m => m.SurName, surName);
 
-        _personDtoSpec = s => s
-            .Member(memberSelector: m => m.FirstName, firstName)
-            .Member(memberSelector: m => m.SurName, surName);
-
         _personAddDtoSpec = s => s
             .Member(memberSelector: m => m.FirstName, firstName)
             .Member(memberSelector: m => m.SurName, surName);
@@ -47,8 +41,6 @@ public class PersonSpec : LocalizedSpecification,
     }
 
     Specification<PersonAddDto> ISpecificationHolder<PersonAddDto>.Specification => _personAddDtoSpec;
-    Specification<PersonDto> ISpecificationHolder<PersonDto>.Specification => _personDtoSpec;
-
     Specification<PersonFullName> ISpecificationHolder<PersonFullName>.Specification => _personFullNameSpec;
     Specification<PersonUpdateDto> ISpecificationHolder<PersonUpdateDto>.Specification => _personUpdateDtoSpec;
 }

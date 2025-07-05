@@ -6,7 +6,7 @@ using gmafffff.training.hotel.domain.Dto.PropertyManagement;
 namespace gmafffff.training.hotel.business.PropertyManagement.Handlers;
 
 public class GetRoomsQueryHandler(IHotelBlocksRepository<int, Guid> repo) : QueryDbHandler<GetRoomsQuery, RoomDto> {
-    public override async Task<IList<RoomDto>> CreateDbQuery(GetRoomsQuery query,
+    protected override async Task<IList<RoomDto>> RunDbQueryAsync(GetRoomsQuery query,
         CancellationToken cancel = default) {
         return await repo
             .GetRoomsAsync(query.Filter, query.SortOrder, query.Pager, cancel)

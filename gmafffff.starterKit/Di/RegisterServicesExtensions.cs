@@ -19,16 +19,35 @@ public static class RegisterServicesExtensions {
     /// </summary>
     private static readonly Type[] IgnoreInterfaces = [
         typeof(IEntityMapper<,,>),
-        typeof(IEntityMapperForward<,,>),
-        typeof(IEntityMapperBackward<,,>),
-        typeof(IEntityMapperDuplex<,,>),
-        typeof(IEntityMapperForwardExpression<,,>),
         typeof(IRepository<,>),
         typeof(IRepositoryFactory<,,>),
         typeof(IDomainEventHandler),
         typeof(IDisposable),
         typeof(IAsyncDisposable)
     ];
+
+    private static readonly Type[] IgnoreAttributes = [
+        typeof(MapperAttribute)
+    ];
+
+    /// <summary>
+    ///     Проверяет нужно ли регистрировать интерфейс или он является служебным
+    /// </summary>
+    /// <param name="interface">Тип проверяемого интерфейса</param>
+    /// <returns></returns>
+    private static bool IsRegisterInterface(Type @interface) {
+        var isIgnored = @interface.IsGenericType
+            ? IgnoreInterfaces.Contains(@interface.GetGenericTypeDefinition())
+            : IgnoreInterfaces.Contains(@interface);
+
+        var hasIgnoredAttribute = IgnoreAttributes.Any(ignore
+            => @interface
+                .CustomAttributes
+                .Select(attr => attr.AttributeType)
+                .Contains(ignore));
+
+        return !isIgnored && !hasIgnoredAttribute;
+    }
 
     #region Валидация
 
@@ -96,10 +115,7 @@ public static class RegisterServicesExtensions {
 
                 selector
                     .AddClasses(@class => @class.AssignableTo(typeof(IRepository<,>)))
-                    .AsImplementedInterfaces(predicate: @interface =>
-                        @interface.IsGenericType
-                            ? !IgnoreInterfaces.Contains(@interface.GetGenericTypeDefinition())
-                            : !IgnoreInterfaces.Contains(@interface))
+                    .AsImplementedInterfaces(predicate: IsRegisterInterface)
                     .WithScopedLifetime();
             })
             .Scan(scan => {
@@ -108,10 +124,7 @@ public static class RegisterServicesExtensions {
                     : scan.FromAssemblies(assemblies);
                 selector
                     .AddClasses(@class => @class.AssignableTo(typeof(IRepositoryFactory<,,>)))
-                    .AsImplementedInterfaces(predicate: @interface =>
-                        @interface.IsGenericType
-                            ? !IgnoreInterfaces.Contains(@interface.GetGenericTypeDefinition())
-                            : !IgnoreInterfaces.Contains(@interface))
+                    .AsImplementedInterfaces(predicate: IsRegisterInterface)
                     .WithSingletonLifetime();
             });
     }
@@ -144,10 +157,7 @@ public static class RegisterServicesExtensions {
 
             selector
                 .AddClasses(@class => @class.AssignableTo(typeof(IDomainEventHandler<>)))
-                .AsImplementedInterfaces(predicate: @interface =>
-                    @interface.IsGenericType
-                        ? !IgnoreInterfaces.Contains(@interface.GetGenericTypeDefinition())
-                        : !IgnoreInterfaces.Contains(@interface))
+                .AsImplementedInterfaces(predicate: IsRegisterInterface)
                 .WithTransientLifetime();
         });
     }
@@ -188,10 +198,7 @@ public static class RegisterServicesExtensions {
             selector
                 .AddClasses(@class => @class.AssignableTo(typeof(IEntityMapper<,,>)))
                 .UsingRegistrationStrategy(RegistrationStrategy.Skip)
-                .AsSelfWithInterfaces(predicate: @interface =>
-                    @interface.IsGenericType
-                        ? !IgnoreInterfaces.Contains(@interface.GetGenericTypeDefinition())
-                        : !IgnoreInterfaces.Contains(@interface))
+                .AsSelfWithInterfaces(predicate: IsRegisterInterface)
                 .WithSingletonLifetime();
         });
     }
@@ -293,7 +300,7 @@ public static class RegisterServicesExtensions {
 
             selector
                 .AddClasses(@class => @class.AssignableTo(typeof(IBusinessConstraintCheck<>)))
-                .AsImplementedInterfaces()
+                .AsImplementedInterfaces(predicate: IsRegisterInterface)
                 .WithScopedLifetime();
         });
     }
@@ -314,10 +321,7 @@ public static class RegisterServicesExtensions {
 
             selector
                 .AddClasses(@class => @class.AssignableTo(typeof(BusinessCommandDbHandler<,,,,,>)))
-                .AsImplementedInterfaces(predicate: @interface =>
-                    @interface.IsGenericType
-                        ? !IgnoreInterfaces.Contains(@interface.GetGenericTypeDefinition())
-                        : !IgnoreInterfaces.Contains(@interface))
+                .AsImplementedInterfaces(predicate: IsRegisterInterface)
                 .WithTransientLifetime();
         });
     }
@@ -338,10 +342,7 @@ public static class RegisterServicesExtensions {
 
             selector
                 .AddClasses(@class => @class.AssignableTo(typeof(IQueryHandler<,>)))
-                .AsImplementedInterfaces(predicate: @interface =>
-                    @interface.IsGenericType
-                        ? !IgnoreInterfaces.Contains(@interface.GetGenericTypeDefinition())
-                        : !IgnoreInterfaces.Contains(@interface))
+                .AsImplementedInterfaces(predicate: IsRegisterInterface)
                 .WithTransientLifetime();
         });
     }
@@ -362,10 +363,7 @@ public static class RegisterServicesExtensions {
 
             selector
                 .AddClasses(@class => @class.AssignableTo(typeof(ITriggerEventToCommandTranslator<>)))
-                .AsImplementedInterfaces(predicate: @interface =>
-                    @interface.IsGenericType
-                        ? !IgnoreInterfaces.Contains(@interface.GetGenericTypeDefinition())
-                        : !IgnoreInterfaces.Contains(@interface))
+                .AsImplementedInterfaces(predicate: IsRegisterInterface)
                 .WithTransientLifetime();
         });
     }

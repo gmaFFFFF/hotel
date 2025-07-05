@@ -1,4 +1,5 @@
 using gmafffff.starterKit.Mappers;
+using gmafffff.training.hotel.business.PersonManagement.Dto;
 using gmafffff.training.hotel.domain.Dto.PersonManagement;
 using gmafffff.training.hotel.domain.Model;
 
@@ -30,7 +31,8 @@ public class PersonConfig : StandardMapsterConfig {
             .Ignore(d => d.Id, d => d.History)
             .GenerateMapper(MapType.MapToTarget);
     }
-    public static void SetInitialPersonHistory(Person<Guid> person){
+
+    public static void SetInitialPersonHistory(Person<Guid> person) {
         person.History ??= new VisitorHistory(0, 0);
     }
 }

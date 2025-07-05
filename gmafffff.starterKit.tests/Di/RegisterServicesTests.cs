@@ -1,4 +1,5 @@
-﻿using gmafffff.starterKit.BusinessLogic;
+﻿using FluentAssertions.Execution;
+using gmafffff.starterKit.BusinessLogic;
 using gmafffff.starterKit.Di;
 using gmafffff.starterKit.Domain.Events;
 using gmafffff.starterKit.Mappers;
@@ -60,10 +61,16 @@ public class RegisterServicesTests {
         provider.AddEntityMappers(typeof(RegisterServicesTests).Assembly);
 
         // Assert
-        provider.Received(3);
+        using var _ = new AssertionScope();
+        provider.Received(6);
         provider.Received().Add(Arg.Is<ServiceDescriptor>(descriptor =>
             descriptor.ServiceType == typeof(TestMapperImplementation) &&
             descriptor.ImplementationType == typeof(TestMapperImplementation) &&
+            descriptor.Lifetime == ServiceLifetime.Singleton));
+
+        provider.Received().Add(Arg.Is<ServiceDescriptor>(descriptor =>
+            descriptor.ServiceType == typeof(ITestMapperMapster) &&
+            descriptor.ImplementationFactory != null &&
             descriptor.Lifetime == ServiceLifetime.Singleton));
 
         provider.Received().Add(Arg.Is<ServiceDescriptor>(descriptor =>
@@ -72,16 +79,26 @@ public class RegisterServicesTests {
             descriptor.Lifetime == ServiceLifetime.Singleton));
 
         provider.Received().Add(Arg.Is<ServiceDescriptor>(descriptor =>
-            descriptor.ServiceType == typeof(ITestMapperMapster) &&
+            descriptor.ServiceType.IsGenericType &&
+            descriptor.ServiceType.GetGenericTypeDefinition() == typeof(IEntityMapperDuplex<,,>) &&
+            descriptor.ImplementationFactory != null &&
+            descriptor.Lifetime == ServiceLifetime.Singleton));
+
+        provider.Received().Add(Arg.Is<ServiceDescriptor>(descriptor =>
+            descriptor.ServiceType.IsGenericType &&
+            descriptor.ServiceType.GetGenericTypeDefinition() == typeof(IEntityMapperForward<,,>) &&
+            descriptor.ImplementationFactory != null &&
+            descriptor.Lifetime == ServiceLifetime.Singleton));
+
+        provider.Received().Add(Arg.Is<ServiceDescriptor>(descriptor =>
+            descriptor.ServiceType.IsGenericType &&
+            descriptor.ServiceType.GetGenericTypeDefinition() == typeof(IEntityMapperBackward<,,>) &&
             descriptor.ImplementationFactory != null &&
             descriptor.Lifetime == ServiceLifetime.Singleton));
 
         provider.DidNotReceive().Add(Arg.Is<ServiceDescriptor>(descriptor =>
             descriptor.ServiceType.IsGenericType &&
             (descriptor.ServiceType.GetGenericTypeDefinition() == typeof(IEntityMapper<,,>) ||
-             descriptor.ServiceType.GetGenericTypeDefinition() == typeof(IEntityMapperForward<,,>) ||
-             descriptor.ServiceType.GetGenericTypeDefinition() == typeof(IEntityMapperBackward<,,>) ||
-             descriptor.ServiceType.GetGenericTypeDefinition() == typeof(IEntityMapperDuplex<,,>) ||
              descriptor.ServiceType.GetGenericTypeDefinition() == typeof(IEntityMapperForwardExpression<,,>)
             )));
     }

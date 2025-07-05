@@ -9,7 +9,8 @@ namespace gmafffff.starterKit.Mappers;
 /// <typeparam name="TMainEntity">Сущность</typeparam>
 /// <typeparam name="TId">Тип идентификатора сущности</typeparam>
 /// <typeparam name="TDto">Обменный формат сущности</typeparam>
-public interface IEntityMapperForwardExpression<TMainEntity, TId, TDto>
+public interface IEntityMapperForwardExpression<TMainEntity, TId, TDto> :
+    IEntityMapper<TMainEntity, TId, TDto>
     where TMainEntity : Entity<TId>
     where TId : struct, IEquatable<TId> {
     /// <summary>

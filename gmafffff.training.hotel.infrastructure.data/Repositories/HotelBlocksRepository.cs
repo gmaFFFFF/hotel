@@ -1,5 +1,6 @@
 ﻿using gmafffff.starterKit.Domain.Events;
 using gmafffff.starterKit.EntityFrameworkCore;
+using gmafffff.training.hotel.domain.Contracts.Mappers;
 using gmafffff.training.hotel.domain.Dto.PropertyManagement;
 using gmafffff.training.hotel.infrastructure.data.Sessions;
 

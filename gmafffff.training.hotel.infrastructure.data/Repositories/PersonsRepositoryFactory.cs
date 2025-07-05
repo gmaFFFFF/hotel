@@ -3,10 +3,9 @@
 namespace gmafffff.training.hotel.infrastructure.data.Repositories;
 
 public class PersonsRepositoryFactory(
-    IDbContextFactory<HotelDbContext> contextFactory,
-    IPersonManagementMapper mapper) :
+    IDbContextFactory<HotelDbContext> contextFactory) :
     IPersonsRepositoryFactory<Guid> {
     public IPersonsRepository<Guid> CreateTransient() {
-        return new PersonsRepository(contextFactory.CreateDbContext(), mapper);
+        return new PersonsRepository(contextFactory.CreateDbContext());
     }
 }

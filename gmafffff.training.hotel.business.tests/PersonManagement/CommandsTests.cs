@@ -4,11 +4,13 @@ using gmafffff.starterKit.BusinessLogic;
 using gmafffff.starterKit.Messaging.Crud;
 using gmafffff.starterKit.Utils;
 using gmafffff.training.hotel.business.PersonManagement.Commands;
+using gmafffff.training.hotel.business.PersonManagement.Dto;
 using gmafffff.training.hotel.business.PersonManagement.Handlers;
 using gmafffff.training.hotel.business.tests.Fixtures;
 using gmafffff.training.hotel.domain.Model;
 using gmafffff.training.hotel.sampleModel.FakeModel.AutoFixture;
 using JetBrains.Annotations;
+using Mapster;
 using Xunit.Abstractions;
 
 namespace gmafffff.training.hotel.business.tests.PersonManagement;
@@ -30,10 +32,10 @@ public partial class PersonManagementTests {
             // Act
             var result = await runner.Execute(command);
             var newPerson = (await PersonRepo
-                    .GetPersonsAsync(person => person.FullName.FirstName == command.New.FirstName &&
-                                               person.FullName.SurName == command.New.SurName &&
-                                               person.FullName.Patronymic == command.New.Patronymic)
-                ).Single();
+                    .GetAsync(spec: person => person.FullName.FirstName == command.New.FirstName &&
+                                              person.FullName.SurName == command.New.SurName &&
+                                              person.FullName.Patronymic == command.New.Patronymic)
+                ).Single().Adapt<PersonDto>();
 
             // Assert
             using var _ = new AssertionScope();
@@ -56,8 +58,8 @@ public partial class PersonManagementTests {
 
             // Act
             var result = await runner.Execute(command);
-            var updatedPerson = (await PersonRepo.GetPersonsAsync(person => person.Id == command.Id)
-                ).Single();
+            var updatedPerson = (await PersonRepo.GetAsync(person => person.Id == command.Id)
+                ).Single().Adapt<PersonDto>();
 
             // Assert
             using var _ = new AssertionScope();
@@ -95,7 +97,7 @@ public partial class PersonManagementTests {
 
             using var _ = new AssertionScope();
             result.IsSucc.Should().BeTrue();
-            (await PersonRepo.GetPersonsAsync(person => removePersonIds.Contains(person.Id)))
+            (await PersonRepo.GetAsync(person => removePersonIds.Contains(person.Id)))
                 .Should().BeEmpty();
         }
     }

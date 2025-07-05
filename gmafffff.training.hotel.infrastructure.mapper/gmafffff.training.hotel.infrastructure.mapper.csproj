@@ -7,6 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\gmafffff.training.hotel.business\gmafffff.training.hotel.business.csproj"/>
         <ProjectReference Include="..\gmafffff.training.hotel.domain\gmafffff.training.hotel.domain.csproj"/>
     </ItemGroup>
 

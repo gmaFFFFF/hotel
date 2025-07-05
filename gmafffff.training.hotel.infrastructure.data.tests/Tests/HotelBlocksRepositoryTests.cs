@@ -23,7 +23,7 @@ public class HotelBlocksRepositoryTests : IClassFixture<SqliteHotelDbFixture> {
     }
 
     private async Task ClearDb() {
-        await new PersonsRepository(_sqliteHotelDbFixture.CreateDbContext(), null!).DeleteBulkAsync(_ => true);
+        await new PersonsRepository(_sqliteHotelDbFixture.CreateDbContext()).DeleteBulkAsync(_ => true);
         await new AccommodationReportsRepository(_sqliteHotelDbFixture.CreateDbContext()).DeleteBulkAsync(_ => true);
         await new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext(), null!).DeleteBulkAsync(_ => true);
 

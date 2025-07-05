@@ -17,7 +17,6 @@ global using Microsoft.EntityFrameworkCore.ValueGeneration;
 // Модель
 global using gmafffff.training.hotel.domain.Model;
 global using gmafffff.training.hotel.domain.Contracts.Repositories;
-global using gmafffff.training.hotel.domain.Contracts.Mappers;
 
 // Конфигурация
 global using gmafffff.training.hotel.infrastructure.data.Configs;

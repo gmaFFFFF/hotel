@@ -1,3 +1,4 @@
+using gmafffff.training.hotel.domain.Contracts.Mappers;
 using gmafffff.training.hotel.infrastructure.data.Sessions;
 
 namespace gmafffff.training.hotel.infrastructure.data.Repositories;

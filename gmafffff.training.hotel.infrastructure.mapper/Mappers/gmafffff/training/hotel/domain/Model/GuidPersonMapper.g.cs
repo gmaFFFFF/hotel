@@ -1,6 +1,6 @@
 using System;
 using System.Linq.Expressions;
-using gmafffff.training.hotel.domain.Dto.PersonManagement;
+using gmafffff.training.hotel.business.PersonManagement.Dto;
 using gmafffff.training.hotel.domain.Model;
 
 namespace gmafffff.training.hotel.domain.Model

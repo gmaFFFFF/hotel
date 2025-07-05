@@ -21,7 +21,7 @@ public class RepositoryTests : IClassFixture<SqliteHotelDbFixture> {
     }
 
     private async Task ClearDb() {
-        await new PersonsRepository(_sqliteHotelDbFixture.CreateDbContext(), null!).DeleteBulkAsync(_ => true);
+        await new PersonsRepository(_sqliteHotelDbFixture.CreateDbContext()).DeleteBulkAsync(_ => true);
         await new AccommodationReportsRepository(_sqliteHotelDbFixture.CreateDbContext()).DeleteBulkAsync(_ => true);
         await new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext(), null!).DeleteBulkAsync(_ => true);
     }
@@ -42,7 +42,7 @@ public class RepositoryTests : IClassFixture<SqliteHotelDbFixture> {
 
         // Act 
         var reportAttach = (await repoEditAttach.LoadAsync(_ => true))[0];
-        reportAttach.Visitors.Add(default);
+        reportAttach.Visitors.Add(Guid.Empty);
         await repoEditAttach.SaveChangesAsync();
 
         var reportDetach = (await repoEditDetach.GetAsync(x => x.Id == reportAttach.Id)).Single();
@@ -54,7 +54,7 @@ public class RepositoryTests : IClassFixture<SqliteHotelDbFixture> {
         // Assert
         using var _ = new AssertionScope();
         reportDetach.Visitors.Should().BeEmpty();
-        reportResult.Visitors.Should().Contain(default(Guid));
+        reportResult.Visitors.Should().Contain(Guid.Empty);
         reportResult.Visitors.Should().Equal(reportAttach.Visitors);
         reportResult.Visitors.Should().NotEqual(reportDetach.Visitors);
     }
@@ -155,8 +155,8 @@ public class RepositoryTests : IClassFixture<SqliteHotelDbFixture> {
     [HotelAutodata]
     public async Task CanAddEntities(Person<Guid> person, IEnumerable<Person<Guid>> persons) {
         // Arrange
-        var repoInit = new PersonsRepository(_sqliteHotelDbFixture.CreateDbContext(), null!);
-        var repoTest = new PersonsRepository(_sqliteHotelDbFixture.CreateDbContext(), null!);
+        var repoInit = new PersonsRepository(_sqliteHotelDbFixture.CreateDbContext());
+        var repoTest = new PersonsRepository(_sqliteHotelDbFixture.CreateDbContext());
 
         // Act
         repoInit.Add(person);
@@ -224,9 +224,9 @@ public class RepositoryTests : IClassFixture<SqliteHotelDbFixture> {
     [HotelAutodata]
     public async Task CanDeleteEntitiesById(Person<Guid> person, IEnumerable<Person<Guid>> persons) {
         // Arrange
-        var repoInit = new PersonsRepository(_sqliteHotelDbFixture.CreateDbContext(), null!);
-        var repoDelete = new PersonsRepository(_sqliteHotelDbFixture.CreateDbContext(), null!);
-        var repoTest = new PersonsRepository(_sqliteHotelDbFixture.CreateDbContext(), null!);
+        var repoInit = new PersonsRepository(_sqliteHotelDbFixture.CreateDbContext());
+        var repoDelete = new PersonsRepository(_sqliteHotelDbFixture.CreateDbContext());
+        var repoTest = new PersonsRepository(_sqliteHotelDbFixture.CreateDbContext());
 
         // Act
         repoInit.Add(person);
@@ -251,8 +251,8 @@ public class RepositoryTests : IClassFixture<SqliteHotelDbFixture> {
     [HotelAutodata]
     public async Task CanUpdateEntity(Person<Guid> person, Person<Guid> personUpdate) {
         // Arrange
-        var repoInit = new PersonsRepository(_sqliteHotelDbFixture.CreateDbContext(), null!);
-        var repoMod = new PersonsRepository(_sqliteHotelDbFixture.CreateDbContext(), null!);
+        var repoInit = new PersonsRepository(_sqliteHotelDbFixture.CreateDbContext());
+        var repoMod = new PersonsRepository(_sqliteHotelDbFixture.CreateDbContext());
 
         repoInit.Add(person);
         await repoInit.SaveChangesAsync();

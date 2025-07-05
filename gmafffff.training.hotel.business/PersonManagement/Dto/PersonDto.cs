@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace gmafffff.training.hotel.domain.Dto.PersonManagement;
+namespace gmafffff.training.hotel.business.PersonManagement.Dto;
 
 public record PersonDto(
     [Display(Name = "Ид")] Guid PersonId,
