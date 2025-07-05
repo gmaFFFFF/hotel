@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using gmafffff.training.hotel.domain.Dto.PropertyManagement;
+using gmafffff.training.hotel.business.PropertyManagement.Dto;
 using gmafffff.training.hotel.domain.Model;
 using Mapster;
 

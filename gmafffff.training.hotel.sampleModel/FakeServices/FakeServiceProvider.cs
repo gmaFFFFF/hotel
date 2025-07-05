@@ -37,11 +37,11 @@ public class FakeServiceProvider : IDisposable {
             .AddRepositories(
                 typeof(HotelBlocksRepository).Assembly,
                 typeof(InvoiceRepository).Assembly)
-            .AddValidotValidators([typeof(RoomSpec).Assembly, typeof(SettleInCommandSpec).Assembly])
+            .AddValidotValidators(typeof(RoomSpec).Assembly, typeof(SettleInCommandSpec).Assembly)
             .AddDomainEventProcessor()
             .AddDomainEventHandlers()
             .AddBusinessLogic(typeof(RoomNumberMustUnique).Assembly)
-            .AddEntityMappersAndConfig(typeof(IPropertyManagementMapperMapster).Assembly);
+            .AddEntityMappersAndConfig(typeof(IPropertyManagementMapperMapsterDomain).Assembly);
 
         Instance = ServiceCollection.BuildServiceProvider(new ServiceProviderOptions {
             ValidateOnBuild = true,

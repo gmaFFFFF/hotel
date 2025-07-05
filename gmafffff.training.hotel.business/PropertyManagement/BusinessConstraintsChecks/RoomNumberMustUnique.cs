@@ -23,7 +23,7 @@ public class RoomNumberMustUnique(IHotelBlocksRepositoryFactory<int, Guid> repos
         var repository = repositoryFactory.CreateTransient();
         var old = (await repository.GetRoomsAsync(predicate: room => room.Id == command.Id, cancel: cancel))
             .SingleOrDefault();
-        if (old is null || old.Number == updateRoomNum)
+        if (old is null || old.RoomDetails.Number == updateRoomNum)
             return true;
         var count = await repository.CountRoomByAsync(predicate: room => room.RoomDetails.Number == updateRoomNum,
             cancel);

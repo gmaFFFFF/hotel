@@ -1,8 +1,8 @@
 using FluentAssertions;
 using gmafffff.starterKit.BusinessLogic;
+using gmafffff.training.hotel.business.PropertyManagement.Dto;
 using gmafffff.training.hotel.business.PropertyManagement.Queries;
 using gmafffff.training.hotel.business.tests.Fixtures;
-using gmafffff.training.hotel.domain.Dto.PropertyManagement;
 using gmafffff.training.hotel.domain.Model;
 using JetBrains.Annotations;
 using Mapster;

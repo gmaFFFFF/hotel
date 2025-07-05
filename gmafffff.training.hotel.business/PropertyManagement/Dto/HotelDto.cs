@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace gmafffff.training.hotel.domain.Dto.PropertyManagement;
+namespace gmafffff.training.hotel.business.PropertyManagement.Dto;
 
 /// <summary>
 ///     Номерной фонд

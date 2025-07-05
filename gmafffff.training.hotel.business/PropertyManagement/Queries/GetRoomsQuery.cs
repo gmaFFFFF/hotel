@@ -1,4 +1,4 @@
-using gmafffff.training.hotel.domain.Dto.PropertyManagement;
+using gmafffff.training.hotel.business.PropertyManagement.Dto;
 using gmafffff.training.hotel.domain.Model;
 
 namespace gmafffff.training.hotel.business.PropertyManagement.Queries;

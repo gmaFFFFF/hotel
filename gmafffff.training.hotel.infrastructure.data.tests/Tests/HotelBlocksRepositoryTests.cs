@@ -1,6 +1,4 @@
-using gmafffff.training.hotel.domain.Contracts.Mappers;
 using gmafffff.training.hotel.domain.Contracts.Repositories;
-using gmafffff.training.hotel.infrastructure.mapper.Required;
 using gmafffff.training.hotel.SampleModel.FakeDb;
 using JetBrains.Annotations;
 
@@ -9,7 +7,6 @@ namespace gmafffff.training.hotel.infrastructure.data.tests.Tests;
 [TestSubject(typeof(HotelBlocksRepository))]
 public class HotelBlocksRepositoryTests : IClassFixture<SqliteHotelDbFixture> {
     private readonly FakeHotel _fakeHotel = new FakeHotelBuilder().Build();
-    private readonly IPropertyManagementMapper _mapper = new PropertyManagementMapperMapster();
     private readonly SqliteHotelDbFixture _sqliteHotelDbFixture;
 
     public HotelBlocksRepositoryTests(SqliteHotelDbFixture sqliteHotelDbFixture, ITestOutputHelper output) {
@@ -25,7 +22,7 @@ public class HotelBlocksRepositoryTests : IClassFixture<SqliteHotelDbFixture> {
     private async Task ClearDb() {
         await new PersonsRepository(_sqliteHotelDbFixture.CreateDbContext()).DeleteBulkAsync(_ => true);
         await new AccommodationReportsRepository(_sqliteHotelDbFixture.CreateDbContext()).DeleteBulkAsync(_ => true);
-        await new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext(), null!).DeleteBulkAsync(_ => true);
+        await new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext()).DeleteBulkAsync(_ => true);
 
         var repoInit = CreateRepo();
         repoInit.Add(_fakeHotel.Hotel);
@@ -33,7 +30,7 @@ public class HotelBlocksRepositoryTests : IClassFixture<SqliteHotelDbFixture> {
     }
 
     private IHotelBlocksRepository<int, Guid> CreateRepo() {
-        return new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext(), _mapper);
+        return new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext());
     }
 
     /// <summary>
@@ -74,8 +71,7 @@ public class HotelBlocksRepositoryTests : IClassFixture<SqliteHotelDbFixture> {
         onlyStandardRoom
             .Should().BeEquivalentTo(
                 _fakeHotel.Hotel.Rooms
-                    .Where(room => room.RoomDetails.Type == RoomType.Standard)
-                    .Select(room => _mapper.Map(room)));
+                    .Where(room => room.RoomDetails.Type == RoomType.Standard));
     }
 
     /// <summary>

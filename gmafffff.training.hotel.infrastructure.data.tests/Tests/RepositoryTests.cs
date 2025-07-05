@@ -23,7 +23,7 @@ public class RepositoryTests : IClassFixture<SqliteHotelDbFixture> {
     private async Task ClearDb() {
         await new PersonsRepository(_sqliteHotelDbFixture.CreateDbContext()).DeleteBulkAsync(_ => true);
         await new AccommodationReportsRepository(_sqliteHotelDbFixture.CreateDbContext()).DeleteBulkAsync(_ => true);
-        await new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext(), null!).DeleteBulkAsync(_ => true);
+        await new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext()).DeleteBulkAsync(_ => true);
     }
 
     /// <summary>
@@ -177,9 +177,9 @@ public class RepositoryTests : IClassFixture<SqliteHotelDbFixture> {
         var allRoom = rooms.Append(room);
 
         // Arrange
-        var repoInit = new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext(), null!);
-        var repoDel = new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext(), null!);
-        var repoTest = new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext(), null!);
+        var repoInit = new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext());
+        var repoDel = new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext());
+        var repoTest = new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext());
 
         hotel.Rooms = allRoom.ToList();
         repoInit.Add(hotel);
@@ -202,9 +202,9 @@ public class RepositoryTests : IClassFixture<SqliteHotelDbFixture> {
         var allRoom = rooms.Append(room);
 
         // Arrange
-        var repoInit = new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext(), null!);
-        var repoDel = new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext(), null!);
-        var repoTest = new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext(), null!);
+        var repoInit = new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext());
+        var repoDel = new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext());
+        var repoTest = new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext());
 
         hotel.Rooms = allRoom.ToList();
         repoInit.Add(hotel);

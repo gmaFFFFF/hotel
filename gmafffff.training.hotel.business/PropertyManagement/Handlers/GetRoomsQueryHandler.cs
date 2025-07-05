@@ -1,15 +1,20 @@
 ﻿using gmafffff.starterKit.BusinessLogic;
+using gmafffff.starterKit.Mappers;
+using gmafffff.training.hotel.business.PropertyManagement.Dto;
 using gmafffff.training.hotel.business.PropertyManagement.Queries;
 using gmafffff.training.hotel.domain.Contracts.Repositories;
-using gmafffff.training.hotel.domain.Dto.PropertyManagement;
+using gmafffff.training.hotel.domain.Model;
 
 namespace gmafffff.training.hotel.business.PropertyManagement.Handlers;
 
-public class GetRoomsQueryHandler(IHotelBlocksRepository<int, Guid> repo) : QueryDbHandler<GetRoomsQuery, RoomDto> {
+public class GetRoomsQueryHandler(
+    IHotelBlocksRepository<int, Guid> repo,
+    IEntityMapperForwardExpression<Room<Guid>, int, RoomDto> mapper)
+    : QueryDbHandler<GetRoomsQuery, RoomDto> {
     protected override async Task<IList<RoomDto>> RunDbQueryAsync(GetRoomsQuery query,
         CancellationToken cancel = default) {
         return await repo
-            .GetRoomsAsync(query.Filter, query.SortOrder, query.Pager, cancel)
+            .GetRoomsDtoAsync(mapper.EntityToDto, query.Filter, query.SortOrder, query.Pager, cancel)
             .ConfigureAwait(false);
     }
 }

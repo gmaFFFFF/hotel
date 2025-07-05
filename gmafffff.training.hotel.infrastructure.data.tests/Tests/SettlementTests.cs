@@ -21,7 +21,7 @@ public class SettlementTests : IClassFixture<SqliteHotelDbFixture> {
     private async Task ClearDb() {
         await new PersonsRepository(_sqliteHotelDbFixture.CreateDbContext()).DeleteBulkAsync(_ => true);
         await new AccommodationReportsRepository(_sqliteHotelDbFixture.CreateDbContext()).DeleteBulkAsync(_ => true);
-        await new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext(), null!).DeleteBulkAsync(_ => true);
+        await new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext()).DeleteBulkAsync(_ => true);
     }
 
     /// <summary>
@@ -31,12 +31,12 @@ public class SettlementTests : IClassFixture<SqliteHotelDbFixture> {
     [HotelAutodata]
     public async Task ConcurrentModificationOfVisitorThrowsException(Person<Guid> person) {
         // Arrange
-        var initRepo = new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext(), null!);
-        var settledRepo = new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext(), null!);
-        var firstRepo = new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext(), null!);
-        var parallelRepo = new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext(), null!);
+        var initRepo = new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext());
+        var settledRepo = new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext());
+        var firstRepo = new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext());
+        var parallelRepo = new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext());
 
-        var testRepo = new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext(), null!);
+        var testRepo = new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext());
 
         // Инициализация хранилища
         initRepo.Add(_fakeHotel.Hotel);

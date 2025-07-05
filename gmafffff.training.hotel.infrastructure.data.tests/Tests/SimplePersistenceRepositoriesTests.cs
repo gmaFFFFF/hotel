@@ -23,14 +23,14 @@ public class SimplePersistenceRepositoriesTests : IClassFixture<SqliteHotelDbFix
     private async Task ClearDb() {
         await new PersonsRepository(_sqliteHotelDbFixture.CreateDbContext()).DeleteBulkAsync(_ => true);
         await new AccommodationReportsRepository(_sqliteHotelDbFixture.CreateDbContext()).DeleteBulkAsync(_ => true);
-        await new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext(), null!).DeleteBulkAsync(_ => true);
+        await new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext()).DeleteBulkAsync(_ => true);
     }
 
     [Fact]
     public async Task CanSaveHotelBlock() {
         // Arrange
-        var repoInit = new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext(), null!);
-        var repoTest = new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext(), null!);
+        var repoInit = new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext());
+        var repoTest = new HotelBlocksRepository(_sqliteHotelDbFixture.CreateDbContext());
         IList<HotelBlock<int, Guid>>? saved = null;
 
         repoInit.Add(_fakeHotel.Hotel);
