@@ -1,4 +1,5 @@
 using gmafffff.starterKit.Domain;
+using gmafffff.starterKit.Domain.Events;
 using gmafffff.starterKit.Messaging;
 using gmafffff.starterKit.Messaging.Crud;
 using gmafffff.starterKit.Utils;
@@ -11,11 +12,11 @@ public class DeleteDbCommandHandler<
     TDeleteCommand, TDeletedEvent,
     TEntity, TEntityId>(
     IRepository<TEntity, TEntityId> repository,
-    IServiceProvider serviceProvider,
+    IDomainEventDispatcher domainEventDispatcher,
     ILogger<IBusinessCommandHandler<TDeleteCommand>>? logger = null)
     : BusinessCommandDbHandler<TDeleteCommand,
         TEntity, TEntityId, IRepository<TEntity, TEntityId>,
-        TEntity, TEntity>(repository, serviceProvider, isSaveToDbSeparately: true, logger)
+        TEntity, TEntity>(repository, domainEventDispatcher, isSaveToDbSeparately: true, logger)
     where TDeleteCommand : DeleteBusinessCommand<TEntityId>
     where TDeletedEvent : DeletedBusinessEvent<TEntityId>
     where TEntityId : struct, IEquatable<TEntityId>
@@ -36,7 +37,7 @@ public class DeleteDbCommandHandler<
 
     protected override IList<BusinessEvent> PackResultToEvent(IList<TEntity> result) {
         return result
-            .Select(r => Activator<TDeletedEvent>.CreateInstance(r.Id, Command, default(Guid)))
+            .Select(r => Activator<TDeletedEvent>.CreateInstance(r.Id, Command, Guid.Empty))
             .Cast<BusinessEvent>()
             .ToList();
     }

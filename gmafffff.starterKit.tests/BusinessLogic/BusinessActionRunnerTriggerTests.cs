@@ -5,6 +5,7 @@ using gmafffff.starterKit.EntityFrameworkCore;
 using gmafffff.starterKit.Messaging;
 using gmafffff.starterKit.tests.BusinessLogic.Fixtures;
 using LanguageExt.Common;
+using Microsoft.Extensions.DependencyInjection;
 using NSubstitute.ExceptionExtensions;
 using Validot;
 
@@ -35,14 +36,12 @@ public partial class BusinessActionRunnerTests {
             Substitute.For<ITriggerEventToCommandTranslator<MyTrigger>>();
 
         public BusinessActionRunnerTrigger() {
-            _runner = new BusinessActionRunner<CommandWithTrigger>(_provider);
-
             // Обработчик событий домена
-            _domainEventProcessor = new DomainEventProcessor(_provider);
+            _domainEventProcessor = new DomainEventProcessor(new DomainEventHandlerFabric(_provider));
 
             // Контейнер служб
             _provider.GetService(typeof(IBusinessActionRunner<CommandWithTrigger>))
-                .Returns(_ => new BusinessActionRunner<CommandWithTrigger>(_provider));
+                .Returns(_ => NewRunner(_provider));
             _provider.GetService(typeof(IValidator<CommandWithTrigger>))
                 .Returns(null);
             _provider.GetService(typeof(IEnumerable<IBusinessConstraintCheck<CommandWithTrigger>>))
@@ -53,6 +52,8 @@ public partial class BusinessActionRunnerTests {
                 .Returns(_ => Enumerable.Repeat(_translator, count: 1));
             _provider.GetService(typeof(IDomainEventDispatcher))
                 .Returns(_domainEventProcessor);
+
+            _runner = NewRunner(_provider);
 
             // Образцы данных
             _commands = Enumerable.Range(start: 0, count: 8)
@@ -115,7 +116,7 @@ public partial class BusinessActionRunnerTests {
             _cmdToEvents[_commands[6]] = step3_3;
 
 
-            _handler.ExecuteAsync(default!)
+            _handler.ExecuteAsync(null!)
                 .ReturnsForAnyArgs(x => Fin<IList<BusinessEvent>>.Succ(_cmdToEvents[x.Arg<CommandWithTrigger>()]));
 
             _handler.ExecuteAsync(Arg.Is<CommandWithTrigger>(trigger => trigger.ThrowException),
@@ -130,6 +131,17 @@ public partial class BusinessActionRunnerTests {
                     _cts.Cancel();
                     return Fin<IList<BusinessEvent>>.Succ(_cmdToEvents[x.Arg<CommandWithTrigger>()]);
                 });
+        }
+
+        private static BusinessActionRunner<CommandWithTrigger> NewRunner(IServiceProvider provider) {
+            return new BusinessActionRunner<CommandWithTrigger>(
+                provider.GetRequiredService<IBusinessCommandHandler<CommandWithTrigger>>(),
+                new BusinessActionRunnerFabric(provider),
+                provider.GetServices<IBusinessConstraintCheck<CommandWithTrigger>>(),
+                new TriggerEventToCommandTranslatorFabric(provider),
+                provider.GetService<IValidator<CommandWithTrigger>>(),
+                logger: null
+            );
         }
 
         /// <summary>
@@ -228,7 +240,7 @@ public partial class BusinessActionRunnerTests {
         }
 
         /// <summary>
-        ///     Обработка команды прерывается, если если запрошена отмена
+        ///     Обработка команды прерывается, если запрошена отмена
         /// </summary>
         [Fact]
         public async Task ProcessTriggerEventInterruptIfCancelRequest() {

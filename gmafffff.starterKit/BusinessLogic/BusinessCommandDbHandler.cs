@@ -4,7 +4,6 @@ using gmafffff.starterKit.Messaging;
 using LanguageExt;
 using LanguageExt.Common;
 using Light.GuardClauses;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -24,7 +23,7 @@ public abstract class BusinessCommandDbHandler<
     TEntity, TId, TRepo,
     TLoad, TResult>(
     TRepo repository,
-    IServiceProvider serviceProvider,
+    IDomainEventDispatcher domainEventDispatcher,
     bool isSaveToDbSeparately = true,
     ILogger<IBusinessCommandHandler<TCommand>>? logger = null) :
     IBusinessCommandHandler<TCommand>
@@ -37,11 +36,6 @@ public abstract class BusinessCommandDbHandler<
     /// </summary>
     private readonly ILogger<IBusinessCommandHandler<TCommand>> _logger =
         logger ?? NullLogger<IBusinessCommandHandler<TCommand>>.Instance;
-
-    /// <summary>
-    ///     Контейнер DI
-    /// </summary>
-    protected readonly IServiceProvider ServiceProvider = serviceProvider.MustNotBeNull();
 
     /// <summary>
     ///     Выполнение команды происходит отдельно от сохранения её результата в БД?
@@ -69,12 +63,10 @@ public abstract class BusinessCommandDbHandler<
         // Функциональные обёртки для функций-шагов
         var load = (TRepo repo) =>
             FinT<IO, IList<TLoad>>.LiftIO(
-                IO.liftAsync(
-                    async env => await LoadAsync(repo, env.Token).ConfigureAwait(false)));
+                IO.liftAsync(async env => await LoadAsync(repo, env.Token).ConfigureAwait(false)));
         var act = (IList<TLoad> loaded) =>
             FinT<IO, IList<TResult>>.LiftIO(
-                IO.liftAsync(
-                    async env => await RunActionAsync(loaded, env.Token).ConfigureAwait(false)));
+                IO.liftAsync(async env => await RunActionAsync(loaded, env.Token).ConfigureAwait(false)));
         var nothing = FinT<IO, int>.Lift(Fin<int>.Succ(0));
         var saveDb = (TRepo repo) =>
             FinT<IO, int>.LiftIO(
@@ -167,9 +159,8 @@ public abstract class BusinessCommandDbHandler<
     protected abstract IList<BusinessEvent> PackResultToEvent(IList<TResult> result);
 
     private FinT<IO, Unit> DispatchDomainEvent() {
-        var dispatcher = serviceProvider.GetRequiredService<IDomainEventDispatcher>();
-        var dispatch = FinT<IO, Unit>.LiftIO(IO.liftAsync(
-            async env => await dispatcher.DispatchAsync(env.Token).ConfigureAwait(false)));
+        var dispatch = FinT<IO, Unit>.LiftIO(IO.liftAsync(async env =>
+            await domainEventDispatcher.DispatchAsync(env.Token).ConfigureAwait(false)));
 
         dispatch.IfSucc(_ => _logger.LogTrace("Успешно обработаны доменные события"));
         dispatch.IfFail(error => _logger.LogTrace("При обработке доменных ошибок возникли ошибки: {@Errors}", error));

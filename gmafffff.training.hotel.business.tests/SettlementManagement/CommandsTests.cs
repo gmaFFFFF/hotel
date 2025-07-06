@@ -1,17 +1,17 @@
+using FluentAssertions;
+using FluentAssertions.Execution;
 using gmafffff.starterKit.AppError;
 using gmafffff.starterKit.BusinessLogic;
 using gmafffff.starterKit.Utils;
-using FluentAssertions;
-using FluentAssertions.Execution;
-using JetBrains.Annotations;
-using Xunit.Abstractions;
-
 using gmafffff.training.hotel.business.SettlementManagement.Commands;
 using gmafffff.training.hotel.business.SettlementManagement.Events;
 using gmafffff.training.hotel.business.SettlementManagement.Handlers;
 using gmafffff.training.hotel.business.tests.Fixtures;
 using gmafffff.training.hotel.domain.Model;
 using gmafffff.training.hotel.sampleModel.FakeModel.AutoFixture;
+using JetBrains.Annotations;
+using Microsoft.Extensions.DependencyInjection;
+using Xunit.Abstractions;
 
 namespace gmafffff.training.hotel.business.tests.SettlementManagement;
 
@@ -29,7 +29,7 @@ public partial class SettlementManagementTests {
             var room = FakeHotel.Hotel.Rooms.Where(Room<Guid>.IsFreeRoom.Compile()).First();
             var visitors = FakeHotel.Persons.Take(room.RoomDetails.Capacity).Select(v => v.Id);
 
-            var runner = new BusinessActionRunner<SettleInCommand>(Scope.ServiceProvider);
+            var runner = Scope.ServiceProvider.GetRequiredService<IBusinessActionRunner<SettleInCommand>>();
             command = command with { RoomId = room.Id, Visitors = visitors, DepartureDatePlanned = null };
 
             // Act
@@ -64,7 +64,7 @@ public partial class SettlementManagementTests {
                 .Where(p => !room.Visit!.Visitors.Contains(p.Id))
                 .Take(room.RoomDetails.Capacity - room.Visit!.Visitors.Count).Select(v => v.Id);
 
-            var runner = new BusinessActionRunner<SettleInCommand>(Scope.ServiceProvider);
+            var runner = Scope.ServiceProvider.GetRequiredService<IBusinessActionRunner<SettleInCommand>>();
             command = command with { RoomId = room.Id, Visitors = visitors, DepartureDatePlanned = null };
 
             // Act
@@ -94,7 +94,7 @@ public partial class SettlementManagementTests {
             var visitors = FakeHotel.Persons.Take(room.RoomDetails.Capacity).Select(v => v.Id).ToArray();
             visitors[0] = Guid.NewGuid();
 
-            var runner = new BusinessActionRunner<SettleInCommand>(Scope.ServiceProvider);
+            var runner = Scope.ServiceProvider.GetRequiredService<IBusinessActionRunner<SettleInCommand>>();
             command = command with { RoomId = room.Id, Visitors = visitors, DepartureDatePlanned = null };
 
             // Act
@@ -117,7 +117,7 @@ public partial class SettlementManagementTests {
             var command1 = new MoveOutCommand(rooms[0].Id, DateOnly.FromDateTime(DateTime.Today.AddDays(-1)));
             var command2 = new MoveOutCommand(rooms[1].Id);
 
-            var runner = new BusinessActionRunner<MoveOutCommand>(Scope.ServiceProvider);
+            var runner = Scope.ServiceProvider.GetRequiredService<IBusinessActionRunner<MoveOutCommand>>();
 
             // Act
             var res1 = await runner.Execute(command1);

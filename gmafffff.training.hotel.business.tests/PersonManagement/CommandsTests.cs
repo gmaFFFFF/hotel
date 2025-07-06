@@ -11,6 +11,7 @@ using gmafffff.training.hotel.domain.Model;
 using gmafffff.training.hotel.sampleModel.FakeModel.AutoFixture;
 using JetBrains.Annotations;
 using Mapster;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
 
 namespace gmafffff.training.hotel.business.tests.PersonManagement;
@@ -27,7 +28,7 @@ public partial class PersonManagementTests {
         [HotelAutodata]
         public async Task AddPerson(AddPersonCommand command) {
             // Arrange
-            var runner = new BusinessActionRunner<AddPersonCommand>(Scope.ServiceProvider);
+            var runner = Scope.ServiceProvider.GetRequiredService<IBusinessActionRunner<AddPersonCommand>>();
 
             // Act
             var result = await runner.Execute(command);
@@ -52,8 +53,7 @@ public partial class PersonManagementTests {
         public async Task UpdatePerson(UpdatePersonCommand command) {
             // Arrange
             var old = FakeHotel.Persons.First();
-            var runner =
-                new BusinessActionRunner<UpdatePersonCommand>(Scope.ServiceProvider);
+            var runner = Scope.ServiceProvider.GetRequiredService<IBusinessActionRunner<UpdatePersonCommand>>();
             command = command with { Id = old.Id };
 
             // Act
@@ -84,8 +84,7 @@ public partial class PersonManagementTests {
                 throw new NotSupportedException("Если не сложилась тестовая ситуация нужно просто перезапустить тест");
 
             var command = new RemovePersonsCommand(leavingPersons);
-            var runner =
-                new BusinessActionRunner<RemovePersonsCommand>(Scope.ServiceProvider);
+            var runner = Scope.ServiceProvider.GetRequiredService<IBusinessActionRunner<RemovePersonsCommand>>();
 
             // Act
             var result = await runner.Execute(command);

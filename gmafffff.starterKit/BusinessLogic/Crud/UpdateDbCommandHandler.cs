@@ -1,5 +1,6 @@
 using gmafffff.starterKit.AppError;
 using gmafffff.starterKit.Domain;
+using gmafffff.starterKit.Domain.Events;
 using gmafffff.starterKit.Mappers;
 using gmafffff.starterKit.Messaging;
 using gmafffff.starterKit.Messaging.Crud;
@@ -14,12 +15,12 @@ public class UpdateDbCommandHandler<
     TEntity, TEntityId>(
     IRepository<TEntity, TEntityId> repository,
     IEntityMapperBackward<TEntity, TEntityId, TDto> mapper,
-    IServiceProvider serviceProvider,
+    IDomainEventDispatcher domainEventDispatcher,
     ILogger<IBusinessCommandHandler<TUpdateCommand>>? logger = null)
     : BusinessCommandDbHandler<TUpdateCommand,
             TEntity, TEntityId, IRepository<TEntity, TEntityId>,
             TEntity, TEntity>
-        (repository, serviceProvider, isSaveToDbSeparately: true, logger)
+        (repository, domainEventDispatcher, isSaveToDbSeparately: true, logger)
     where TUpdateCommand : UpdateBusinessCommand<TEntityId, TDto>
     where TUpdatedEvent : UpdatedBusinessEvent<TEntityId>
     where TEntityId : struct, IEquatable<TEntityId>
@@ -43,7 +44,7 @@ public class UpdateDbCommandHandler<
 
     protected override IList<BusinessEvent> PackResultToEvent(IList<TEntity> result) {
         return result
-            .Select(r => Activator<TUpdatedEvent>.CreateInstance(r.Id, Command, default(Guid)))
+            .Select(r => Activator<TUpdatedEvent>.CreateInstance(r.Id, Command, Guid.Empty))
             .Cast<BusinessEvent>()
             .ToList();
     }

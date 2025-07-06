@@ -1,4 +1,5 @@
 ﻿using gmafffff.starterKit.BusinessLogic.Crud;
+using gmafffff.starterKit.Domain.Events;
 using gmafffff.starterKit.Messaging.Crud;
 using gmafffff.training.hotel.business.PersonManagement.Commands;
 using gmafffff.training.hotel.domain.Contracts.Mappers;
@@ -12,8 +13,8 @@ namespace gmafffff.training.hotel.business.PersonManagement.Handlers;
 public class UpdatePersonCommandHandler(
     IPersonsRepository<Guid> repository,
     IPersonManagementMapper mapper,
-    IServiceProvider serviceProvider,
+    IDomainEventDispatcher domainEventDispatcher,
     ILogger<UpdatePersonCommandHandler>? logger = null) :
     UpdateDbCommandHandler<
         UpdatePersonCommand, PersonUpdateDto, UpdatedBusinessEvent<Guid>,
-        Person<Guid>, Guid>(repository, mapper, serviceProvider, logger);
+        Person<Guid>, Guid>(repository, mapper, domainEventDispatcher, logger);

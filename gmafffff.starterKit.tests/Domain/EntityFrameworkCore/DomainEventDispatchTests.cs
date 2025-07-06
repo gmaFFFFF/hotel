@@ -20,7 +20,7 @@ public partial class DomainEventsTests {
         private readonly IServiceProvider _provider = Substitute.For<IServiceProvider>();
 
         public DomainEventDispatch() {
-            _eventProcessor = new DomainEventProcessor(_provider);
+            _eventProcessor = new DomainEventProcessor(new DomainEventHandlerFabric(_provider));
 
             _event1 = new SimpleDomainEvent(_entity);
             _event2 = new SimpleDomainEvent2(_entity);

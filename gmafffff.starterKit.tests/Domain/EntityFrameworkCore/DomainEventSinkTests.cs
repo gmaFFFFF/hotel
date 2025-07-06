@@ -14,7 +14,7 @@ public partial class DomainEventsTests {
         private readonly IServiceProvider _provider = Substitute.For<IServiceProvider>();
 
         public DomainEventSink() {
-            _eventSink = new DomainEventProcessor(_provider);
+            _eventSink = new DomainEventProcessor(new DomainEventHandlerFabric(_provider));
             _context = new SimpleDbContext(nameof(DomainEventsTests) + nameof(DomainEventSink));
         }
 

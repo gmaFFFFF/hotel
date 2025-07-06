@@ -2,15 +2,18 @@ using gmafffff.starterKit.AppError;
 using gmafffff.starterKit.BusinessLogic;
 using gmafffff.starterKit.Domain.Events;
 using gmafffff.starterKit.Messaging;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace gmafffff.starterKit.tests.BusinessLogic.Fixtures;
 
 public class DbHandler(bool isSaveToDbSeparately = true, IServiceProvider? provider = null)
     : BusinessCommandDbHandler<DbHandlerCommand,
-            BusinessEntity, int, Repo, DbHandlerStatus,
-            DbHandlerStatus>
-        (new Repo(), provider ?? GetFakeServiceProvider(), isSaveToDbSeparately) {
-    public static EventHandler<BeforeSavingEventArgs> Handler =
+        BusinessEntity, int, Repo, DbHandlerStatus,
+        DbHandlerStatus>
+    (new Repo(),
+        (provider ?? GetFakeServiceProvider()).GetRequiredService<IDomainEventDispatcher>(),
+        isSaveToDbSeparately) {
+    public static readonly EventHandler<BeforeSavingEventArgs> Handler =
         (_, args) => args.IsSaveResult = args.Command.IsSaveResult;
 
     public DbHandlerStatus Status;

@@ -3,9 +3,7 @@ using gmafffff.starterKit.AppError;
 using gmafffff.starterKit.Messaging;
 using LanguageExt;
 using LanguageExt.Common;
-using Light.GuardClauses;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Validot;
@@ -13,14 +11,28 @@ using Validot;
 namespace gmafffff.starterKit.BusinessLogic;
 
 /// <summary>
-///     Проверяет команду <see cref="BusinessCommand" /> на соответствие формальным требованиями
-///     и при условии соблюдения бизнес-правил <see cref="IBusinessConstraintCheck{TCommand}" />
-///     отправляет её на исполнение, запуская команды,
-///     соответствующие (<see cref="ITriggerEventToCommandTranslator{TTrigger}" />)
-///     сигнальным событиям <see cref="TriggerEvent" />.
+///     Оболочка пусковика бизнес-действий <see cref="Execute"/>.
+///     Проверяет бизнес-команду <see cref="BusinessCommand" />
+///     на соответствие формальным требованиям <paramref name="validator"/>
+///     и при условии соблюдения бизнес-правил <paramref name="businessConstraintChecks"/>
+///     отправляет её на исполнение.
+///     Если в результате обработки команды возникают сигнальные события <see cref="TriggerEvent" />,
+///     то генерируются (<see cref="ITriggerEventToCommandTranslator{TTrigger}" />) новые бизнес-команды
+///     и также отправляются на исполнение.
 /// </summary>
+/// <param name="validator">Форматно-логический контроль (формальная проверка) бизнес-команды</param>
+/// <param name="businessConstraintChecks">Бизнес-ограничения, ограничивающие запуск бизнес-команд</param>
+/// <param name="businessCommandHandler">Обработчик бизнес-команды</param>
+/// <param name="businessActionRunnerFabric">Фабрика пусковиков бизнес-действий</param>
+/// <param name="triggerEventToCommandTranslatorFabric">Фабрика преобразователей триггеров в бизнес-команды</param>
+/// <param name="logger">Журнал</param>
+/// <typeparam name="TCommand">Тип бизнес-команды</typeparam>
 public class BusinessActionRunner<TCommand>(
-    IServiceProvider serviceProvider,
+    IBusinessCommandHandler<TCommand> businessCommandHandler,
+    IBusinessActionRunnerFabric businessActionRunnerFabric,
+    IEnumerable<IBusinessConstraintCheck<TCommand>> businessConstraintChecks,
+    ITriggerEventToCommandTranslatorFabric triggerEventToCommandTranslatorFabric,
+    IValidator<TCommand>? validator = null,
     ILogger<BusinessActionRunner<TCommand>>? logger = null)
     : IBusinessActionRunner<TCommand>
     where TCommand : BusinessCommand {
@@ -29,11 +41,6 @@ public class BusinessActionRunner<TCommand>(
     /// </summary>
     private readonly ILogger<BusinessActionRunner<TCommand>> _logger =
         logger ?? NullLogger<BusinessActionRunner<TCommand>>.Instance;
-
-    /// <summary>
-    ///     Контейнер DI
-    /// </summary>
-    protected readonly IServiceProvider ServiceProvider = serviceProvider.MustNotBeNull();
 
     /// <summary>
     ///     Собрать выявленные ошибки формальной корректности модели (не рекомендуется),
@@ -46,7 +53,7 @@ public class BusinessActionRunner<TCommand>(
     ///     после выявления первого несоответствия
     /// </summary>
     /// <remarks>
-    ///     Установка в true повышает производительность, т.к. правила проверяются параллельно, а не последовательно
+    ///     Установка в true повышает производительность, так как правила проверяются параллельно, а не последовательно
     /// </remarks>
     public bool ContinueCheckBusinessConstraintsAfterFirstError { get; set; } = true;
 
@@ -87,10 +94,8 @@ public class BusinessActionRunner<TCommand>(
         }
 
         FinT<IO, IList<BusinessEvent>> Handle(TCommand cmd) {
-            var handler = ServiceProvider.GetRequiredService<IBusinessCommandHandler<TCommand>>();
-
-            var execute = FinT<IO, IList<BusinessEvent>>.LiftIO(IO.liftAsync(
-                async env => await handler.ExecuteAsync(cmd, env.Token).ConfigureAwait(false)));
+            var execute = FinT<IO, IList<BusinessEvent>>.LiftIO(IO.liftAsync(async env =>
+                await businessCommandHandler.ExecuteAsync(cmd, env.Token).ConfigureAwait(false)));
 
             execute.IfSucc(events => _logger.LogTrace("Результат исполнения команды: {@Events}", events));
             execute.IfFail(error => _logger.LogTrace("Невозможно выполнить команду: {@Errors}", error));
@@ -104,8 +109,6 @@ public class BusinessActionRunner<TCommand>(
     /// </summary>
     /// <returns>Возвращает true если формальных ошибок не выявлено</returns>
     protected Validation<Error, Unit> IsFormalValid(TCommand command) {
-        var validator = ServiceProvider.GetService<IValidator<TCommand>>();
-
         if (validator is null)
             return Unit.Default;
 
@@ -131,7 +134,7 @@ public class BusinessActionRunner<TCommand>(
 
         if (ContinueCheckBusinessConstraintsAfterFirstError)
             // В функциональном стиле уродливый код сократился в 2 раза, параллельность исполнения обеспечена «из коробки»
-            error += await ServiceProvider.GetServices<IBusinessConstraintCheck<TCommand>>()
+            error += await businessConstraintChecks
                 // Загруженный список правил трансформируем в аналог IEnumerable
                 .AsIterable()
                 // Запускаем проверку каждого правила так же как и в Select, но IO станет внешней монадой,
@@ -144,7 +147,7 @@ public class BusinessActionRunner<TCommand>(
                 .ConfigureAwait(false);
 
         else
-            foreach (var constraint in ServiceProvider.GetServices<IBusinessConstraintCheck<TCommand>>()) {
+            foreach (var constraint in businessConstraintChecks) {
                 cancel.ThrowIfCancellationRequested();
                 var test = await CheckConstraint(constraint, command, _logger).RunAsync(EnvIO.New(token: cancel));
 
@@ -163,13 +166,12 @@ public class BusinessActionRunner<TCommand>(
 
         static IO<bool> CallCheck(IBusinessConstraintCheck<TCommand> constraint, TCommand command,
             ILogger<BusinessActionRunner<TCommand>> logger) {
-            return IO.liftAsync(
-                async env => {
-                    var result = await constraint.IsSatisfiedAsync(command, env.Token).ConfigureAwait(false);
-                    logger.LogTrace("Команда соответствует бизнес-ограничению {BusinessConstraintCheck}: {IsValid}",
-                        constraint.ErrorCode, result);
-                    return result;
-                });
+            return IO.liftAsync(async env => {
+                var result = await constraint.IsSatisfiedAsync(command, env.Token).ConfigureAwait(false);
+                logger.LogTrace("Команда соответствует бизнес-ограничению {BusinessConstraintCheck}: {IsValid}",
+                    constraint.ErrorCode, result);
+                return result;
+            });
         }
 
         static IO<Error> CheckConstraint(IBusinessConstraintCheck<TCommand> constraint, TCommand command,
@@ -232,10 +234,8 @@ public class BusinessActionRunner<TCommand>(
         return runCommands;
 
         Iterable<ITriggerEventToCommandTranslator> FindTriggerToCommandsTranslators(TriggerEvent trigger) {
-            var translatorType = typeof(ITriggerEventToCommandTranslator<>).MakeGenericType(trigger.GetType());
-            var translators = ServiceProvider
-                .GetServices(translatorType)
-                .Cast<ITriggerEventToCommandTranslator>()
+            var translators = triggerEventToCommandTranslatorFabric
+                .GetTranslators(trigger)
                 .AsIterable();
 
             if (translators.IsEmpty())
@@ -245,8 +245,7 @@ public class BusinessActionRunner<TCommand>(
         }
 
         FinT<IO, IList<BusinessEvent>> RunCommand(BusinessCommand cmd) {
-            var runnerType = typeof(IBusinessActionRunner<>).MakeGenericType(cmd.GetType());
-            var runner = (IBusinessActionRunner)ServiceProvider.GetRequiredService(runnerType);
+            var runner = businessActionRunnerFabric.GetBusinessActionRunner(cmd);
 
             var execute = (BusinessCommand cmd) =>
                 IO.liftAsync(async env => await runner.Execute(cmd, env.Token).ConfigureAwait(false));

@@ -1,5 +1,6 @@
 using gmafffff.starterKit.AppError;
 using gmafffff.starterKit.BusinessLogic;
+using gmafffff.starterKit.Domain.Events;
 using gmafffff.training.hotel.business.SettlementManagement.Commands;
 using gmafffff.training.hotel.business.SettlementManagement.Events;
 using gmafffff.training.hotel.domain.Contracts.Repositories;
@@ -11,11 +12,11 @@ namespace gmafffff.training.hotel.business.SettlementManagement.Handlers;
 public class SettleInCommandHandler(
     IHotelBlocksRepository<int, Guid> repo,
     IPersonsRepository<Guid> personsRepository,
-    IServiceProvider serviceProvider,
+    IDomainEventDispatcher domainEventDispatcher,
     ILogger<SettleInCommandHandler>? logger = null)
     : BusinessCommandDbHandler<SettleInCommand,
         HotelBlock<int, Guid>, int, IHotelBlocksRepository<int, Guid>,
-        HotelBlock<int, Guid>, Room<Guid>>(repo, serviceProvider, logger: logger) {
+        HotelBlock<int, Guid>, Room<Guid>>(repo, domainEventDispatcher, logger: logger) {
     protected override async Task<Fin<IList<HotelBlock<int, Guid>>>> LoadAsync(IHotelBlocksRepository<int, Guid> repo,
         CancellationToken cancel = default) {
         var found = (await repo

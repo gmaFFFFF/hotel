@@ -1,4 +1,5 @@
 using gmafffff.starterKit.Domain;
+using gmafffff.starterKit.Domain.Events;
 using gmafffff.starterKit.Mappers;
 using gmafffff.starterKit.Messaging;
 using gmafffff.starterKit.Messaging.Crud;
@@ -13,11 +14,11 @@ public class CreateDbCommandHandler<
     TEntity, TEntityId>(
     IRepository<TEntity, TEntityId> repository,
     IEntityMapperBackward<TEntity, TEntityId, TDto> mapper,
-    IServiceProvider serviceProvider,
+    IDomainEventDispatcher domainEventDispatcher,
     ILogger<IBusinessCommandHandler<TAddCommand>>? logger = null)
     : BusinessCommandDbHandler<TAddCommand,
         TEntity, TEntityId, IRepository<TEntity, TEntityId>,
-        Unit, TEntity>(repository, serviceProvider, isSaveToDbSeparately: true, logger)
+        Unit, TEntity>(repository, domainEventDispatcher, isSaveToDbSeparately: true, logger)
     where TAddCommand : CreateBusinessCommand<TDto>
     where TAddedEvent : CreatedBusinessEvent<TEntityId>
     where TEntityId : struct, IEquatable<TEntityId>
@@ -31,7 +32,7 @@ public class CreateDbCommandHandler<
 
     protected override IList<BusinessEvent> PackResultToEvent(IList<TEntity> result) {
         return result
-            .Select(r => Activator<TAddedEvent>.CreateInstance(r.Id, Command, default(Guid)))
+            .Select(r => Activator<TAddedEvent>.CreateInstance(r.Id, Command, Guid.Empty))
             .Cast<BusinessEvent>()
             .ToList();
     }

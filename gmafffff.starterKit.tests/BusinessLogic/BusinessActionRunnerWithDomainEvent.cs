@@ -3,6 +3,7 @@ using gmafffff.starterKit.BusinessLogic;
 using gmafffff.starterKit.Domain.Events;
 using gmafffff.starterKit.EntityFrameworkCore;
 using gmafffff.starterKit.tests.BusinessLogic.Fixtures;
+using Microsoft.Extensions.DependencyInjection;
 using Validot;
 
 namespace gmafffff.starterKit.tests.BusinessLogic;
@@ -11,7 +12,7 @@ namespace gmafffff.starterKit.tests.BusinessLogic;
 public partial class BusinessActionRunnerTests {
     public class BusinessActionRunnerWithDomainEvent {
         private const string ErrorMessage = "Обработка прервана";
-        private readonly Dictionary<CommandWithTrigger, TestDomainEvent> _cmd2domainEvents = [];
+        private readonly Dictionary<CommandWithTrigger, TestDomainEvent> _cmd2domainEvents;
 
         private readonly DbHandler _cmdHandler;
 
@@ -22,38 +23,12 @@ public partial class BusinessActionRunnerTests {
 
         private readonly IServiceProvider _provider = Substitute.For<IServiceProvider>();
 
-        private readonly BusinessActionRunner<CommandWithTrigger> _runner;
-
         private readonly ITriggerEventToCommandTranslator<MyTrigger> _triggerTranslator =
             Substitute.For<ITriggerEventToCommandTranslator<MyTrigger>>();
 
+        private BusinessActionRunner<CommandWithTrigger> _runner;
+
         public BusinessActionRunnerWithDomainEvent() {
-            _runner = new BusinessActionRunner<CommandWithTrigger>(_provider);
-            _cmdHandler = Substitute.ForPartsOf<DbHandler>(true, _provider);
-
-            // Обработчик событий домена
-            var domainEventProcessor = new DomainEventProcessor(_provider);
-            _domainEventHandler.HandleAsync(Arg.Any<IDomainEvent>(),
-                    Arg.Any<DomainEventDispatcherContext>(),
-                    Arg.Any<CancellationToken>())
-                .ReturnsForAnyArgs(Fin<Unit>.Succ(Unit.Default));
-
-            // Контейнер служб
-            _provider.GetService(typeof(IBusinessActionRunner<CommandWithTrigger>))
-                .Returns(_ => new BusinessActionRunner<CommandWithTrigger>(_provider));
-            _provider.GetService(typeof(IValidator<CommandWithTrigger>))
-                .Returns(null);
-            _provider.GetService(typeof(IEnumerable<IBusinessConstraintCheck<CommandWithTrigger>>))
-                .Returns(Array.Empty<IBusinessConstraintCheck<CommandWithTrigger>>());
-            _provider.GetService(typeof(IBusinessCommandHandler<CommandWithTrigger>))
-                .Returns(_cmdHandler);
-            _provider.GetService(typeof(IEnumerable<ITriggerEventToCommandTranslator<MyTrigger>>))
-                .Returns(Enumerable.Repeat(_triggerTranslator, count: 1));
-            _provider.GetService(typeof(IDomainEventDispatcher))
-                .Returns(domainEventProcessor);
-            _provider.GetService(typeof(IEnumerable<IDomainEventHandler<TestDomainEvent>>))
-                .Returns(Enumerable.Repeat(_domainEventHandler, count: 1));
-
             // Образцы данных
             _commands = Enumerable.Range(start: 0, count: 2)
                 .Select(i => new CommandWithTrigger(Number: i)).ToList();
@@ -62,10 +37,56 @@ public partial class BusinessActionRunnerTests {
                 .Select(cmd => (cmd, new TestDomainEvent(cmd.Number)))
                 .ToDictionary();
 
+            // Обработчик событий домена
+            var domainEventProcessor = new DomainEventProcessor(new DomainEventHandlerFabric(_provider));
+            _domainEventHandler.HandleAsync(Arg.Any<IDomainEvent>(),
+                    Arg.Any<DomainEventDispatcherContext>(),
+                    Arg.Any<CancellationToken>())
+                .ReturnsForAnyArgs(Fin<Unit>.Succ(Unit.Default));
 
+            // Контейнер служб
+            _provider.GetService(typeof(IValidator<CommandWithTrigger>))
+                .Returns(null);
+            _provider.GetService(typeof(IEnumerable<IBusinessConstraintCheck<CommandWithTrigger>>))
+                .Returns(Array.Empty<IBusinessConstraintCheck<CommandWithTrigger>>());
+            _provider.GetService(typeof(IEnumerable<ITriggerEventToCommandTranslator<MyTrigger>>))
+                .Returns(Enumerable.Repeat(_triggerTranslator, count: 1));
+            _provider.GetService(typeof(IDomainEventDispatcher))
+                .Returns(domainEventProcessor);
+            _provider.GetService(typeof(IEnumerable<IDomainEventHandler<TestDomainEvent>>))
+                .Returns(Enumerable.Repeat(_domainEventHandler, count: 1));
+
+            // Обработчик команды
+            _cmdHandler = Substitute.ForPartsOf<DbHandler>(true, _provider);
             _cmdHandler
                 .WhenForAnyArgs(x => x.RunAction(Arg.Any<CommandWithTrigger>()))
                 .Do(x => domainEventProcessor.AddEvent(_cmd2domainEvents[x.Arg<CommandWithTrigger>()]));
+            _provider.GetService(typeof(IBusinessCommandHandler<CommandWithTrigger>))
+                .Returns(_cmdHandler);
+
+            _provider.GetService(typeof(IBusinessActionRunner<CommandWithTrigger>))
+                .Returns(_ => new BusinessActionRunner<CommandWithTrigger>(
+                    _cmdHandler,
+                    new BusinessActionRunnerFabric(_provider),
+                    [],
+                    new TriggerEventToCommandTranslatorFabric(_provider),
+                    validator: null,
+                    logger: null
+                ));
+
+            // Тестируемый объект
+            _runner = NewRunner(_provider);
+        }
+
+        private static BusinessActionRunner<CommandWithTrigger> NewRunner(IServiceProvider provider) {
+            return new BusinessActionRunner<CommandWithTrigger>(
+                provider.GetRequiredService<IBusinessCommandHandler<CommandWithTrigger>>(),
+                new BusinessActionRunnerFabric(provider),
+                provider.GetServices<IBusinessConstraintCheck<CommandWithTrigger>>(),
+                new TriggerEventToCommandTranslatorFabric(provider),
+                provider.GetService<IValidator<CommandWithTrigger>>(),
+                logger: null
+            );
         }
 
         /// <summary>
@@ -100,6 +121,7 @@ public partial class BusinessActionRunnerTests {
                     Arg.Any<DomainEventDispatcherContext>(),
                     Arg.Any<CancellationToken>())
                 .ReturnsForAnyArgs(Fin<Unit>.Fail(ErrorMessage));
+            _runner = NewRunner(_provider);
 
             // Act
             var result = await _runner.Execute(_commands[0]);

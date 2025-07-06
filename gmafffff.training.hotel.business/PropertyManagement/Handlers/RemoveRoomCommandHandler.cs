@@ -1,4 +1,5 @@
 using gmafffff.starterKit.BusinessLogic;
+using gmafffff.starterKit.Domain.Events;
 using gmafffff.starterKit.Messaging.Crud;
 using gmafffff.training.hotel.business.PropertyManagement.Commands;
 using gmafffff.training.hotel.domain.Contracts.Repositories;
@@ -9,11 +10,11 @@ namespace gmafffff.training.hotel.business.PropertyManagement.Handlers;
 
 public class RemoveRoomCommandHandler(
     IHotelBlocksRepository<int, Guid> repo,
-    IServiceProvider serviceProvider,
+    IDomainEventDispatcher domainEventDispatcher,
     ILogger<RemoveRoomCommandHandler>? logger = null)
     : BusinessCommandDbHandler<RemoveRoomsCommand,
         HotelBlock<int, Guid>, int, IHotelBlocksRepository<int, Guid>,
-        HotelBlock<int, Guid>, Room<Guid>>(repo, serviceProvider, logger: logger) {
+        HotelBlock<int, Guid>, Room<Guid>>(repo, domainEventDispatcher, logger: logger) {
     protected override async Task<Fin<IList<HotelBlock<int, Guid>>>> LoadAsync(IHotelBlocksRepository<int, Guid> repo,
         CancellationToken cancel = default) {
         var load = await repo

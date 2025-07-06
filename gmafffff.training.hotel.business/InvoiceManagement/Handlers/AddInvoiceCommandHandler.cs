@@ -1,4 +1,5 @@
 using gmafffff.starterKit.BusinessLogic;
+using gmafffff.starterKit.Domain.Events;
 using gmafffff.starterKit.Messaging.Crud;
 using gmafffff.training.hotel.business.InvoiceManagement.Commands;
 using gmafffff.training.hotel.domain.pay.Contracts.Repositories;
@@ -9,11 +10,11 @@ namespace gmafffff.training.hotel.business.InvoiceManagement.Handlers;
 
 public class AddInvoiceCommandHandler(
     IInvoiceRepository repo,
-    IServiceProvider serviceProvider,
+    IDomainEventDispatcher domainEventDispatcher,
     ILogger<AddInvoiceCommandHandler>? logger = null)
     : BusinessCommandDbHandler<AddInvoiceCommand,
         Invoice, int, IInvoiceRepository,
-        Unit, Invoice>(repo, serviceProvider, logger: logger) {
+        Unit, Invoice>(repo, domainEventDispatcher, logger: logger) {
     protected override Task<Fin<IList<Invoice>>>
         RunActionAsync(IList<Unit> loaded, CancellationToken cancel = default) {
         repo.Add(Command.New);

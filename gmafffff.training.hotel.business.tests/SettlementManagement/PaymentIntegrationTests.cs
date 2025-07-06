@@ -27,7 +27,7 @@ public partial class SettlementManagementTests {
                 .Where(Room<Guid>.IsFreeRoom.Not().Compile())
                 .First(room => room.Visit.ArrivalDate < DateOnly.FromDateTime(DateTime.Today));
             var command = new MoveOutCommand(room.Id);
-            var runner = new BusinessActionRunner<MoveOutCommand>(Scope.ServiceProvider);
+            var runner = Scope.ServiceProvider.GetRequiredService<IBusinessActionRunner<MoveOutCommand>>();
 
             // Act
             var res = await runner.Execute(command);

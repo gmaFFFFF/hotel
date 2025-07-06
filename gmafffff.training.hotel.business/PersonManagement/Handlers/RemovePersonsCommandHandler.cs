@@ -1,4 +1,5 @@
 ﻿using gmafffff.starterKit.BusinessLogic.Crud;
+using gmafffff.starterKit.Domain.Events;
 using gmafffff.starterKit.Messaging.Crud;
 using gmafffff.training.hotel.business.PersonManagement.Commands;
 using gmafffff.training.hotel.domain.Contracts.Repositories;
@@ -9,8 +10,8 @@ namespace gmafffff.training.hotel.business.PersonManagement.Handlers;
 
 public class RemovePersonsCommandHandler(
     IPersonsRepository<Guid> repo,
-    IServiceProvider serviceProvider,
+    IDomainEventDispatcher domainEventDispatcher,
     ILogger<RemovePersonsCommandHandler>? logger = null)
     : DeleteDbCommandHandler<
         RemovePersonsCommand, DeletedBusinessEvent<Guid>,
-        Person<Guid>, Guid>(repo, serviceProvider, logger);
+        Person<Guid>, Guid>(repo, domainEventDispatcher, logger);

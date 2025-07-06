@@ -1,18 +1,16 @@
 ﻿using gmafffff.starterKit.Domain;
 using gmafffff.starterKit.Domain.Events;
 using LanguageExt;
-using Light.GuardClauses;
 using Light.GuardClauses.FrameworkExtensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace gmafffff.starterKit.EntityFrameworkCore;
 
 public class DomainEventProcessor(
-    IServiceProvider serviceProvider,
+    IDomainEventHandlerFabric domainEventHandlerFabric,
     ILogger<DomainEventProcessor>? logger = null) : IDomainEventSink, IDomainEventDispatcher {
     /// <summary>
     ///     Журнал
@@ -20,11 +18,6 @@ public class DomainEventProcessor(
     private readonly ILogger<DomainEventProcessor> _logger = logger ?? NullLogger<DomainEventProcessor>.Instance;
 
     #region Реализация IDomainEventDispatcher
-
-    /// <summary>
-    ///     Контейнер DI
-    /// </summary>
-    protected readonly IServiceProvider ServiceProvider = serviceProvider.MustNotBeNull();
 
     /// <summary>
     ///     Индекс первого необработанного события
@@ -47,14 +40,13 @@ public class DomainEventProcessor(
     /// </summary>
     /// <param name="Events"></param>
     /// <param name="UnhandledEventIndex"></param>
-    /// <param name="ServiceProvider"></param>
     private record HandleState(
         IReadOnlyList<IDomainEvent> Events,
         int UnhandledEventIndex,
-        IServiceProvider ServiceProvider);
+        IDomainEventHandlerFabric DomainEventHandlerFabric);
 
     public async Task<Fin<Unit>> DispatchAsync(CancellationToken cancel = default) {
-        HandleState initialState = new(Events, _unhandledEventIndex, ServiceProvider);
+        HandleState initialState = new(Events, _unhandledEventIndex, domainEventHandlerFabric);
         var steps = await HandleEventsRecursive(_logger)
             .Run(initialState).As()
             .Run().As()
@@ -102,14 +94,12 @@ public class DomainEventProcessor(
                 select newState;
         }
 
-        // Найти все обработчики для конкретного события в ServiceProvider
+        // Найти все обработчики для конкретного события
         static StateT<HandleState, FinT<IO>, Iterable<IDomainEventHandler>>
             FindDomainEventHandlers(IDomainEvent @event) {
-            var handlerType = typeof(IDomainEventHandler<>).MakeGenericType(@event.GetType());
             return from state in StateT.get<FinT<IO>, HandleState>()
-                select state.ServiceProvider
-                    .GetServices(handlerType)
-                    .Cast<IDomainEventHandler>()
+                select state.DomainEventHandlerFabric
+                    .GetDomainEventHandlers(@event)
                     .AsIterable();
         }
 
@@ -118,8 +108,7 @@ public class DomainEventProcessor(
             return from state in StateT.get<FinT<IO>, HandleState>()
                 select new DomainEventDispatcherContext(
                     state.Events.Skip(state.UnhandledEventIndex).Skip(1).ToArray(),
-                    state.Events.Take(state.UnhandledEventIndex).ToArray(),
-                    state.ServiceProvider
+                    state.Events.Take(state.UnhandledEventIndex).ToArray()
                 );
         }
 
@@ -145,8 +134,8 @@ public class DomainEventProcessor(
         // Запустить обработчик события
         static IO<Fin<Unit>> RunEventHandler(IDomainEvent @event, DomainEventDispatcherContext context,
             IDomainEventHandler handler) {
-            return IO.liftAsync(
-                async env => await handler.HandleAsync(@event, context, env.Token).ConfigureAwait(false));
+            return IO.liftAsync(async env =>
+                await handler.HandleAsync(@event, context, env.Token).ConfigureAwait(false));
         }
     }
 
@@ -197,7 +186,7 @@ public class DomainEventProcessor(
     ///     Отключает у сущности <see cref="Entity{TId}" />, реализующей интерфейс <see cref="IDomainEventSink" />,
     ///     приемника событий при прекращении ей отслеживания <see cref="DbContext" />
     /// </summary>
-    private void ChangeTrackerOnStateChanged(object? sender, EntityStateChangedEventArgs e) {
+    private static void ChangeTrackerOnStateChanged(object? sender, EntityStateChangedEventArgs e) {
         if (e.Entry.Entity is IDomainEventEmitter entity &&
             e.NewState is EntityState.Detached)
             entity.ResetDomainEventSink();

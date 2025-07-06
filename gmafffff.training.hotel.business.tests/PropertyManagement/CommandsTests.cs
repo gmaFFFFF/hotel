@@ -8,6 +8,7 @@ using gmafffff.training.hotel.business.tests.Fixtures;
 using gmafffff.training.hotel.domain.Model;
 using gmafffff.training.hotel.sampleModel.FakeModel.AutoFixture;
 using JetBrains.Annotations;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
 
 namespace gmafffff.training.hotel.business.tests.PropertyManagement;
@@ -30,7 +31,7 @@ public partial class PropertyManagementTests {
                     Number = guid.ToString()
                 }
             };
-            var runner = new BusinessActionRunner<AddRoomCommand>(Scope.ServiceProvider);
+            var runner = Scope.ServiceProvider.GetRequiredService<IBusinessActionRunner<AddRoomCommand>>();
 
             // Act
             var result = await runner.Execute(command);
@@ -52,7 +53,7 @@ public partial class PropertyManagementTests {
         public async Task UpdateRoom(UpdateRoomCommand command) {
             // Arrange
             var old = FakeHotel.Hotel.Rooms.First();
-            var runner = new BusinessActionRunner<UpdateRoomCommand>(Scope.ServiceProvider);
+            var runner = Scope.ServiceProvider.GetRequiredService<IBusinessActionRunner<UpdateRoomCommand>>();
             command = command with { Id = old.Id };
 
             // Act
@@ -69,7 +70,7 @@ public partial class PropertyManagementTests {
         /// <summary>
         ///     Удаляет номер
         /// </summary>
-        /// <exception cref="NotSupportedException">если оказалось слишком мало свободных номеров для теста</exception>
+        /// <exception cref="NotSupportedException">Если оказалось слишком мало свободных номеров для теста</exception>
         [Fact]
         public async Task RemoveRoom() {
             // Arrange
@@ -78,7 +79,7 @@ public partial class PropertyManagementTests {
             if (removeRooms.Length < 2) throw new NotSupportedException();
 
             var command = new RemoveRoomsCommand(removeRoomsIds);
-            var runner = new BusinessActionRunner<RemoveRoomsCommand>(Scope.ServiceProvider);
+            var runner = Scope.ServiceProvider.GetRequiredService<IBusinessActionRunner<RemoveRoomsCommand>>();
 
             // Act
             var result = await runner.Execute(command);

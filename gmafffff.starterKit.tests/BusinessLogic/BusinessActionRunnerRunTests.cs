@@ -5,6 +5,7 @@ using gmafffff.starterKit.EntityFrameworkCore;
 using gmafffff.starterKit.Messaging;
 using gmafffff.starterKit.tests.BusinessLogic.Fixtures;
 using gmafffff.starterKit.tests.Validation.Fixtures;
+using Microsoft.Extensions.DependencyInjection;
 using NSubstitute.ExceptionExtensions;
 using NSubstitute.Extensions;
 using Validot;
@@ -35,8 +36,6 @@ public partial class BusinessActionRunnerTests {
         private readonly BusinessActionCommand _notValidCommand = new(false);
         private readonly IServiceProvider _provider = Substitute.For<IServiceProvider>();
 
-        private readonly BusinessActionRunner<BusinessActionCommand> _runner;
-
         private readonly IBusinessConstraintCheck<BusinessActionCommand> _successCheck1 =
             Substitute.For<IBusinessConstraintCheck<BusinessActionCommand>>();
 
@@ -47,6 +46,8 @@ public partial class BusinessActionRunnerTests {
             Substitute.For<IValidator<BusinessActionCommand>>();
 
         private readonly BusinessActionCommand _validCommand = new(true);
+
+        private BusinessActionRunner<BusinessActionCommand> _runner;
 
         public BusinessActionRunnerRun() {
             // Форматно-логический контроль
@@ -78,17 +79,30 @@ public partial class BusinessActionRunnerTests {
                 .Returns(Fin<IList<BusinessEvent>>.Succ([new BusinessActionResult(_validCommand)]));
 
             // Обработчик событий домена
-            _domainEventProcessor = new DomainEventProcessor(_provider);
+            _domainEventProcessor = new DomainEventProcessor(new DomainEventHandlerFabric(_provider));
 
             // Контейнер служб
             _provider.GetService(typeof(IValidator<BusinessActionCommand>))
                 .Returns(_validator);
+            _provider.Configure().GetService(typeof(IEnumerable<IBusinessConstraintCheck<BusinessActionCommand>>))
+                .Returns(Enumerable.Empty<IBusinessConstraintCheck<BusinessActionCommand>>());
             _provider.GetService(typeof(IBusinessCommandHandler<BusinessActionCommand>))
                 .Returns(_handler);
             _provider.GetService(typeof(IDomainEventDispatcher))
                 .Returns(_domainEventProcessor);
 
-            _runner = new BusinessActionRunner<BusinessActionCommand>(_provider);
+            _runner = NewRunner(_provider);
+        }
+
+        private static BusinessActionRunner<BusinessActionCommand> NewRunner(IServiceProvider provider) {
+            return new BusinessActionRunner<BusinessActionCommand>(
+                provider.GetRequiredService<IBusinessCommandHandler<BusinessActionCommand>>(),
+                new BusinessActionRunnerFabric(provider),
+                provider.GetServices<IBusinessConstraintCheck<BusinessActionCommand>>(),
+                new TriggerEventToCommandTranslatorFabric(provider),
+                provider.GetService<IValidator<BusinessActionCommand>>(),
+                logger: null
+            );
         }
 
         /// <summary>
@@ -145,6 +159,7 @@ public partial class BusinessActionRunnerTests {
                 [_successCheck1, _successCheck2, _failCheck1, _failCheck2];
             _provider.Configure().GetService(typeof(IEnumerable<IBusinessConstraintCheck<BusinessActionCommand>>))
                 .Returns(checks);
+            _runner = NewRunner(_provider);
             _runner.ContinueCheckBusinessConstraintsAfterFirstError = false;
 
             // Act
@@ -173,6 +188,7 @@ public partial class BusinessActionRunnerTests {
                 [_successCheck1, _successCheck2, _failCheck1, _failCheck2, _exceptionCheck1, _exceptionCheck2];
             _provider.Configure().GetService(typeof(IEnumerable<IBusinessConstraintCheck<BusinessActionCommand>>))
                 .Returns(checks);
+            _runner = NewRunner(_provider);
             _runner.ContinueCheckBusinessConstraintsAfterFirstError = true;
 
             // Act
@@ -211,6 +227,7 @@ public partial class BusinessActionRunnerTests {
             IBusinessConstraintCheck<BusinessActionCommand>[] checks = [_successCheck1, _successCheck2];
             _provider.Configure().GetService(typeof(IEnumerable<IBusinessConstraintCheck<BusinessActionCommand>>))
                 .Returns(checks);
+            _runner = NewRunner(_provider);
 
             // Act
             var result = await _runner.Execute(_validCommand);
