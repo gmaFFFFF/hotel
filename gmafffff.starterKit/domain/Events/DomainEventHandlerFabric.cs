@@ -2,8 +2,8 @@
 
 namespace gmafffff.starterKit.Domain.Events;
 
-public record DomainEventHandlerFabric(IServiceProvider ServiceProvider) : IDomainEventHandlerFabric {
-    public IEnumerable<IDomainEventHandler> GetDomainEventHandlers(IDomainEvent @event) {
+public record DomainEventHandlerFabric(IServiceProvider ServiceProvider) {
+    public virtual IEnumerable<IDomainEventHandler> GetDomainEventHandlers(IDomainEvent @event) {
         var handlerType = typeof(IDomainEventHandler<>).MakeGenericType(@event.GetType());
         return ServiceProvider
             .GetServices(handlerType)

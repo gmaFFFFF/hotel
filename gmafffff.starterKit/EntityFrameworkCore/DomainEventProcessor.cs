@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 namespace gmafffff.starterKit.EntityFrameworkCore;
 
 public class DomainEventProcessor(
-    IDomainEventHandlerFabric domainEventHandlerFabric,
+    DomainEventHandlerFabric domainEventHandlerFabric,
     ILogger<DomainEventProcessor>? logger = null) : IDomainEventSink, IDomainEventDispatcher {
     /// <summary>
     ///     Журнал
@@ -43,7 +43,7 @@ public class DomainEventProcessor(
     private record HandleState(
         IReadOnlyList<IDomainEvent> Events,
         int UnhandledEventIndex,
-        IDomainEventHandlerFabric DomainEventHandlerFabric);
+        DomainEventHandlerFabric DomainEventHandlerFabric);
 
     public async Task<Fin<Unit>> DispatchAsync(CancellationToken cancel = default) {
         HandleState initialState = new(Events, _unhandledEventIndex, domainEventHandlerFabric);

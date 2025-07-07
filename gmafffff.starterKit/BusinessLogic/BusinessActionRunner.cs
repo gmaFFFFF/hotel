@@ -29,9 +29,9 @@ namespace gmafffff.starterKit.BusinessLogic;
 /// <typeparam name="TCommand">Тип бизнес-команды</typeparam>
 public class BusinessActionRunner<TCommand>(
     IBusinessCommandHandler<TCommand> businessCommandHandler,
-    IBusinessActionRunnerFabric businessActionRunnerFabric,
+    BusinessActionRunnerFabric businessActionRunnerFabric,
     IEnumerable<IBusinessConstraintCheck<TCommand>> businessConstraintChecks,
-    ITriggerEventToCommandTranslatorFabric triggerEventToCommandTranslatorFabric,
+    TriggerEventToCommandTranslatorFabric triggerEventToCommandTranslatorFabric,
     IValidator<TCommand>? validator = null,
     ILogger<BusinessActionRunner<TCommand>>? logger = null)
     : IBusinessActionRunner<TCommand>

@@ -150,7 +150,7 @@ public static class RegisterServicesExtensions {
     /// <returns></returns>
     public static IServiceCollection AddDomainEventHandlers(this IServiceCollection @this,
         params Assembly[] assemblies) {
-        @this.TryAddScoped<IDomainEventHandlerFabric, DomainEventHandlerFabric>();
+        @this.TryAddScoped<DomainEventHandlerFabric>();
         return @this.Scan(scan => {
             var selector = assemblies.Length == 0
                 ? scan.FromApplicationDependencies()
@@ -281,7 +281,7 @@ public static class RegisterServicesExtensions {
     /// <param name="this"></param>
     /// <returns></returns>
     internal static IServiceCollection AddBusinessActionRunner(this IServiceCollection @this) {
-        @this.TryAddScoped<IBusinessActionRunnerFabric, BusinessActionRunnerFabric>();
+        @this.TryAddScoped<BusinessActionRunnerFabric>();
         @this.TryAddTransient(typeof(IBusinessActionRunner<>), typeof(BusinessActionRunner<>));
         return @this;
     }
@@ -358,7 +358,7 @@ public static class RegisterServicesExtensions {
     /// <returns></returns>
     internal static IServiceCollection AddTriggerEventToCommandTranslators(this IServiceCollection @this,
         params Assembly[] assemblies) {
-        @this.TryAddScoped<ITriggerEventToCommandTranslatorFabric, TriggerEventToCommandTranslatorFabric>();
+        @this.TryAddScoped<TriggerEventToCommandTranslatorFabric>();
 
         return @this.Scan(scan => {
             var selector = assemblies.Length == 0

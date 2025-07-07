@@ -3,9 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace gmafffff.starterKit.BusinessLogic;
 
-public record TriggerEventToCommandTranslatorFabric(IServiceProvider ServiceProvider)
-    : ITriggerEventToCommandTranslatorFabric {
-    public IEnumerable<ITriggerEventToCommandTranslator> GetTranslators(TriggerEvent trigger) {
+public record TriggerEventToCommandTranslatorFabric(IServiceProvider ServiceProvider) {
+    public virtual IEnumerable<ITriggerEventToCommandTranslator> GetTranslators(TriggerEvent trigger) {
         var translatorType = typeof(ITriggerEventToCommandTranslator<>).MakeGenericType(trigger.GetType());
         return ServiceProvider
             .GetServices(translatorType)
