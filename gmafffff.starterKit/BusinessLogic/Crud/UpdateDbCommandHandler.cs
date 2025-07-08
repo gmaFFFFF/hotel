@@ -10,21 +10,32 @@ using Microsoft.Extensions.Logging;
 
 namespace gmafffff.starterKit.BusinessLogic.Crud;
 
-public class UpdateDbCommandHandler<
+public partial class UpdateDbCommandHandler<
     TUpdateCommand, TDto, TUpdatedEvent,
-    TEntity, TEntityId>(
-    IRepository<TEntity, TEntityId> repository,
-    IEntityMapperBackward<TEntity, TEntityId, TDto> mapper,
-    IDomainEventDispatcher domainEventDispatcher,
-    ILogger<IBusinessCommandHandler<TUpdateCommand>>? logger = null)
-    : BusinessCommandDbHandler<TUpdateCommand,
-            TEntity, TEntityId, IRepository<TEntity, TEntityId>,
-            TEntity, TEntity>
-        (repository, domainEventDispatcher, isSaveToDbSeparately: true, logger)
+    TEntity, TEntityId> : BusinessCommandDbHandler<TUpdateCommand,
+    TEntity, TEntityId, IRepository<TEntity, TEntityId>,
+    TEntity, TEntity>
     where TUpdateCommand : UpdateBusinessCommand<TEntityId, TDto>
     where TUpdatedEvent : UpdatedBusinessEvent<TEntityId>
     where TEntityId : struct, IEquatable<TEntityId>
     where TEntity : Entity<TEntityId> {
+    /// <summary>
+    ///     CRC16 для
+    ///     <see
+    ///         cref="gmafffff.starterKit.BusinessLogic.Crud.UpdateDbCommandHandler{TUpdateCommand,TDto,TUpdatedEvent,TEntity,TEntityId}" />
+    /// </summary>
+    public const int EventIdBase = 0x0d0c;
+
+    private readonly IEntityMapperBackward<TEntity, TEntityId, TDto> _mapper;
+
+    public UpdateDbCommandHandler(IRepository<TEntity, TEntityId> repository,
+        IEntityMapperBackward<TEntity, TEntityId, TDto> mapper,
+        IDomainEventDispatcher domainEventDispatcher,
+        ILogger<IBusinessCommandHandler<TUpdateCommand>>? logger = null) : base(repository, domainEventDispatcher,
+        isSaveToDbSeparately: true, logger) {
+        _mapper = mapper;
+    }
+
     protected override async Task<Fin<IList<TEntity>>> LoadAsync(IRepository<TEntity, TEntityId> repo,
         CancellationToken cancel = default) {
         var found = await repo
@@ -38,7 +49,9 @@ public class UpdateDbCommandHandler<
 
     protected override Task<Fin<IList<TEntity>>> RunActionAsync(IList<TEntity> loaded,
         CancellationToken cancel = default) {
-        mapper.Update(Command.Changed, loaded[0]);
+        _mapper.Update(Command.Changed, loaded[0]);
+
+        UpdateEntityLog(loaded[0].Id);
         return Task.FromResult(Fin<IList<TEntity>>.Succ(loaded));
     }
 
@@ -48,4 +61,9 @@ public class UpdateDbCommandHandler<
             .Cast<BusinessEvent>()
             .ToList();
     }
+
+    [LoggerMessage(EventId = EventIdBase + 1, Level = LogLevel.Trace,
+        Message = "Модифицирован объект: {@updatedEntityId}",
+        EventName = "UpdateEntity")]
+    private partial void UpdateEntityLog(TEntityId updatedEntityId);
 }

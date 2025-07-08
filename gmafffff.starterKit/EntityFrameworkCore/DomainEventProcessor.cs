@@ -1,6 +1,7 @@
 ﻿using gmafffff.starterKit.Domain;
 using gmafffff.starterKit.Domain.Events;
 using LanguageExt;
+using LanguageExt.Common;
 using Light.GuardClauses.FrameworkExtensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -122,11 +123,10 @@ public class DomainEventProcessor(
                 .Map(fin =>
                     fin.BiMap(
                         Succ: _ => {
-                            logger.LogTrace("Событие {@Event} успешно обработано", @event);
+                            logger.HandleEventSuccess(@event);
                             return Unit.Default;
                         }, Fail: error => {
-                            logger.LogTrace("Обработка события {@Event} завершилась с ошибкой {@Error}",
-                                @event, error);
+                            logger.HandleEventFail(@event, error);
                             return error;
                         }));
         }
@@ -156,10 +156,11 @@ public class DomainEventProcessor(
     public IReadOnlyList<IDomainEvent> Events => _events.AsReadOnlyList();
 
     public IDomainEventSink AddEvent(IDomainEvent @event) {
-        _logger.LogTrace("Возникло событие домена {@DomainEvent}", @event);
-        if (!_events.Contains(@event))
-            _events.Add(@event);
+        if (_events.Contains(@event)) return this;
 
+        _events.Add(@event);
+
+        _logger.AddEvent(@event);
         return this;
     }
 
@@ -170,6 +171,7 @@ public class DomainEventProcessor(
         context.ChangeTracker.Tracked += ChangeTrackerOnTracked;
         context.ChangeTracker.StateChanged += ChangeTrackerOnStateChanged;
 
+        _logger.RegisterDbContext(context.ContextId);
         return this;
     }
 
@@ -193,4 +195,25 @@ public class DomainEventProcessor(
     }
 
     #endregion
+}
+
+internal static partial class DomainEventProcessorLog {
+    /// <summary>
+    ///     CRC16 для <see cref="gmafffff.starterKit.EntityFrameworkCore.DomainEventProcessor" />
+    /// </summary>
+    public const int EventIdBase = 0x7e89;
+
+    [LoggerMessage(EventId = EventIdBase + 1, Level = LogLevel.Trace, Message = "Зарегистрирован DbContext: {Id}")]
+    public static partial void RegisterDbContext(this ILogger logger, DbContextId id);
+
+    [LoggerMessage(EventId = EventIdBase + 2, Level = LogLevel.Trace,
+        Message = "Сохранено событие домена {@DomainEvent}")]
+    public static partial void AddEvent(this ILogger logger, IDomainEvent domainEvent);
+
+    [LoggerMessage(EventId = EventIdBase + 3, Level = LogLevel.Trace, Message = "Обработано событие: {@DomainEvent}")]
+    public static partial void HandleEventSuccess(this ILogger logger, IDomainEvent domainEvent);
+
+    [LoggerMessage(EventId = EventIdBase + 4, Level = LogLevel.Error,
+        Message = "Ошибка обработки события {@DomainEvent}: {@Error}")]
+    public static partial void HandleEventFail(this ILogger logger, IDomainEvent domainEvent, Error error);
 }

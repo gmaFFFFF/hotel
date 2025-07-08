@@ -34,8 +34,10 @@ public abstract class BusinessCommandDbHandler<
     /// <summary>
     ///     Журнал
     /// </summary>
-    private readonly ILogger<IBusinessCommandHandler<TCommand>> _logger =
+    protected readonly ILogger<IBusinessCommandHandler<TCommand>> Logger =
         logger ?? NullLogger<IBusinessCommandHandler<TCommand>>.Instance;
+
+    protected readonly TRepo Repository = repository;
 
     /// <summary>
     ///     Выполнение команды происходит отдельно от сохранения её результата в БД?
@@ -57,41 +59,15 @@ public abstract class BusinessCommandDbHandler<
         Command = command.MustNotBeNull();
         Result = null;
 
-        // --- Запись шагов (внутренних вызов функций) в функциональном стиле 
-        // исключила дублирование проверок результата предыдущего шага и отмены
-
-        // Функциональные обёртки для функций-шагов
-        var load = (TRepo repo) =>
-            FinT<IO, IList<TLoad>>.LiftIO(
-                IO.liftAsync(async env => await LoadAsync(repo, env.Token).ConfigureAwait(false)));
-        var act = (IList<TLoad> loaded) =>
-            FinT<IO, IList<TResult>>.LiftIO(
-                IO.liftAsync(async env => await RunActionAsync(loaded, env.Token).ConfigureAwait(false)));
-        var nothing = FinT<IO, int>.Lift(Fin<int>.Succ(0));
-        var saveDb = (TRepo repo) =>
-            FinT<IO, int>.LiftIO(
-                IO.liftAsync(async env => await SaveAsync(repo, env.Token).ConfigureAwait(false)));
-        // Сохранение в БД выполняется если не было отменено
-        var saveDbIf = (bool isSave, TRepo repo) => isSave ? saveDb(repo) : nothing;
-        var beforeSave = (IList<TResult> res) =>
-            FinT<IO, bool>.Lift(
-                IO.lift(() => OnBeforeSaving(res)));
-        // Отдельные команды могут выполняться непосредственно в БД, поэтому операция сохранения может быть не нужна
-        var saveSeparate = (IList<TResult> res, TRepo repo) => IsSaveToDbSeparately
-            ? beforeSave(res).Bind(isSaveResult => saveDbIf(isSaveResult, repo))
-            : nothing;
-        var pack = (IList<TResult> res) =>
-            FinT<IO, IList<BusinessEvent>>.Lift(
-                IO.lift(() => PackResultToEvent(res)));
-
+        using var logScope = Logger.OpenBusinessCommandDbHandlerLogScope(command.MessageId);
 
         // Выполняем шаги последовательно, при условии успешного выполнения предыдущего шага и отсутствия отмены
         var steps =
-            from loaded in load(repository)
-            from res in act(loaded)
+            from loaded in LoadFromDb(Repository)
+            from res in Act(loaded)
             from _ in DispatchDomainEvent()
-            from count in saveSeparate(res, repository)
-            from businessEvents in pack(res)
+            from count in SaveSeparate(res, Repository)
+            from businessEvents in Pack(res)
             select businessEvents;
 
         var run = await steps
@@ -103,6 +79,64 @@ public abstract class BusinessCommandDbHandler<
         Result = run.IfFail(Array.Empty<BusinessEvent>()).ToArray();
 
         return Fin<IList<BusinessEvent>>.Succ(Result);
+
+        // Функциональные обёртки для функций-шагов
+        FinT<IO, IList<TLoad>> LoadFromDb(TRepo repo) {
+            var loadAsync = async (EnvIO env) => {
+                var loaded = await LoadAsync(repo, env.Token).ConfigureAwait(false);
+                loaded.IfSucc(loaded => {
+                    if (loaded.Any()) Logger.LoadDataSuccess();
+                });
+                loaded.IfFail(error => Logger.LoadDataFail(error));
+                return loaded;
+            };
+            return IO.liftAsync(loadAsync);
+        }
+
+        FinT<IO, IList<TResult>> Act(IList<TLoad> loaded) {
+            var actAsync = async (EnvIO env) => {
+                var result = await RunActionAsync(loaded, env.Token).ConfigureAwait(false);
+                result.IfSucc(_ => Logger.ComputeSuccess());
+                result.IfFail(error => Logger.ComputeFail(error));
+                return result;
+            };
+            return IO.liftAsync(actAsync);
+        }
+
+        FinT<IO, int> SaveDb(TRepo repo) {
+            return IO.liftAsync(async env => {
+                var count = await SaveAsync(repo, env.Token).ConfigureAwait(false);
+                count.IfSucc(count => Logger.SaveSuccess(count));
+                count.IfFail(error => Logger.SaveFail(error));
+                return count;
+            });
+        }
+
+        FinT<IO, int> SaveNotRequired() {
+            return IO<int>.Lift(() => {
+                Logger.SavingNotRequired();
+                return 0;
+            });
+        }
+
+        FinT<IO, int> SaveDbIf(bool isSave, TRepo repo) {
+            return isSave ? SaveDb(repo) : SaveNotRequired();
+        }
+
+        FinT<IO, bool> BeforeSave(IList<TResult> res) {
+            return IO.lift(() => OnBeforeSaving(res));
+        }
+
+        // Отдельные команды могут выполняться непосредственно в БД, поэтому операция сохранения может быть не нужна
+        FinT<IO, int> SaveSeparate(IList<TResult> res, TRepo repo) {
+            return IsSaveToDbSeparately
+                ? BeforeSave(res).Bind(isSaveResult => SaveDbIf(isSaveResult, repo))
+                : SaveNotRequired();
+        }
+
+        FinT<IO, IList<BusinessEvent>> Pack(IList<TResult> res) {
+            return IO.lift(() => PackResultToEvent(res));
+        }
     }
 
     /// <summary>
@@ -162,8 +196,8 @@ public abstract class BusinessCommandDbHandler<
         var dispatch = FinT<IO, Unit>.LiftIO(IO.liftAsync(async env =>
             await domainEventDispatcher.DispatchAsync(env.Token).ConfigureAwait(false)));
 
-        dispatch.IfSucc(_ => _logger.LogTrace("Успешно обработаны доменные события"));
-        dispatch.IfFail(error => _logger.LogTrace("При обработке доменных ошибок возникли ошибки: {@Errors}", error));
+        dispatch.IfSucc(_ => Logger.DispatchDomainEventsSuccess());
+        dispatch.IfFail(error => Logger.DispatchDomainEventsFail(error));
 
         return dispatch;
     }
@@ -191,4 +225,47 @@ public abstract class BusinessCommandDbHandler<
         /// </summary>
         public bool IsSaveResult { get; set; } = isSaveResult;
     }
+}
+
+internal static partial class BusinessCommandDbHandlerLog {
+    /// <summary>
+    ///     CRC16 для
+    ///     <see cref="gmafffff.starterKit.BusinessLogic.BusinessCommandDbHandler{TCommand,TEntity,TId,TRepo,TLoad,TResult}" />
+    /// </summary>
+    public const int EventIdBase = 0x6098;
+
+    private static readonly Func<ILogger, Guid, IDisposable?> OpenBusinessCommandDbHandlerLogScopeFunc =
+        LoggerMessage.DefineScope<Guid>("Исполнение команды {CommandId}");
+
+    public static IDisposable? OpenBusinessCommandDbHandlerLogScope(this ILogger logger, Guid commandId) {
+        return OpenBusinessCommandDbHandlerLogScopeFunc(logger, commandId);
+    }
+
+    [LoggerMessage(EventId = EventIdBase + 1, Level = LogLevel.Trace, Message = "Данные загружены")]
+    public static partial void LoadDataSuccess(this ILogger logger);
+
+    [LoggerMessage(EventId = EventIdBase + 2, Level = LogLevel.Error, Message = "Ошибка загрузки данных: {@Error}")]
+    public static partial void LoadDataFail(this ILogger logger, Error error);
+
+    [LoggerMessage(EventId = EventIdBase + 3, Level = LogLevel.Trace, Message = "Вычисление завершено")]
+    public static partial void ComputeSuccess(this ILogger logger);
+
+    [LoggerMessage(EventId = EventIdBase + 4, Level = LogLevel.Error, Message = "Ошибка вычисления: {@Error}")]
+    public static partial void ComputeFail(this ILogger logger, Error error);
+
+    [LoggerMessage(EventId = EventIdBase + 5, Level = LogLevel.Trace, Message = "Сохранено записей: {count}")]
+    public static partial void SaveSuccess(this ILogger logger, int count);
+
+    [LoggerMessage(EventId = EventIdBase + 6, Level = LogLevel.Error, Message = "Ошибка сохранения: {@Error}")]
+    public static partial void SaveFail(this ILogger logger, Error error);
+
+    [LoggerMessage(EventId = EventIdBase + 7, Level = LogLevel.Trace, Message = "Отдельно сохранение не проводилось")]
+    public static partial void SavingNotRequired(this ILogger logger);
+
+    [LoggerMessage(EventId = EventIdBase + 8, Level = LogLevel.Trace, Message = "Обработаны доменные события")]
+    public static partial void DispatchDomainEventsSuccess(this ILogger logger);
+
+    [LoggerMessage(EventId = EventIdBase + 9, Level = LogLevel.Error,
+        Message = "Обработка доменных событий провалена: {@Error}")]
+    public static partial void DispatchDomainEventsFail(this ILogger logger, Error error);
 }

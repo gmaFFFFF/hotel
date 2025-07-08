@@ -62,8 +62,6 @@ public class BusinessActionRunner<TCommand>(
     /// </summary>
     public virtual async Task<Fin<IList<BusinessEvent>>> Execute(TCommand command,
         CancellationToken cancel = default) {
-        using var _ = _logger.BeginScope("На исполнение поступила {@BusinessCommand}", command);
-
         var steps =
             from _1 in Validate(command)
             from _2 in CheckConstraint(command)
@@ -71,13 +69,15 @@ public class BusinessActionRunner<TCommand>(
             from events in ProcessTriggerEvents(primaryEvents)
             select events;
 
+        using var transaction = new TransactionScope(TransactionScopeOption.Required);
+        using var _ = _logger.OpenBusinessActionRunnerLogScope(command);
         try {
-            using var transaction = new TransactionScope(TransactionScopeOption.Required);
             var result = await steps.Run().RunAsync(EnvIO.New(token: cancel)).ConfigureAwait(false);
             result.IfSucc(_ => transaction.Complete());
             return result;
         }
         catch (OperationCanceledException) {
+            _logger.HandleCommandCanceled();
             return AppErrorHelper.NewError(AppErrorCode.OperationCancel);
         }
         catch (DbUpdateConcurrencyException concurrencyException) {
@@ -97,8 +97,8 @@ public class BusinessActionRunner<TCommand>(
             var execute = FinT<IO, IList<BusinessEvent>>.LiftIO(IO.liftAsync(async env =>
                 await businessCommandHandler.ExecuteAsync(cmd, env.Token).ConfigureAwait(false)));
 
-            execute.IfSucc(events => _logger.LogTrace("Результат исполнения команды: {@Events}", events));
-            execute.IfFail(error => _logger.LogTrace("Невозможно выполнить команду: {@Errors}", error));
+            execute.IfSucc(events => _logger.HandleCommandSuccess(events));
+            execute.IfFail(error => _logger.HandleCommandFail(error));
 
             return execute;
         }
@@ -114,7 +114,7 @@ public class BusinessActionRunner<TCommand>(
 
         var result = validator.IsValid(command);
 
-        _logger.LogTrace("Команда прошла форматно-логический контроль: {IsValid}", result);
+        _logger.ValidateCommand(result);
 
         return result
             ? Unit.Default
@@ -157,7 +157,7 @@ public class BusinessActionRunner<TCommand>(
                 break;
             }
 
-        _logger.LogTrace("Бизнес-ограничения соблюдаются: {IsSatisfied}", error.IsEmpty);
+        _logger.CheckAllBusinessConstraints(error.IsEmpty);
 
         return error.IsEmpty
             ? Unit.Default
@@ -168,8 +168,7 @@ public class BusinessActionRunner<TCommand>(
             ILogger<BusinessActionRunner<TCommand>> logger) {
             return IO.liftAsync(async env => {
                 var result = await constraint.IsSatisfiedAsync(command, env.Token).ConfigureAwait(false);
-                logger.LogTrace("Команда соответствует бизнес-ограничению {BusinessConstraintCheck}: {IsValid}",
-                    constraint.ErrorCode, result);
+                logger.CheckBusinessConstraint(constraint.ErrorCode, result);
                 return result;
             });
         }
@@ -198,9 +197,15 @@ public class BusinessActionRunner<TCommand>(
             .Where(group => !group.Key)
             .SelectMany(e => e.AsEnumerable());
 
-        var triggerResultsEvent = groupByTypeEvent.Where(group => group.Key)
+        var triggerEvents = groupByTypeEvent.Where(group => group.Key)
             .SelectMany(e => e.AsEnumerable())
             .Cast<TriggerEvent>()
+            .ToArray();
+
+        if (triggerEvents.Length != 0)
+            _logger.EmitTriggers(triggerEvents);
+
+        var triggerResultsEvent = triggerEvents
             .AsIterable()
             .Traverse(RunTrigger)
             .As()
@@ -214,15 +219,14 @@ public class BusinessActionRunner<TCommand>(
     /// <summary>
     ///     Находит и запускает команды, связанные с <paramref name="trigger" />
     /// </summary>
-    /// <param name="trigger">событие—триггер</param>
+    /// <param name="trigger">событие-триггер</param>
     /// <returns></returns>
     private FinT<IO, IEnumerable<BusinessEvent>> RunTrigger(TriggerEvent trigger) {
         var commands = FindTriggerToCommandsTranslators(trigger)
             .Bind(translator => translator.Translate(trigger))
             .ToList();
 
-        _logger.LogWarning("{@EventTrigger} сигнализирует о необходимости выполнить {@BusinessCommands}",
-            trigger, commands);
+        _logger.TranslateTriggerToCommands(trigger, commands);
 
         var runCommands = commands
             .AsIterable()
@@ -239,7 +243,7 @@ public class BusinessActionRunner<TCommand>(
                 .AsIterable();
 
             if (translators.IsEmpty())
-                _logger.LogWarning("Не найден транслятор в команду для {@EventTrigger}", trigger);
+                _logger.TriggerTranslatorNotFound(trigger);
 
             return translators;
         }
@@ -253,4 +257,54 @@ public class BusinessActionRunner<TCommand>(
             return result;
         }
     }
+}
+
+internal static partial class BusinessActionRunnerLog {
+    /// <summary>
+    ///     CRC16 для <see cref="gmafffff.starterKit.BusinessLogic.BusinessActionRunner{TCommand}" />
+    /// </summary>
+    public const int EventIdBase = 0xff11;
+
+    private static readonly Func<ILogger, BusinessCommand, IDisposable?> OpenBusinessActionRunnerLogScopeFunc =
+        LoggerMessage.DefineScope<BusinessCommand>("Конвейер обработки бизнес команды {@BusinessCommand}");
+
+    public static IDisposable? OpenBusinessActionRunnerLogScope(this ILogger logger, BusinessCommand command) {
+        return OpenBusinessActionRunnerLogScopeFunc(logger, command);
+    }
+
+    [LoggerMessage(EventId = EventIdBase + 1, Level = LogLevel.Trace,
+        Message = "Форматно-логический контроль команды: {IsValid}")]
+    public static partial void ValidateCommand(this ILogger logger, bool isValid);
+
+    [LoggerMessage(EventId = EventIdBase + 2, Level = LogLevel.Trace,
+        Message = "Проверка бизнес-ограничения {BusinessConstraint} для команды: {IsSatisfied}")]
+    public static partial void CheckBusinessConstraint(this ILogger logger, Enum businessConstraint, bool isSatisfied);
+
+    [LoggerMessage(EventId = EventIdBase + 3, Level = LogLevel.Trace,
+        Message = "Проверены все бизнес-ограничения: {IsSatisfied}")]
+    public static partial void CheckAllBusinessConstraints(this ILogger logger, bool isSatisfied);
+
+    [LoggerMessage(EventId = EventIdBase + 4, Level = LogLevel.Trace,
+        Message = "Команда исполнена. Произошли события: {@Events}")]
+    public static partial void HandleCommandSuccess(this ILogger logger, IList<BusinessEvent> events);
+
+    [LoggerMessage(EventId = EventIdBase + 5, Level = LogLevel.Error,
+        Message = "Ошибка исполнения команды: {@Error}")]
+    public static partial void HandleCommandFail(this ILogger logger, Error error);
+
+    [LoggerMessage(EventId = EventIdBase + 6, Level = LogLevel.Warning, Message = "Исполнение команды отменено")]
+    public static partial void HandleCommandCanceled(this ILogger logger);
+
+    [LoggerMessage(EventId = EventIdBase + 7, Level = LogLevel.Trace,
+        Message = "Возникли пусковые события {@Triggers}")]
+    public static partial void EmitTriggers(this ILogger logger, TriggerEvent[] triggers);
+
+    [LoggerMessage(EventId = EventIdBase + 8, Level = LogLevel.Debug,
+        Message = "Не найден транслятор в команду для {@Trigger}")]
+    public static partial void TriggerTranslatorNotFound(this ILogger logger, TriggerEvent trigger);
+
+    [LoggerMessage(EventId = EventIdBase + 9, Level = LogLevel.Trace,
+        Message = "{@Trigger} сигнализирует о необходимости выполнить {@Commands}")]
+    public static partial void TranslateTriggerToCommands(this ILogger logger, TriggerEvent trigger,
+        IList<BusinessCommand> commands);
 }

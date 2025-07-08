@@ -1,12 +1,14 @@
 using gmafffff.starterKit.Domain;
 using gmafffff.starterKit.Mappers;
 using gmafffff.starterKit.Messaging.Crud;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace gmafffff.starterKit.BusinessLogic.Crud;
 
 /// <summary>
 ///     Специализированная версия <see cref="QueryDbHandler{TQuery, TResult}" />
-///     для извлечения сущностей из БД без их отслеживания в <see cref="System.Data.Entity.DBContext" />.
+///     для извлечения сущностей из БД без их отслеживания в <see cref="Entity{TId}.DBContext" />.
 /// </summary>
 /// <typeparam name="TQuery">Запрос</typeparam>
 /// <typeparam name="TDto">Тип возвращаемого объекта</typeparam>
@@ -16,16 +18,35 @@ namespace gmafffff.starterKit.BusinessLogic.Crud;
 ///     К сожалению в DI контейнере Microsoft нельзя осуществить сложную регистрацию открытых обобщённых типов.
 ///     Поэтому для каждого DTO нужно создать отдельный обработчик.
 /// </remarks>
-public class ReadDbQueryHandler<TQuery, TEntity, TEntityId, TDto>(
+public partial class ReadDbQueryHandler<TQuery, TEntity, TEntityId, TDto>(
     IRepository<TEntity, TEntityId> repository,
-    IEntityMapperForwardExpression<TEntity, TEntityId, TDto> mapper)
+    IEntityMapperForwardExpression<TEntity, TEntityId, TDto> mapper,
+    ILogger<IQueryHandler<TQuery, TDto>>? logger = null)
     : QueryDbHandler<TQuery, TDto>
     where TQuery : ReadDbQuery<TDto>
     where TDto : class
     where TEntityId : struct, IEquatable<TEntityId>
     where TEntity : Entity<TEntityId> {
+    /// <summary>
+    ///     CRC16 для <see cref="gmafffff.starterKit.BusinessLogic.Crud.ReadDbQueryHandler{TQuery,TEntity,TEntityId,TDto}" />
+    /// </summary>
+    public const int EventIdBase = 0x566e;
+
+    /// <summary>
+    ///     Журнал
+    /// </summary>
+    private readonly ILogger<IQueryHandler<TQuery, TDto>> _logger =
+        logger ?? NullLogger<IQueryHandler<TQuery, TDto>>.Instance;
+
     protected override async Task<IList<TDto>> RunDbQueryAsync(TQuery query, CancellationToken cancel = default) {
-        return await repository.GetAsync(query.Filter, mapper.EntityToDto, query.SortOrder, query.Pager, cancel)
+        var result = await repository.GetAsync(query.Filter, mapper.EntityToDto, query.SortOrder, query.Pager, cancel)
             .ConfigureAwait(false);
+
+        ExecuteQueryLog(query);
+        return result;
     }
+
+    [LoggerMessage(EventId = EventIdBase + 1, Level = LogLevel.Trace, Message = "Выполнен запрос к БД: {@Query}",
+        EventName = "ExecuteQuery")]
+    private partial void ExecuteQueryLog(TQuery query);
 }
