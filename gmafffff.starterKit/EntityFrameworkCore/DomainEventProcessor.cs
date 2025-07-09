@@ -144,6 +144,11 @@ public class DomainEventProcessor(
     #region Реализация IDomainEventSink
 
     /// <summary>
+    ///     Игнорировать дубликаты событий
+    /// </summary>
+    public bool IgnoreDuplicateEvents { get; set; } = true;
+
+    /// <summary>
     ///     Зарегистрированные DbContext's
     /// </summary>
     private readonly Dictionary<DbContextId, DbContext> _dbContexts = [];
@@ -156,7 +161,10 @@ public class DomainEventProcessor(
     public IReadOnlyList<IDomainEvent> Events => _events.AsReadOnlyList();
 
     public IDomainEventSink AddEvent(IDomainEvent @event) {
-        if (_events.Contains(@event)) return this;
+        if (IgnoreDuplicateEvents && _events.Contains(@event)) {
+            _logger.IgnoreEvent(@event);
+            return this;
+        }
 
         _events.Add(@event);
 
@@ -210,10 +218,14 @@ internal static partial class DomainEventProcessorLog {
         Message = "Сохранено событие домена {@DomainEvent}")]
     public static partial void AddEvent(this ILogger logger, IDomainEvent domainEvent);
 
-    [LoggerMessage(EventId = EventIdBase + 3, Level = LogLevel.Trace, Message = "Обработано событие: {@DomainEvent}")]
+    [LoggerMessage(EventId = EventIdBase + 3, Level = LogLevel.Warning,
+        Message = "Проигнорировано дублирующееся событие домена {@DomainEvent}")]
+    public static partial void IgnoreEvent(this ILogger logger, IDomainEvent domainEvent);
+
+    [LoggerMessage(EventId = EventIdBase + 4, Level = LogLevel.Trace, Message = "Обработано событие: {@DomainEvent}")]
     public static partial void HandleEventSuccess(this ILogger logger, IDomainEvent domainEvent);
 
-    [LoggerMessage(EventId = EventIdBase + 4, Level = LogLevel.Error,
+    [LoggerMessage(EventId = EventIdBase + 5, Level = LogLevel.Error,
         Message = "Ошибка обработки события {@DomainEvent}: {@Error}")]
     public static partial void HandleEventFail(this ILogger logger, IDomainEvent domainEvent, Error error);
 }
