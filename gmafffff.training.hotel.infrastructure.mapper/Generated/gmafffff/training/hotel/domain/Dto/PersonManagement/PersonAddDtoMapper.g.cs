@@ -1,7 +1,7 @@
 using System;
 using gmafffff.training.hotel.domain.Dto.PersonManagement;
 using gmafffff.training.hotel.domain.Model;
-using gmafffff.training.hotel.infrastructure.mapper.MapsterConfig;
+using gmafffff.training.hotel.infrastructure.mapper.MapsterConfig.DomainBusiness;
 
 namespace gmafffff.training.hotel.domain.Dto.PersonManagement
 {

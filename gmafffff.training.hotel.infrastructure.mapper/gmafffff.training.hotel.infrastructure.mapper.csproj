@@ -20,13 +20,14 @@
     <Target Name="Mapster" AfterTargets="AfterBuild">
         <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet tool restore"/>
         <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet mapster model --assembly &quot;$(TargetDir)$(ProjectName).dll&quot; --baseNamespace gmafffff.training.hotel.infrastructure.mapper"/>
-        <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet mapster extension --assembly &quot;$(TargetDir)$(ProjectName).dll&quot; --baseNamespace gmafffff.training.hotel.infrastructure.mapper --output ./Mappers/"/>
-        <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet mapster mapper --assembly &quot;$(TargetDir)$(ProjectName).dll&quot; --baseNamespace gmafffff.training.hotel.infrastructure.mapper --output ./Mappers/"/>
+        <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet mapster extension --assembly &quot;$(TargetDir)$(ProjectName).dll&quot; --baseNamespace gmafffff.training.hotel.infrastructure.mapper --output ./Generated/"/>
+        <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet mapster mapper --assembly &quot;$(TargetDir)$(ProjectName).dll&quot; --baseNamespace gmafffff.training.hotel.infrastructure.mapper --output ./Generated/"/>
     </Target>
 
     <ItemGroup>
         <Generated Include="**\*.g.cs"/>
     </ItemGroup>
+
     <Target Name="CleanGenerated" BeforeTargets="Clean">
         <Delete Files="@(Generated)"/>
     </Target>
