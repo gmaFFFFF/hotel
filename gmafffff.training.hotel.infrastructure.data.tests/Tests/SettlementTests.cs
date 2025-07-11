@@ -1,3 +1,5 @@
+using gmafffff.training.hotel.domain.PersonManagement.Models;
+using gmafffff.training.hotel.domain.PropertyManagement.Models;
 using gmafffff.training.hotel.SampleModel.FakeDb;
 using gmafffff.training.hotel.sampleModel.FakeModel.AutoFixture;
 using JetBrains.Annotations;

@@ -1,6 +1,6 @@
 using System;
-using gmafffff.training.hotel.domain.Dto.PropertyManagement;
-using gmafffff.training.hotel.domain.Model;
+using gmafffff.training.hotel.domain.PropertyManagement.Dto;
+using gmafffff.training.hotel.domain.PropertyManagement.Models;
 using gmafffff.training.hotel.infrastructure.mapper.Required;
 
 namespace gmafffff.training.hotel.infrastructure.mapper.Required

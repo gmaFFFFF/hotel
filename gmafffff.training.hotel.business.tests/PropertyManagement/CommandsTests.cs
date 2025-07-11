@@ -5,7 +5,7 @@ using gmafffff.starterKit.Messaging.Crud;
 using gmafffff.training.hotel.business.PropertyManagement.Commands;
 using gmafffff.training.hotel.business.PropertyManagement.Handlers;
 using gmafffff.training.hotel.business.tests.Fixtures;
-using gmafffff.training.hotel.domain.Model;
+using gmafffff.training.hotel.domain.PropertyManagement.Models;
 using gmafffff.training.hotel.sampleModel.FakeModel.AutoFixture;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;

@@ -1,3 +1,7 @@
+using gmafffff.training.hotel.domain.PersonManagement.Models;
+using gmafffff.training.hotel.domain.PropertyManagement.Models;
+using gmafffff.training.hotel.domain.SettlementManagement.Models;
+
 namespace gmafffff.training.hotel.sampleModel.FakeModel.AutoFixture;
 
 public class FakeHotelCustomization : ICustomization {
@@ -12,7 +16,8 @@ public class FakeHotelCustomization : ICustomization {
         fixture.Customizations.Add(new TariffGenerator());
 
         fixture.Customize<Room<Guid>>(c => c.Without(room => room.Visit).Without(room => room.RoomCleanings));
-        fixture.Customize<Person<Guid>>(c => c.With(person => person.History, new VisitorHistory(Count: 0, Duration: 0)));
+        fixture.Customize<Person<Guid>>(c =>
+            c.With(propertyPicker: person => person.History, new VisitorHistory(Count: 0, Duration: 0)));
 
         var hotelBlockId = 1;
         fixture.Customize<HotelBlock<int, Guid>>(c =>

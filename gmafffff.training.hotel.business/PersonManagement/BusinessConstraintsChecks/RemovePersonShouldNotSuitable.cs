@@ -2,8 +2,8 @@
 using gmafffff.starterKit.Utils;
 using gmafffff.training.hotel.business.Error;
 using gmafffff.training.hotel.business.PersonManagement.Commands;
-using gmafffff.training.hotel.domain.Contracts.Repositories;
-using gmafffff.training.hotel.domain.Model;
+using gmafffff.training.hotel.domain.PropertyManagement.Contracts.Repositories;
+using gmafffff.training.hotel.domain.PropertyManagement.Models;
 
 namespace gmafffff.training.hotel.business.PersonManagement.BusinessConstraintsChecks;
 

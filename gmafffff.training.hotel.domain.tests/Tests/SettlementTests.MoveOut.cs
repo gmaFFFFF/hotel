@@ -1,5 +1,7 @@
 ﻿using gmafffff.starterKit.Domain.Events;
-using gmafffff.training.hotel.domain.DomainEvents;
+using gmafffff.training.hotel.domain.PersonManagement.Models;
+using gmafffff.training.hotel.domain.PropertyManagement.Models;
+using gmafffff.training.hotel.domain.SettlementManagement.DomainEvents;
 using JetBrains.Annotations;
 using NSubstitute;
 

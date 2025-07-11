@@ -1,4 +1,6 @@
-﻿namespace gmafffff.training.hotel.infrastructure.data.Configs;
+﻿using gmafffff.training.hotel.domain.SettlementManagement.Models;
+
+namespace gmafffff.training.hotel.infrastructure.data.Configs;
 
 public class AccommodationReportConfig : IEntityTypeConfiguration<AccommodationReport<Guid>> {
     public void Configure(EntityTypeBuilder<AccommodationReport<Guid>> builder) {

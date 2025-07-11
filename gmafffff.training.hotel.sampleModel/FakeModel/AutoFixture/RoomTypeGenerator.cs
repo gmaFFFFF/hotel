@@ -1,3 +1,5 @@
+using gmafffff.training.hotel.domain.PropertyManagement.Models;
+
 namespace gmafffff.training.hotel.sampleModel.FakeModel.AutoFixture;
 
 public class RoomTypeGenerator : ISpecimenBuilder {

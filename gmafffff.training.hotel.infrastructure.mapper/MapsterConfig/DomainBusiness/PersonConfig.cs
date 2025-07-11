@@ -1,7 +1,8 @@
 using gmafffff.starterKit.Mappers;
 using gmafffff.training.hotel.business.PersonManagement.Dto;
-using gmafffff.training.hotel.domain.Dto.PersonManagement;
-using gmafffff.training.hotel.domain.Model;
+using gmafffff.training.hotel.domain.PersonManagement.Dto;
+using gmafffff.training.hotel.domain.PersonManagement.Models;
+using gmafffff.training.hotel.domain.SettlementManagement.Models;
 
 namespace gmafffff.training.hotel.infrastructure.mapper.MapsterConfig.DomainBusiness;
 

@@ -1,7 +1,7 @@
 using System;
 using System.Linq.Expressions;
 using gmafffff.training.hotel.business.PersonManagement.Dto;
-using gmafffff.training.hotel.domain.Model;
+using gmafffff.training.hotel.domain.PersonManagement.Models;
 using gmafffff.training.hotel.infrastructure.mapper.Required;
 
 namespace gmafffff.training.hotel.infrastructure.mapper.Required

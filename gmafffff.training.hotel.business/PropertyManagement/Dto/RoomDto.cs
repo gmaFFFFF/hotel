@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using gmafffff.starterKit.Validation;
-using gmafffff.training.hotel.domain.Model;
+using gmafffff.training.hotel.domain.PropertyManagement.Models;
 
 namespace gmafffff.training.hotel.business.PropertyManagement.Dto;
 

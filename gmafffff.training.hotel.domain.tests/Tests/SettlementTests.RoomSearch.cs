@@ -1,4 +1,6 @@
-﻿using JetBrains.Annotations;
+﻿using gmafffff.training.hotel.domain.PropertyManagement.Models;
+using gmafffff.training.hotel.domain.SettlementManagement.Models;
+using JetBrains.Annotations;
 
 namespace gmafffff.training.hotel.domain.tests.Tests;
 

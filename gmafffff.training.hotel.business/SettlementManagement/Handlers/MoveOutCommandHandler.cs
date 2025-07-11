@@ -3,8 +3,9 @@ using gmafffff.starterKit.BusinessLogic;
 using gmafffff.starterKit.Domain.Events;
 using gmafffff.training.hotel.business.SettlementManagement.Commands;
 using gmafffff.training.hotel.business.SettlementManagement.Events;
-using gmafffff.training.hotel.domain.Contracts.Repositories;
-using gmafffff.training.hotel.domain.Model;
+using gmafffff.training.hotel.domain.PropertyManagement.Contracts.Repositories;
+using gmafffff.training.hotel.domain.PropertyManagement.Models;
+using gmafffff.training.hotel.domain.SettlementManagement.Models;
 using Microsoft.Extensions.Logging;
 
 namespace gmafffff.training.hotel.business.SettlementManagement.Handlers;

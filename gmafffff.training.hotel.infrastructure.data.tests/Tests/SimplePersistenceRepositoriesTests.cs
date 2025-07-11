@@ -1,4 +1,7 @@
-﻿using gmafffff.training.hotel.SampleModel.FakeDb;
+﻿using gmafffff.training.hotel.domain.PersonManagement.Models;
+using gmafffff.training.hotel.domain.PropertyManagement.Models;
+using gmafffff.training.hotel.domain.SettlementManagement.Models;
+using gmafffff.training.hotel.SampleModel.FakeDb;
 using JetBrains.Annotations;
 
 namespace gmafffff.training.hotel.infrastructure.data.tests.Tests;

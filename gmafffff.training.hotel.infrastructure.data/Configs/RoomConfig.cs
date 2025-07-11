@@ -1,4 +1,7 @@
-﻿namespace gmafffff.training.hotel.infrastructure.data.Configs;
+﻿using gmafffff.training.hotel.domain.PropertyManagement.Models;
+using gmafffff.training.hotel.domain.SettlementManagement.Models;
+
+namespace gmafffff.training.hotel.infrastructure.data.Configs;
 
 public class RoomConfig : IEntityTypeConfiguration<Room<Guid>> {
     public const string EntityName = "Room";

@@ -1,4 +1,4 @@
-using gmafffff.training.hotel.domain.Contracts.Mappers;
+using gmafffff.training.hotel.domain.PropertyManagement.Contracts.Mappers;
 
 namespace gmafffff.training.hotel.infrastructure.mapper.Required;
 

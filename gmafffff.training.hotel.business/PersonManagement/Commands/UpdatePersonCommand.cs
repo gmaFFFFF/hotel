@@ -1,5 +1,5 @@
 ﻿using gmafffff.starterKit.Messaging.Crud;
-using gmafffff.training.hotel.domain.Dto.PersonManagement;
+using gmafffff.training.hotel.domain.PersonManagement.Dto;
 
 namespace gmafffff.training.hotel.business.PersonManagement.Commands;
 

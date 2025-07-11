@@ -1,5 +1,8 @@
 ﻿using EntityFramework.Exceptions.Sqlite;
 using gmafffff.starterKit.EntityFrameworkCore.Conventions;
+using gmafffff.training.hotel.domain.PersonManagement.Models;
+using gmafffff.training.hotel.domain.PropertyManagement.Models;
+using gmafffff.training.hotel.domain.SettlementManagement.Models;
 
 namespace gmafffff.training.hotel.infrastructure.data.Sessions;
 

@@ -1,4 +1,5 @@
-﻿using gmafffff.training.hotel.domain.Contracts.Repositories;
+﻿using gmafffff.training.hotel.domain.PersonManagement.Contracts.Repositories;
+using gmafffff.training.hotel.domain.PropertyManagement.Contracts.Repositories;
 using gmafffff.training.hotel.sampleModel.FakeModel;
 using gmafffff.training.hotel.SampleModel.FakeServices;
 using Microsoft.Extensions.DependencyInjection;

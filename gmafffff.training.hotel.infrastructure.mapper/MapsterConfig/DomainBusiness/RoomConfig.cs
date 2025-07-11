@@ -1,7 +1,7 @@
 using gmafffff.starterKit.Mappers;
 using gmafffff.training.hotel.business.PropertyManagement.Dto;
-using gmafffff.training.hotel.domain.Dto.PropertyManagement;
-using gmafffff.training.hotel.domain.Model;
+using gmafffff.training.hotel.domain.PropertyManagement.Dto;
+using gmafffff.training.hotel.domain.PropertyManagement.Models;
 
 namespace gmafffff.training.hotel.infrastructure.mapper.MapsterConfig.DomainBusiness;
 

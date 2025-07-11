@@ -1,3 +1,6 @@
+using gmafffff.training.hotel.domain.PersonManagement.Models;
+using gmafffff.training.hotel.domain.PropertyManagement.Models;
+using gmafffff.training.hotel.domain.SettlementManagement.Models;
 using gmafffff.training.hotel.sampleModel.FakeModel.AutoFixture;
 
 namespace gmafffff.training.hotel.sampleModel.FakeModel;

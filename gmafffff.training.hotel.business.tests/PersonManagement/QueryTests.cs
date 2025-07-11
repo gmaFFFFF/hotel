@@ -5,7 +5,7 @@ using gmafffff.training.hotel.business.PersonManagement.Dto;
 using gmafffff.training.hotel.business.PersonManagement.Handlers;
 using gmafffff.training.hotel.business.PersonManagement.Queries;
 using gmafffff.training.hotel.business.tests.Fixtures;
-using gmafffff.training.hotel.domain.Model;
+using gmafffff.training.hotel.domain.PropertyManagement.Models;
 using JetBrains.Annotations;
 using Mapster;
 using Microsoft.Extensions.DependencyInjection;

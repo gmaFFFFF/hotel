@@ -3,9 +3,9 @@ using gmafffff.starterKit.BusinessLogic;
 using gmafffff.starterKit.Domain.Events;
 using gmafffff.starterKit.Messaging.Crud;
 using gmafffff.training.hotel.business.PropertyManagement.Commands;
-using gmafffff.training.hotel.domain.Contracts.Mappers;
-using gmafffff.training.hotel.domain.Contracts.Repositories;
-using gmafffff.training.hotel.domain.Model;
+using gmafffff.training.hotel.domain.PropertyManagement.Contracts.Mappers;
+using gmafffff.training.hotel.domain.PropertyManagement.Contracts.Repositories;
+using gmafffff.training.hotel.domain.PropertyManagement.Models;
 using Microsoft.Extensions.Logging;
 
 namespace gmafffff.training.hotel.business.PropertyManagement.Handlers;

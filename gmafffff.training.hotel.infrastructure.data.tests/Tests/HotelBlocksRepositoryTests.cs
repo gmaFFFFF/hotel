@@ -1,4 +1,5 @@
-using gmafffff.training.hotel.domain.Contracts.Repositories;
+using gmafffff.training.hotel.domain.PropertyManagement.Contracts.Repositories;
+using gmafffff.training.hotel.domain.PropertyManagement.Models;
 using gmafffff.training.hotel.SampleModel.FakeDb;
 using JetBrains.Annotations;
 

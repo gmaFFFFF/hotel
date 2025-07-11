@@ -3,7 +3,7 @@ using gmafffff.starterKit.Utils;
 using gmafffff.training.hotel.business.PersonManagement.BusinessConstraintsChecks;
 using gmafffff.training.hotel.business.PersonManagement.Commands;
 using gmafffff.training.hotel.business.tests.Fixtures;
-using gmafffff.training.hotel.domain.Model;
+using gmafffff.training.hotel.domain.PropertyManagement.Models;
 using JetBrains.Annotations;
 using Xunit.Abstractions;
 

@@ -1,7 +1,7 @@
 ﻿using gmafffff.starterKit.Di;
 using gmafffff.training.hotel.business.PropertyManagement.BusinessConstraintsChecks;
 using gmafffff.training.hotel.business.SettlementManagement.Validations;
-using gmafffff.training.hotel.domain.Validation;
+using gmafffff.training.hotel.domain.PropertyManagement.Validations;
 using gmafffff.training.hotel.infrastructure.data.pay.Repositories;
 using gmafffff.training.hotel.infrastructure.data.pay.Sessions;
 using gmafffff.training.hotel.infrastructure.data.Repositories;

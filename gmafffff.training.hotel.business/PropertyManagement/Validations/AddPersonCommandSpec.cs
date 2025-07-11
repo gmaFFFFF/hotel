@@ -1,7 +1,7 @@
 using gmafffff.starterKit.Validation;
 using gmafffff.training.hotel.business.PersonManagement.Commands;
-using gmafffff.training.hotel.domain.Dto.PersonManagement;
-using gmafffff.training.hotel.domain.Validation;
+using gmafffff.training.hotel.domain.PersonManagement.Dto;
+using gmafffff.training.hotel.domain.PersonManagement.Validations;
 using Validot;
 
 namespace gmafffff.training.hotel.business.PropertyManagement.Validations;

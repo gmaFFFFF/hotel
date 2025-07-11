@@ -1,6 +1,6 @@
 using System;
-using gmafffff.training.hotel.domain.Dto.PersonManagement;
-using gmafffff.training.hotel.domain.Model;
+using gmafffff.training.hotel.domain.PersonManagement.Dto;
+using gmafffff.training.hotel.domain.PersonManagement.Models;
 using gmafffff.training.hotel.infrastructure.mapper.MapsterConfig.DomainBusiness;
 using gmafffff.training.hotel.infrastructure.mapper.Required;
 

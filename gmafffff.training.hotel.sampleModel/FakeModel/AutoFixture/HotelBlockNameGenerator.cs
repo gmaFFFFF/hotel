@@ -1,4 +1,5 @@
 using System.Reflection;
+using gmafffff.training.hotel.domain.PropertyManagement.Models;
 
 namespace gmafffff.training.hotel.sampleModel.FakeModel.AutoFixture;
 

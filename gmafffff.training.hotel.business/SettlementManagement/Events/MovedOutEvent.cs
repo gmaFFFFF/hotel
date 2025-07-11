@@ -1,5 +1,5 @@
 using gmafffff.training.hotel.business.SettlementManagement.Commands;
-using gmafffff.training.hotel.domain.Model;
+using gmafffff.training.hotel.domain.SettlementManagement.Models;
 
 namespace gmafffff.training.hotel.business.SettlementManagement.Events;
 

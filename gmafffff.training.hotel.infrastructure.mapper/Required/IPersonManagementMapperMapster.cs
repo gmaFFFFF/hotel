@@ -1,8 +1,10 @@
+using gmafffff.training.hotel.domain.PersonManagement.Contracts.Mappers;
+
 namespace gmafffff.training.hotel.infrastructure.mapper.Required;
 
 [Mapper]
 public interface IPersonManagementMapperMapsterDomain :
-    domain.Contracts.Mappers.IPersonManagementMapper;
+    IPersonManagementMapper;
 
 [Mapper]
 public interface IPersonManagementMapperMapsterBusiness :

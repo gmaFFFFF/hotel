@@ -1,4 +1,6 @@
-﻿namespace gmafffff.training.hotel.infrastructure.data.Configs;
+﻿using gmafffff.training.hotel.domain.PersonManagement.Models;
+
+namespace gmafffff.training.hotel.infrastructure.data.Configs;
 
 public class PersonConfig : IEntityTypeConfiguration<Person<Guid>> {
     public void Configure(EntityTypeBuilder<Person<Guid>> builder) {
