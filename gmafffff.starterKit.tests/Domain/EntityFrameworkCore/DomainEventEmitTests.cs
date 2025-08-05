@@ -34,7 +34,7 @@ public partial class DomainEventsTests {
 
             // Assert
             _eventSink.Events
-                .Should().Equal([event1, event2]);
+                .Should().Equal(event1, event2);
         }
 
         /// <summary>
@@ -54,7 +54,7 @@ public partial class DomainEventsTests {
             // Assert
             _eventSink.Events
                 .Should().ContainSingle()
-                .And.Equal([event2])
+                .And.Equal(event2)
                 .And.Subject.First().Should().BeSameAs(event1);
         }
 
