@@ -74,7 +74,7 @@ public partial class PropertyManagementTests {
         [Fact]
         public async Task RemoveRoom() {
             // Arrange
-            var removeRooms = FakeHotel.Hotel.Rooms.Where(Room<Guid>.IsFreeRoom.Compile()).Take(2).ToArray();
+            var removeRooms = FakeHotel.Hotel.Rooms.Where(Room<Guid>.WhereFreeRoom.Compile()).Take(2).ToArray();
             var removeRoomsIds = removeRooms.Select(room => room.Id).ToArray();
             if (removeRooms.Length < 2) throw new NotSupportedException();
 

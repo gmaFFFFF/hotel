@@ -20,7 +20,7 @@ public partial class PersonManagementTests {
         public async Task CanQueryData() {
             // Arrange
             var exceptedIds = FakeHotel.Hotel.Rooms
-                .Where(Room<Guid>.IsFreeRoom.Not().Compile())
+                .Where(Room<Guid>.WhereFreeRoom.Not().Compile())
                 .SelectMany(r => r.Visit!.Visitors)
                 .ToArray();
             var excepted = FakeHotel.Persons

@@ -3,7 +3,7 @@
 /// <summary>
 ///     Посетитель
 /// </summary>
-public class Person<TId> : Entity<TId> where TId : struct, IEquatable<TId> {
+public partial class Person<TId> : Entity<TId> where TId : struct, IEquatable<TId> {
     /// <summary>
     ///     ФИО
     /// </summary>

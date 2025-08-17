@@ -5,7 +5,7 @@
 /// </summary>
 public enum RoomType {
     /// <summary>
-    ///     не установлен
+    ///     Не установлен
     /// </summary>
     None,
 

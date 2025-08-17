@@ -45,20 +45,20 @@ public class SettlementTests : IClassFixture<SqliteHotelDbFixture> {
         await initRepo.SaveChangesAsync();
 
         // Находим свободный номер и заселяем в него человека
-        var initHotel = (await settledRepo.LoadWithRoomFilterAsync(Room<Guid>.IsFreeRoom))[0];
+        var initHotel = (await settledRepo.LoadWithRoomFilterAsync(Room<Guid>.WhereFreeRoom))[0];
         var testRoom = initHotel.Rooms.First();
         initHotel.SettledIn([person.Id], testRoom);
         await settledRepo.SaveChangesAsync();
 
         // Запрашиваем номер в первом соединении
         var firstQueryHotel =
-            (await firstRepo.LoadWithRoomFilterAsync(Room<Guid>.FilterByNumber(testRoom.RoomDetails.Number)))
+            (await firstRepo.LoadWithRoomFilterAsync(Room<Guid>.WhereNumber(testRoom.RoomDetails.Number)))
             .Single(h => h.Id == initHotel.Id);
         var firstQueryRoom = firstQueryHotel.Rooms.Single();
 
         // Запрашиваем номер в параллельном соединении
         var parallelQueryHotel =
-            (await parallelRepo.LoadWithRoomFilterAsync(Room<Guid>.FilterByNumber(testRoom.RoomDetails.Number)))
+            (await parallelRepo.LoadWithRoomFilterAsync(Room<Guid>.WhereNumber(testRoom.RoomDetails.Number)))
             .Single(h => h.Id == initHotel.Id);
         var parallelQueryRoom = parallelQueryHotel.Rooms.Single();
 
@@ -76,7 +76,7 @@ public class SettlementTests : IClassFixture<SqliteHotelDbFixture> {
         await settlementAct.Should().NotThrowAsync();
         await parallelAct.Should().ThrowAsync<DbUpdateConcurrencyException>();
 
-        (await testRepo.LoadWithRoomFilterAsync(Room<Guid>.FilterByNumber(testRoom.RoomDetails.Number)))
+        (await testRepo.LoadWithRoomFilterAsync(Room<Guid>.WhereNumber(testRoom.RoomDetails.Number)))
             .Single(h => h.Id == initHotel.Id)
             .Rooms.Should().ContainSingle()
             .Which.Should().BeEquivalentTo(firstQueryRoom);

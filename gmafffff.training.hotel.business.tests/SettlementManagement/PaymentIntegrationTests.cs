@@ -24,7 +24,7 @@ public partial class SettlementManagementTests {
             // Arrange
             var invoiceRepository = Scope.ServiceProvider.GetRequiredService<IInvoiceRepository>();
             var room = FakeHotel.Hotel.Rooms
-                .Where(Room<Guid>.IsFreeRoom.Not().Compile())
+                .Where(Room<Guid>.WhereFreeRoom.Not().Compile())
                 .First(room => room.Visit.ArrivalDate < DateOnly.FromDateTime(DateTime.Today));
             var command = new MoveOutCommand(room.Id);
             var runner = Scope.ServiceProvider.GetRequiredService<IBusinessActionRunner<MoveOutCommand>>();

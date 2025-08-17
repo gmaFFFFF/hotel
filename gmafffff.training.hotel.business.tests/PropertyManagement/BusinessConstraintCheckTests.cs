@@ -107,11 +107,11 @@ public partial class PropertyManagementTests {
         ///     бизнес-ограничение <see cref="RemoveRoomsMustFree" /> соблюдается
         /// </summary>
         /// <returns></returns>
-        /// <exception cref="NotSupportedException">если оказалось слишком мало свободных номеров для теста</exception>
+        /// <exception cref="NotSupportedException">Если оказалось слишком мало свободных номеров для теста</exception>
         [Fact]
         public async Task RemoveRoomsMustFreeIsSuccess() {
             // Arrange
-            var freeRooms = FakeHotel.Hotel.Rooms.Where(Room<Guid>.IsFreeRoom.Compile()).Take(2).ToArray();
+            var freeRooms = FakeHotel.Hotel.Rooms.Where(Room<Guid>.WhereFreeRoom.Compile()).Take(2).ToArray();
             if (freeRooms.Length < 2) throw new NotSupportedException();
 
             var command = new RemoveRoomsCommand(freeRooms.Select(room => room.Id).ToArray());
@@ -128,12 +128,12 @@ public partial class PropertyManagementTests {
         ///     бизнес-ограничение <see cref="RemoveRoomsMustFree" /> нарушается
         /// </summary>
         /// <returns></returns>
-        /// <exception cref="NotSupportedException">если оказалось слишком мало свободных номеров для теста</exception>
+        /// <exception cref="NotSupportedException">Если оказалось слишком мало свободных номеров для теста</exception>
         [Fact]
         public async Task RemoveRoomsMustFreeIsFail() {
             // Arrange
-            var busyRoom = FakeHotel.Hotel.Rooms.Where(Room<Guid>.IsFreeRoom.Not().Compile()).First();
-            var freeRooms = FakeHotel.Hotel.Rooms.Where(Room<Guid>.IsFreeRoom.Compile()).Take(2).ToArray();
+            var busyRoom = FakeHotel.Hotel.Rooms.Where(Room<Guid>.WhereFreeRoom.Not().Compile()).First();
+            var freeRooms = FakeHotel.Hotel.Rooms.Where(Room<Guid>.WhereFreeRoom.Compile()).Take(2).ToArray();
             if (freeRooms.Length < 2) throw new NotSupportedException();
 
             var command = new RemoveRoomsCommand(freeRooms.Append(busyRoom).Select(room => room.Id).ToArray());

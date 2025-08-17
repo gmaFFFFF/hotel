@@ -17,10 +17,10 @@ public partial class PropertyManagementTests {
         [Fact]
         public async Task CanQueryData() {
             // Arrange
-            var query = new GetRoomsQuery(Room<Guid>.FilterByType(RoomType.Standard));
+            var query = new GetRoomsQuery(Room<Guid>.WhereType(RoomType.Standard));
             var handler = Scope.ServiceProvider.GetRequiredService<IQueryHandler<GetRoomsQuery, RoomDto>>();
             var excepted = FakeHotel.Hotel.Rooms
-                .Where(Room<Guid>.FilterByType(RoomType.Standard).Compile())
+                .Where(Room<Guid>.WhereType(RoomType.Standard).Compile())
                 .Select(room => room.Adapt<RoomDto>())
                 .ToArray();
 

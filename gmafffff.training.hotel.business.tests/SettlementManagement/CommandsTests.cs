@@ -26,7 +26,7 @@ public partial class SettlementManagementTests {
         [HotelAutodata]
         public async Task PossibleSettleInEmptyRoom(SettleInCommand command) {
             // Arrange
-            var room = FakeHotel.Hotel.Rooms.Where(Room<Guid>.IsFreeRoom.Compile()).First();
+            var room = FakeHotel.Hotel.Rooms.Where(Room<Guid>.WhereFreeRoom.Compile()).First();
             var visitors = FakeHotel.Persons.Take(room.RoomDetails.Capacity).Select(v => v.Id);
 
             var runner = Scope.ServiceProvider.GetRequiredService<IBusinessActionRunner<SettleInCommand>>();
@@ -56,7 +56,7 @@ public partial class SettlementManagementTests {
         public async Task PossibleSettleInRoom(SettleInCommand command) {
             // Arrange
             var room = FakeHotel.Hotel.Rooms
-                .Where(Room<Guid>.IsFreeRoom.Not().Compile())
+                .Where(Room<Guid>.WhereFreeRoom.Not().Compile())
                 .FirstOrDefault(r => r.RoomDetails.Capacity > r.Visit!.Visitors.Count);
             if (room is null)
                 throw new Exception("Не сложились обстоятельства для теста. Повторите запуск");
@@ -90,7 +90,7 @@ public partial class SettlementManagementTests {
         [HotelAutodata]
         public async Task VisitorMustBeInDb(SettleInCommand command) {
             // Arrange
-            var room = FakeHotel.Hotel.Rooms.Where(Room<Guid>.IsFreeRoom.Compile()).First();
+            var room = FakeHotel.Hotel.Rooms.Where(Room<Guid>.WhereFreeRoom.Compile()).First();
             var visitors = FakeHotel.Persons.Take(room.RoomDetails.Capacity).Select(v => v.Id).ToArray();
             visitors[0] = Guid.NewGuid();
 
@@ -111,7 +111,7 @@ public partial class SettlementManagementTests {
         [Fact]
         public async Task PossibleMoveOut() {
             // Arrange
-            var rooms = FakeHotel.Hotel.Rooms.Where(Room<Guid>.IsFreeRoom.Not().Compile())
+            var rooms = FakeHotel.Hotel.Rooms.Where(Room<Guid>.WhereFreeRoom.Not().Compile())
                 .Take(2)
                 .ToArray();
             var command1 = new MoveOutCommand(rooms[0].Id, DateOnly.FromDateTime(DateTime.Today.AddDays(-1)));

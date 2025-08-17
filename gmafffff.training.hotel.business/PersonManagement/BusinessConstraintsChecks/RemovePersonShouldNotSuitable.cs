@@ -18,8 +18,8 @@ public class RemovePersonShouldNotSuitable(IHotelBlocksRepositoryFactory<int, Gu
         var repository = repositoryFactory.CreateTransient();
         var ids = command.Ids.ToList();
         var count = await repository.CountRoomByAsync(
-            Room<Guid>.IsFreeRoom.Not()
-                .And(room => room.Visit!.Visitors.Intersect(ids).Any()));
+            Room<Guid>.WhereFreeRoom.Not()
+                .And(room => room.Visit!.Visitors.Intersect(ids).Any()), cancel);
         return count == 0;
     }
 }

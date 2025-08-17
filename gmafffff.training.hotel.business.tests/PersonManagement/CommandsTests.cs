@@ -74,7 +74,7 @@ public partial class PersonManagementTests {
         [Fact]
         public async Task RemovePerson() {
             // Arrange
-            var busyRooms = FakeHotel.Hotel.Rooms.Where(Room<Guid>.IsFreeRoom.Not().Compile());
+            var busyRooms = FakeHotel.Hotel.Rooms.Where(Room<Guid>.WhereFreeRoom.Not().Compile());
             var suitablePersons = busyRooms.SelectMany(room => room.Visit!.Visitors).ToList();
             var leavingPersons = FakeHotel.Persons
                 .Select(person => person.Id)

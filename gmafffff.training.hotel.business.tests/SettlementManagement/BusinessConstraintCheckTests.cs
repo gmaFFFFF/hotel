@@ -21,7 +21,7 @@ public partial class SettlementManagementTests {
         public async Task NumberVisitorsNotExceedCapacityRoomIsSuccessful(SettleInCommand command) {
             // Arrange
             var room = FakeHotel.Hotel.Rooms
-                .Where(Room<Guid>.IsFreeRoom.Not().Compile())
+                .Where(Room<Guid>.WhereFreeRoom.Not().Compile())
                 .FirstOrDefault(r => r.RoomDetails.Capacity > r.Visit!.Visitors.Count);
             if (room is null)
                 throw new Exception("Не сложились обстоятельства для теста. Повторите запуск");
@@ -47,7 +47,7 @@ public partial class SettlementManagementTests {
         public async Task NumberVisitorsNotExceedCapacityRoomIsFail(SettleInCommand command) {
             // Arrange
             var room = FakeHotel.Hotel.Rooms
-                .Where(Room<Guid>.IsFreeRoom.Not().Compile())
+                .Where(Room<Guid>.WhereFreeRoom.Not().Compile())
                 .FirstOrDefault(r => r.RoomDetails.Capacity > r.Visit!.Visitors.Count);
             if (room is null)
                 throw new Exception("Не сложились обстоятельства для теста. Повторите запуск");

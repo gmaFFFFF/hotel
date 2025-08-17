@@ -22,7 +22,7 @@ public partial class SettlementManagementTests {
         [Fact]
         public async Task AfterMoveOutRequiresCleaningRoom() {
             // Arrange
-            var room = FakeHotel.Hotel.Rooms.Where(Room<Guid>.IsFreeRoom.Not().Compile()).First();
+            var room = FakeHotel.Hotel.Rooms.Where(Room<Guid>.WhereFreeRoom.Not().Compile()).First();
             var command = new MoveOutCommand(room.Id);
 
             var runner = Scope.ServiceProvider.GetRequiredService<IBusinessActionRunner<MoveOutCommand>>();
@@ -36,7 +36,7 @@ public partial class SettlementManagementTests {
 
             var dirtyRoom = (await HotelRepo.GetAsync())
                 .Single()
-                .Rooms.Single(Room<Guid>.IsCleanRoom.Not().Compile());
+                .Rooms.Single(Room<Guid>.WhereCleanRoom.Not().Compile());
             dirtyRoom.Id.Should().Be(room.Id);
         }
 
@@ -46,7 +46,7 @@ public partial class SettlementManagementTests {
         [Fact]
         public async Task AfterMoveOutUpdateVisitorHistory() {
             // Arrange
-            var room = FakeHotel.Hotel.Rooms.Where(Room<Guid>.IsFreeRoom.Not().Compile()).First();
+            var room = FakeHotel.Hotel.Rooms.Where(Room<Guid>.WhereFreeRoom.Not().Compile()).First();
             var command = new MoveOutCommand(room.Id);
             var runner = Scope.ServiceProvider.GetRequiredService<IBusinessActionRunner<MoveOutCommand>>();
             var oldPersonHistory =

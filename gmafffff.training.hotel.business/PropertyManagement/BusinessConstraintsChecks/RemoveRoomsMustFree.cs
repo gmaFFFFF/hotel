@@ -15,7 +15,7 @@ public class RemoveRoomsMustFree(IHotelBlocksRepositoryFactory<int, Guid> reposi
         var repository = repositoryFactory.CreateTransient();
         var ids = command.Ids.ToList();
         var count = await repository.CountRoomByAsync(
-            Room<Guid>.IsFreeRoom.Not()
+            Room<Guid>.WhereFreeRoom.Not()
                 .And(room => ids.Contains(room.Id)), cancel);
         return count == 0;
     }

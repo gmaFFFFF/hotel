@@ -83,10 +83,10 @@ public class HotelBlocksRepositoryTests : IClassFixture<SqliteHotelDbFixture> {
         // Arrange
         var repoTest = CreateRepo();
 
-        (await repoTest.CountRoomByAsync(Room<Guid>.IsFreeRoom))
+        (await repoTest.CountRoomByAsync(Room<Guid>.WhereFreeRoom))
             .Should().Be(
                 _fakeHotel.Hotel.Rooms
-                    .Where(Room<Guid>.IsFreeRoom.Compile())
+                    .Where(Room<Guid>.WhereFreeRoom.Compile())
                     .Count());
     }
 }
