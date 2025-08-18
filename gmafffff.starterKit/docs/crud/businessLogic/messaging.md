@@ -21,4 +21,4 @@
 * `CreateBusinessCommand` / `CreatedBusinessEvent` — создания сущности.
 * `UpdateBusinessCommand` / `UpdatedBusinessEvent` — изменение сущности.
 * `DeleteBusinessCommand` / `DeletedBusinessEvent` — удаления сущности.
-* `ReadDbQuery` — запрос сущностей.
+* `ReadDbQuery` — запрос из БД с фильтрацией по свойствам DTO или Entity.

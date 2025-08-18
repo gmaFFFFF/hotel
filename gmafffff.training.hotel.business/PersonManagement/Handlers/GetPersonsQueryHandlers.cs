@@ -14,7 +14,12 @@ namespace gmafffff.training.hotel.business.PersonManagement.Handlers;
 ///     К сожалению в DI контейнере Microsoft нельзя осуществить сложную регистрацию открытых обобщённых типов.
 ///     Поэтому для каждого DTO нужно создать отдельный обработчик.
 /// </remarks>
-public class GetPersonsQueryHandler(
+public class GetPersonsQueryByDtoHandler(
     IPersonsRepository<Guid> repo,
     IEntityMapperForwardExpression<Person<Guid>, Guid, PersonDto> mapper) :
-    ReadDbQueryHandler<GetPersonsQuery<PersonDto>, Person<Guid>, Guid, PersonDto>(repo, mapper);
+    ReadDbQueryHandler<GetPersonsQueryByDto<PersonDto>, Person<Guid>, Guid, PersonDto>(repo, mapper);
+
+public class GetPersonsQueryByEntityHandler(
+    IPersonsRepository<Guid> repo,
+    IEntityMapperForwardExpression<Person<Guid>, Guid, PersonDto> mapper) :
+    ReadDbQueryHandler<GetPersonsQueryByEntity<PersonDto>, Person<Guid>, Guid, PersonDto>(repo, mapper);

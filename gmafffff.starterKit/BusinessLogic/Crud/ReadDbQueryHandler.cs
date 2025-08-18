@@ -1,5 +1,6 @@
 using gmafffff.starterKit.Domain;
 using gmafffff.starterKit.Mappers;
+using gmafffff.starterKit.Messaging;
 using gmafffff.starterKit.Messaging.Crud;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -23,7 +24,7 @@ public partial class ReadDbQueryHandler<TQuery, TEntity, TEntityId, TDto>(
     IEntityMapperForwardExpression<TEntity, TEntityId, TDto> mapper,
     ILogger<IQueryHandler<TQuery, TDto>>? logger = null)
     : QueryDbHandler<TQuery, TDto>
-    where TQuery : ReadDbQuery<TDto>
+    where TQuery : Query<TDto>
     where TDto : class
     where TEntityId : struct, IEquatable<TEntityId>
     where TEntity : Entity<TEntityId> {
@@ -39,8 +40,16 @@ public partial class ReadDbQueryHandler<TQuery, TEntity, TEntityId, TDto>(
         logger ?? NullLogger<IQueryHandler<TQuery, TDto>>.Instance;
 
     protected override async Task<IList<TDto>> RunDbQueryAsync(TQuery query, CancellationToken cancel = default) {
-        var result = await repository.GetAsync(query.Filter, mapper.EntityToDto, query.SortOrder, query.Pager, cancel)
-            .ConfigureAwait(false);
+        const string argumentOutOfRangeMessage = "Непредусмотренный тип запроса на чтение из БД";
+
+        var result =
+            query switch {
+                ReadDbQuery<TDto> queryByDto => await repository.GetAsync(queryByDto.Filter,
+                    mapper.EntityToDto, queryByDto.SortOrder, queryByDto.Pager, cancel).ConfigureAwait(false),
+                ReadDbQuery<TEntity, TDto> queryByEntity => await repository.GetAsync(queryByEntity.Filter,
+                    mapper.EntityToDto, queryByEntity.SortOrder, queryByEntity.Pager, cancel).ConfigureAwait(false),
+                _ => throw new ArgumentOutOfRangeException(nameof(query), query, argumentOutOfRangeMessage)
+            };
 
         ExecuteQueryLog(query);
         return result;
