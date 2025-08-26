@@ -272,6 +272,7 @@ public static class RegisterServicesExtensions {
             .AddBusinessConstraintsChecks(assemblies)
             .AddBusinessCommandDbHandlers(assemblies)
             .AddQueryHandlers(assemblies)
+            .AddGenericQueryHandlers(assemblies)
             .AddTriggerEventToCommandTranslators(assemblies);
     }
 
@@ -347,6 +348,30 @@ public static class RegisterServicesExtensions {
                 .AsImplementedInterfaces(predicate: IsRegisterInterface)
                 .WithTransientLifetime();
         });
+    }
+
+    /// <summary>
+    ///     Регистрирует в фабрике <see cref="QueryHandlerFabric" /> универсальные обработчики запросов,
+    ///     реализующие интерфейс <see cref="IQueryHandler{TQuery,TResult}" />
+    /// </summary>
+    /// <param name="this">Описание служб</param>
+    /// <param name="assemblies">Сборки для поиска. Если аргумент опущен, то поиск по всем сборкам домена приложения</param>
+    /// <returns></returns>
+    internal static IServiceCollection AddGenericQueryHandlers(this IServiceCollection @this,
+        params Assembly[] assemblies) {
+        @this.TryAddScoped<QueryHandlerFabric>();
+
+        var assembliesToScan = assemblies.Length > 0
+            ? assemblies
+            : AppDomain.CurrentDomain.GetAssemblies();
+
+        var _ = assembliesToScan
+            .SelectMany(asm => asm.ExportedTypes)
+            .Select(QueryHandlerFabric.TryAddGenericQueryHandler)
+            .ToList();
+
+
+        return @this;
     }
 
     /// <summary>

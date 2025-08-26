@@ -17,7 +17,8 @@ namespace gmafffff.starterKit.BusinessLogic.Crud;
 /// <typeparam name="TEntityId">Тип идентификатора сущности</typeparam>
 /// <remarks>
 ///     К сожалению в DI контейнере Microsoft нельзя осуществить сложную регистрацию открытых обобщённых типов.
-///     Поэтому для каждого DTO нужно создать отдельный обработчик.
+///     Поэтому для каждого DTO нужно создать отдельный обработчик
+///     или воспользоваться <see cref="QueryHandlerFabric"/>.
 /// </remarks>
 public partial class ReadDbQueryHandler<TQuery, TEntity, TEntityId, TDto>(
     IRepository<TEntity, TEntityId> repository,

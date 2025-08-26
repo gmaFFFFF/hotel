@@ -193,6 +193,26 @@ public class RegisterServicesTests {
     }
 
     /// <summary>
+    ///     Добавляет универсальные обработчики запросов к <see cref="QueryHandlerFabric" />
+    /// </summary>
+    [Fact]
+    public void RegisterGenericQueryHandler() {
+        // Arrange
+        var provider = Substitute.For<IServiceCollection>();
+
+        // Act
+        provider.AddGenericQueryHandlers(typeof(TestQueryHandler).Assembly);
+
+        // Assert
+        using var _ = new AssertionScope();
+        QueryHandlerFabric.GenericHandlers.Should().HaveCount(2);
+        QueryHandlerFabric.GenericHandlers.Should().ContainKey(typeof(TestGenericReadDbQueryDto<>))
+            .WhoseValue.Should().Be(typeof(TestGenericReadDbQueryDtoHandler<>));
+        QueryHandlerFabric.GenericHandlers.Should().ContainKey(typeof(TestGenericReadDbQueryEnt<>))
+            .WhoseValue.Should().Be(typeof(TestGenericReadDbQueryEntHandler<>));
+    }
+
+    /// <summary>
     ///     Регистрирует трансляторы <see cref="ITriggerEventToCommandTranslator" />
     ///     сигнальных событий <see cref="TriggerEvent" /> в команды <see cref="BusinessCommand" />
     /// </summary>
