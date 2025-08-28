@@ -434,10 +434,7 @@ public class Repository<T, TId> : IRepository<T, TId>
         DomainEventSink?.RegisterDbContext(Context);
         AutoInclude = autoInclude;
 
-        LoadAll = QueryBuilder(Entities, include: AutoInclude);
-        GetAll = QueryBuilder(LoadAll, options: QueryTune.ChangeTrackingIdentityResolution);
-        // ReSharper disable once VirtualMemberCallInConstructor
-        DefineQuery();
+        DefineQueriesBase();
     }
 
     #endregion
@@ -448,12 +445,19 @@ public class Repository<T, TId> : IRepository<T, TId>
     protected IQueryable<T> GetAll;
 
     /// <summary>
-    ///     Метод формирующий предварительно сформулированные запросы
+    ///     Хук-метод, позволяющий переопределить базовые запросы  <see cref="LoadAll" /> и <see cref="GetAll" />
+    ///     или сформировать новые, используемые производным классом.
     /// </summary>
-    /// <remarks>
-    ///     Метод должен быть переопределён в производных классах с обязательным вызовом метода базового класса
-    /// </remarks>
-    protected virtual void DefineQuery() { }
+    protected virtual void DefineQueries() { }
+
+    /// <summary>
+    ///     Определяет базовые запросы к БД
+    /// </summary>
+    private void DefineQueriesBase() {
+        LoadAll = QueryBuilder(Entities, include: AutoInclude);
+        GetAll = QueryBuilder(LoadAll, options: QueryTune.ChangeTrackingIdentityResolution);
+        DefineQueries();
+    }
 
     #endregion
 

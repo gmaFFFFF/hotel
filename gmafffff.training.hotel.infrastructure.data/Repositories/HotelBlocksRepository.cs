@@ -50,9 +50,7 @@ public class HotelBlocksRepository(HotelDbContext context, IDomainEventSink? dom
         return await RunQueryAsync(query, cancel).ConfigureAwait(false);
     }
 
-    protected override void DefineQuery() {
-        base.DefineQuery();
-
+    protected override void DefineQueries() {
         LoadWithRoomFilter = predicate
             => QueryBuilder(Entities,
                 spec: h => h.Rooms.AsQueryable().Any(predicate),
