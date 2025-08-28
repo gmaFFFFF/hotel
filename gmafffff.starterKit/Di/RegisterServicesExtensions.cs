@@ -19,6 +19,7 @@ public static class RegisterServicesExtensions {
     /// </summary>
     private static readonly Type[] IgnoreInterfaces = [
         typeof(IEntityMapper<,,>),
+        typeof(IRepositoryReadOnly<,>),
         typeof(IRepository<,>),
         typeof(IRepositoryFactory<,,>),
         typeof(IDomainEventHandler),
@@ -114,7 +115,9 @@ public static class RegisterServicesExtensions {
                     : scan.FromAssemblies(assemblies);
 
                 selector
-                    .AddClasses(@class => @class.AssignableTo(typeof(IRepository<,>)))
+                    .AddClasses(@class => @class.AssignableToAny(
+                        typeof(IRepository<,>),
+                        typeof(IRepositoryReadOnly<,>)))
                     .AsImplementedInterfaces(predicate: IsRegisterInterface)
                     .WithScopedLifetime();
             })

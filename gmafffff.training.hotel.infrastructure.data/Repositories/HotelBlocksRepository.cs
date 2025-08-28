@@ -6,16 +6,34 @@ using gmafffff.training.hotel.infrastructure.data.Sessions;
 
 namespace gmafffff.training.hotel.infrastructure.data.Repositories;
 
-public class HotelBlocksRepository(HotelDbContext context, IDomainEventSink? domainEventSink = null) :
-    Repository<HotelBlock<int, Guid>, int>(context,
+public class HotelBlocksRepository :
+    Repository<HotelBlock<int, Guid>, int>,
+    IHotelBlocksRepository<int, Guid> {
+    protected Func<Expression<Func<Room<Guid>, bool>>, IQueryable<Room<Guid>>> GetRoom = null!;
+    protected Func<Expression<Func<Room<Guid>, bool>>, IQueryable<HotelBlock<int, Guid>>> LoadWithRoomFilter = null!;
+
+    public HotelBlocksRepository(HotelDbContext context, IDomainEventSink? domainEventSink = null) : base(context,
         autoInclude: static hotel => hotel
             .Include(h => h.Tariffs)
             .Include(h => h.Rooms)
             .ThenInclude(r => r.RoomCleanings.AsQueryable().Where(cleaning => !cleaning.IsClean)),
-        domainEventSink: domainEventSink),
-    IHotelBlocksRepository<int, Guid> {
-    protected Func<Expression<Func<Room<Guid>, bool>>, IQueryable<Room<Guid>>> GetRoom = null!;
-    protected Func<Expression<Func<Room<Guid>, bool>>, IQueryable<HotelBlock<int, Guid>>> LoadWithRoomFilter = null!;
+        domainEventSink: domainEventSink) {
+        LoadWithRoomFilter = predicate
+            => QueryBuilder(Entities,
+                spec: h => h.Rooms.AsQueryable().Any(predicate),
+                include: h => h
+                    .Include(h => h.Rooms.AsQueryable().Where(predicate))
+                    .ThenInclude(r => r.RoomCleanings.Where(cleaning => !cleaning.IsClean))
+                    .Include(h => h.Tariffs)
+            );
+
+        GetRoom = predicate
+            => QueryBuilder<Room<Guid>, int>(
+                Context.Set<Room<Guid>>(),
+                predicate,
+                options: QueryTune.ChangeTrackingDisable
+            );
+    }
 
     public async Task<IImmutableList<HotelBlock<int, Guid>>> LoadWithRoomFilterAsync(
         Expression<Func<Room<Guid>, bool>> predicate, CancellationToken cancel = default) {
@@ -48,23 +66,5 @@ public class HotelBlocksRepository(HotelDbContext context, IDomainEventSink? dom
 
 
         return await RunQueryAsync(query, cancel).ConfigureAwait(false);
-    }
-
-    protected override void DefineQueries() {
-        LoadWithRoomFilter = predicate
-            => QueryBuilder(Entities,
-                spec: h => h.Rooms.AsQueryable().Any(predicate),
-                include: h => h
-                    .Include(h => h.Rooms.AsQueryable().Where(predicate))
-                    .ThenInclude(r => r.RoomCleanings.Where(cleaning => !cleaning.IsClean))
-                    .Include(h => h.Tariffs)
-            );
-
-        GetRoom = predicate
-            => QueryBuilder<Room<Guid>, int>(
-                Context.Set<Room<Guid>>(),
-                predicate,
-                options: QueryTune.ChangeTrackingDisable
-            );
     }
 }
