@@ -24,8 +24,8 @@ public class QueryHandlerFabricTests {
             .Returns(null);
         _provider.GetService(typeof(IQueryHandler<TestGenericReadDbQueryEnt<TestDto2>, TestDto2>))
             .Returns(null);
-        _provider.GetService(typeof(IRepository<TestEntity, int>))
-            .Returns(Substitute.For<IRepository<TestEntity, int>>());
+        _provider.GetService(typeof(IRepositoryReadOnly<TestEntity, int>))
+            .Returns(Substitute.For<IRepositoryReadOnly<TestEntity, int>>());
         _provider.GetService(typeof(IEntityMapperForwardExpression<TestEntity, int, TestDto2>))
             .Returns(Substitute.For<IEntityMapperForwardExpression<TestEntity, int, TestDto2>>());
     }

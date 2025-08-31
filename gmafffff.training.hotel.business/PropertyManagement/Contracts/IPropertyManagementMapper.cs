@@ -4,7 +4,9 @@ using gmafffff.training.hotel.domain.PropertyManagement.Models;
 
 namespace gmafffff.training.hotel.business.PropertyManagement.Contracts;
 
-public interface IPropertyManagementMapper :
+public interface IPropertyManagementMapperRoom :
     IEntityMapperForward<Room<Guid>, int, RoomDto>,
-    IEntityMapperForwardExpression<Room<Guid>, int, RoomDto>,
-    IEntityMapperForward<HotelBlock<int, Guid>, int, HotelDto>;
+    IEntityMapperForwardExpression<Room<Guid>, int, RoomDto>;
+
+public interface IPropertyManagementMapperHotelBlock :
+    IEntityMapperForwardExpression<HotelBlock<int, Guid>, int, HotelDto>;

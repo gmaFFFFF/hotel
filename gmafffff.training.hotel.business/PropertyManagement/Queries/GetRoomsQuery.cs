@@ -1,10 +1,10 @@
-using gmafffff.training.hotel.business.PropertyManagement.Dto;
+using gmafffff.starterKit.Messaging.Crud;
 using gmafffff.training.hotel.domain.PropertyManagement.Models;
 
 namespace gmafffff.training.hotel.business.PropertyManagement.Queries;
 
-public record GetRoomsQuery(
+public record GetRoomsQuery<TDto>(
     Expression<Func<Room<Guid>, bool>> Filter,
-    Func<IQueryable<RoomDto>, IOrderedQueryable<RoomDto>>? SortOrder = null,
+    Func<IQueryable<TDto>, IOrderedQueryable<TDto>>? SortOrder = null,
     (uint pageNum, uint pageSize)? Pager = null)
-    : Query<RoomDto>(SortOrder, Pager);
+    : ReadDbQuery<Room<Guid>, TDto>(Filter, SortOrder, Pager);

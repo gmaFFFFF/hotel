@@ -1,14 +1,17 @@
 ﻿using gmafffff.starterKit.BusinessLogic;
+using gmafffff.starterKit.Domain;
 using gmafffff.training.hotel.business.Error;
 using gmafffff.training.hotel.business.SettlementManagement.Commands;
 using gmafffff.training.hotel.domain.PropertyManagement.Contracts.Repositories;
+using gmafffff.training.hotel.domain.PropertyManagement.Models;
 
 namespace gmafffff.training.hotel.business.SettlementManagement.BusinessConstraintsChecks;
 
 /// <summary>
 ///     Число посетителей не превышает вместимость номера
 /// </summary>
-public class NumberVisitorsNotExceedCapacityRoom(IHotelBlocksRepositoryFactory<int, Guid> repositoryFactory)
+public class NumberVisitorsNotExceedCapacityRoom(
+    IRepositoryFactory<IHotelBlocksRepository<int, Guid>, HotelBlock<int, Guid>, int> repositoryFactory)
     : IBusinessConstraintCheck<SettleInCommand> {
     public Enum ErrorCode => ErrorBusinessConstraintCheck.CheckPersonLivesInHotel;
 

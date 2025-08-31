@@ -19,9 +19,6 @@ public static class RegisterServicesExtensions {
     /// </summary>
     private static readonly Type[] IgnoreInterfaces = [
         typeof(IEntityMapper<,,>),
-        typeof(IRepositoryReadOnly<,>),
-        typeof(IRepository<,>),
-        typeof(IRepositoryFactory<,,>),
         typeof(IDomainEventHandler),
         typeof(IDisposable),
         typeof(IAsyncDisposable)
@@ -101,35 +98,58 @@ public static class RegisterServicesExtensions {
 
     /// <summary>
     ///     Регистрирует в сервисе внедрения зависимостей оперативные склады,
-    ///     реализующие интерфейс <see cref="IRepository{T,TId}" />,
+    ///     реализующие интерфейс <see cref="IRepositoryReadOnly{T,TId}" /> и <see cref="IRepository{T,TId}" />,
     ///     а также фабрики, реализующие интерфейс <see cref="IRepositoryFactory{TRepo, TEntity, TId}" />
     /// </summary>
     /// <param name="this">Описание служб</param>
     /// <param name="assemblies">Сборки для поиска. Если аргумент опущен, то поиск по всем сборкам домена приложения</param>
     /// <returns></returns>
     public static IServiceCollection AddRepositories(this IServiceCollection @this, params Assembly[] assemblies) {
-        return @this
+        var serviceCollection = @this
             .Scan(scan => {
                 var selector = assemblies.Length == 0
                     ? scan.FromApplicationDependencies()
                     : scan.FromAssemblies(assemblies);
 
                 selector
-                    .AddClasses(@class => @class.AssignableToAny(
-                        typeof(IRepository<,>),
-                        typeof(IRepositoryReadOnly<,>)))
+                    .AddClasses(@class => @class.AssignableTo(typeof(IRepositoryReadOnly<,>)))
                     .AsImplementedInterfaces(predicate: IsRegisterInterface)
                     .WithScopedLifetime();
-            })
-            .Scan(scan => {
-                var selector = assemblies.Length == 0
-                    ? scan.FromApplicationDependencies()
-                    : scan.FromAssemblies(assemblies);
-                selector
-                    .AddClasses(@class => @class.AssignableTo(typeof(IRepositoryFactory<,,>)))
-                    .AsImplementedInterfaces(predicate: IsRegisterInterface)
-                    .WithSingletonLifetime();
             });
+
+        var isRepoInterface = (Type @interface) =>
+            @interface.IsGenericType &&
+            @interface.GetGenericTypeDefinition() == typeof(IRepositoryReadOnly<,>);
+
+        var repoServices = serviceCollection
+            .Where(service => service
+                .ServiceType
+                .GetInterfaces()
+                .Any(isRepoInterface))
+            .ToArray();
+        foreach (var service in repoServices) {
+            var repoInterface = service.ServiceType.GetInterfaces().Single(isRepoInterface);
+            var factoryInterface = typeof(IRepositoryFactory<,,>)
+                .MakeGenericType(
+                    new[] {
+                            service.ServiceType
+                        }.Concat(repoInterface.GetGenericArguments())
+                        .ToArray()
+                );
+
+            var factory = typeof(RepositoryFactory<,,,>)
+                .MakeGenericType(
+                    new[] {
+                            service.ServiceType,
+                            service.ImplementationType!
+                        }
+                        .Concat(repoInterface.GetGenericArguments())
+                        .ToArray()
+                );
+            serviceCollection.AddSingleton(factoryInterface, factory);
+        }
+
+        return serviceCollection;
     }
 
     /// <summary>

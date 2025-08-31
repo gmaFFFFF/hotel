@@ -1,4 +1,5 @@
 using gmafffff.starterKit.BusinessLogic;
+using gmafffff.starterKit.Domain;
 using gmafffff.starterKit.Utils;
 using gmafffff.training.hotel.business.Error;
 using gmafffff.training.hotel.business.PropertyManagement.Commands;
@@ -7,7 +8,8 @@ using gmafffff.training.hotel.domain.PropertyManagement.Models;
 
 namespace gmafffff.training.hotel.business.PropertyManagement.BusinessConstraintsChecks;
 
-public class RemoveRoomsMustFree(IHotelBlocksRepositoryFactory<int, Guid> repositoryFactory)
+public class RemoveRoomsMustFree(
+    IRepositoryFactory<IHotelBlocksRepository<int, Guid>, HotelBlock<int, Guid>, int> repositoryFactory)
     : IBusinessConstraintCheck<RemoveRoomsCommand> {
     public Enum ErrorCode => ErrorBusinessConstraintCheck.CheckRoomBusy;
 

@@ -5,7 +5,7 @@
 Пространство имен: `gmafffff.starterKit.Domain`.
 
 Для получения доступа к сущностям, находящимся в центральном складе (БД),
-используется шаблон Repository (оперативный склад, кладовая).
+используется шаблон Repository (оперативный склад, кладовая, кладовка).
 
 Интерфейс `IRepositoryReadOnly` предназначен для чтения сущностей, не являющихся корнем агрегата типа,
 производного от [`Entity`](./entity.md).
@@ -15,11 +15,9 @@
 * Get — отгрузка сущностей потребителю напрямую из центрального склада, без принятия их на учет в кладовой;
 * Count — подсчет сущностей в центральном складе.
 
-Реализация `IRepositoryReadOnly` для Ef Core представлена классом
-`gmafffff.starterKit.EntityFrameworkCore.RepositoryReadOnly`.
+Реализация `IRepositoryReadOnly` для Ef Core представлена `gmafffff.starterKit.EntityFrameworkCore.RepositoryReadOnly`.
 
-Интерфейс `IRepository` временно извлекает из центрального склада сущности типа,
-производного от [`Entity`](./entity.md).
+Интерфейс `IRepository` временно берёт на себя управление сущностями типа, производного от [`Entity`](./entity.md).
 
 `IRepository` объявляет группы методов:
 
@@ -31,23 +29,27 @@
 * Count — подсчет сущностей в центральном складе;
 * Save — отправка запланированных изменений в центральный склад.
 
-Реализация `IRepository` для Ef Core представлена классом `gmafffff.starterKit.EntityFrameworkCore.Repository`.
+Реализация `IRepository` для Ef Core представлена `gmafffff.starterKit.EntityFrameworkCore.Repository`.
 
 `IRepositoryFactory` предназначен для создания короткоживущих (transient) кладовок.
+`IRepositoryFactory` используется, например, при проверке бизнес ограничений
+`gmafffff.starterKit.BusinessLogic.IBusinessConstraintCheck`.
+
+Реализация интерфейса для EF Core будет зарегистрирована в DI при вызове метода расширения
+`IServiceCollection` `AddRepositories`.
 
 ## Использование
 
 Для каждой сущности — корня агрегата объявите интерфейс, производный от `IRepository`.
-Для каждой сущности, не являющейся корнем агрегата, но для которой нужен удобный доступ, объявите интерфейс,
+Для каждой сущности, не являющейся корнем агрегата, но для которой нужен удобный доступ на чтение, объявите интерфейс,
 производный от `IRepositoryReadOnly`.  
 Добавляйте в него методы, используемые различными компонентами приложения для загрузки/обновления данных из БД.
 
-Для каждого интерфейса оперативного склада объявите `IRepositoryFactory`.
-Эта фабрика будет создавать Transient `IRepositoryReadOnly`,
-используемые при проверке бизнес ограничений `gmafffff.starterKit.BusinessLogic.IBusinessConstraintCheck`
+Реализуйте `IRepositoryReadOnly` \ `IRepository`, используя для EF Core реализацию по умолчанию —
+`gmafffff.starterKit.EntityFrameworkCore.RepositoryReadOnly` \ `gmafffff.starterKit.EntityFrameworkCore.Repository`.
 
-В отдельной инфраструктурной сборке реализуйте `IRepository`, используя для EF Core реализацию по умолчанию —
-`gmafffff.starterKit.EntityFrameworkCore.Repository`, а также `IRepositoryFactory`.
+При регистрации кладовок вызовом метода расширения `IServiceCollection` `AddRepositories` для каждого интерфейса
+оперативного склада будет зарегистрирована подходящая реализация интерфейса `IRepositoryFactory`.
 
 ## DI
 

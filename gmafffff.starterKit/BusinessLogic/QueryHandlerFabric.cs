@@ -7,17 +7,18 @@ namespace gmafffff.starterKit.BusinessLogic;
 /// <summary>
 ///     В DI контейнере Microsoft нельзя осуществить сложную регистрацию открытых обобщённых типов.
 ///     Это делает невозможным регистрацию универсального <see cref="IQueryHandler{TQuery,TResult}" />,
-///     TResult которого может подбираться компилятором в зависимости от TDto из <see cref="ReadDbQuery{TDto}"/>
-///     или <see cref="ReadDbQuery{TEntity, TDto}"/>.
+///     TResult которого может подбираться компилятором в зависимости от TDto из <see cref="ReadDbQuery{TDto}" />
+///     или <see cref="ReadDbQuery{TEntity, TDto}" />.
 ///     Поэтому для каждого TResult, возвращаемого <see cref="IQueryHandler{TQuery,TResult}" />,
 ///     нужно создать отдельный обработчик или воспользоваться этой фабрикой.
 /// </summary>
 public record QueryHandlerFabric(IServiceProvider ServiceProvider) {
     /// <summary>
-    ///     Словарь, где ключом является тип запроса <see cref="Query{T}"/>,
+    ///     Словарь, где ключом является тип запроса <see cref="Query{T}" />,
     ///     а значением универсальный тип его обработчика <see cref="IQueryHandler{TQuery,TResult}" />
     /// </summary>
     internal static readonly Dictionary<Type, Type> GenericHandlers = [];
+
     private static readonly object LockGenericHandlers = new();
 
     /// <summary>
@@ -64,7 +65,7 @@ public record QueryHandlerFabric(IServiceProvider ServiceProvider) {
     public static bool TryAddGenericQueryHandler(Type handler) {
         if (!handler.IsGenericType ||
             handler.IsConstructedGenericType ||
-            handler.IsAbstract ||            
+            handler.IsAbstract ||
             handler.GetGenericArguments().Length > 1 ||
             !IsGenericRealizeInterface(handler, typeof(IQueryHandler<,>)))
             return false;

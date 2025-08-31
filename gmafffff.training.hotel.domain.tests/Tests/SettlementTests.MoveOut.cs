@@ -25,7 +25,7 @@ public partial class SettlementTests {
             hotel.SettledIn([person.Id], room, arrivalDate: arrivalDate, departureDatePlanned: departureDate);
 
             // Act
-            hotel.MoveOut(room, null);
+            hotel.MoveOut(room, departureDate: null);
 
             // Assert
             using var _ = new AssertionScope();

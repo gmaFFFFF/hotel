@@ -1,4 +1,5 @@
 ﻿using gmafffff.starterKit.BusinessLogic;
+using gmafffff.starterKit.Domain;
 using gmafffff.starterKit.Utils;
 using gmafffff.training.hotel.business.Error;
 using gmafffff.training.hotel.business.PersonManagement.Commands;
@@ -10,7 +11,8 @@ namespace gmafffff.training.hotel.business.PersonManagement.BusinessConstraintsC
 /// <summary>
 ///     Удаляемая персона не должна проживать в гостинице
 /// </summary>
-public class RemovePersonShouldNotSuitable(IHotelBlocksRepositoryFactory<int, Guid> repositoryFactory)
+public class RemovePersonShouldNotSuitable(
+    IRepositoryFactory<IHotelBlocksRepository<int, Guid>, HotelBlock<int, Guid>, int> repositoryFactory)
     : IBusinessConstraintCheck<RemovePersonsCommand> {
     public Enum ErrorCode => ErrorBusinessConstraintCheck.CheckPersonLivesInHotel;
 

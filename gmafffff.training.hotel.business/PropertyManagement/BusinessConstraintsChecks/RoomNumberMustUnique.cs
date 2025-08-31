@@ -1,11 +1,14 @@
 using gmafffff.starterKit.BusinessLogic;
+using gmafffff.starterKit.Domain;
 using gmafffff.training.hotel.business.Error;
 using gmafffff.training.hotel.business.PropertyManagement.Commands;
 using gmafffff.training.hotel.domain.PropertyManagement.Contracts.Repositories;
+using gmafffff.training.hotel.domain.PropertyManagement.Models;
 
 namespace gmafffff.training.hotel.business.PropertyManagement.BusinessConstraintsChecks;
 
-public class RoomNumberMustUnique(IHotelBlocksRepositoryFactory<int, Guid> repositoryFactory)
+public class RoomNumberMustUnique(
+    IRepositoryFactory<IHotelBlocksRepository<int, Guid>, HotelBlock<int, Guid>, int> repositoryFactory)
     : IBusinessConstraintCheck<UpdateRoomCommand>,
         IBusinessConstraintCheck<AddRoomCommand> {
     public async Task<bool> IsSatisfiedAsync(AddRoomCommand command, CancellationToken cancel = default) {

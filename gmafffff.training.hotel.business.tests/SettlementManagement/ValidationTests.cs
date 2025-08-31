@@ -19,13 +19,13 @@ public partial class SettlementManagementTests {
                 var yesterday = today.AddDays(-1);
                 return new TheoryData<SettleInCommand, Enum?> {
                     // Проверка на наличие посетителей
-                    { new(RoomId: default, [Guid.Empty]), null },
-                    { new(RoomId: default, []), ErrorValidation.ValidationNotVisitors },
+                    { new SettleInCommand(RoomId: default, [Guid.Empty]), null },
+                    { new SettleInCommand(RoomId: default, []), ErrorValidation.ValidationNotVisitors },
 
                     // Проверка планируемой даты выезда
-                    { new(RoomId: default, [Guid.Empty], DepartureDatePlanned: null), null },
-                    { new(RoomId: default, [Guid.Empty], today), null }, {
-                        new(RoomId: default, [Guid.Empty], yesterday),
+                    { new SettleInCommand(RoomId: default, [Guid.Empty], DepartureDatePlanned: null), null },
+                    { new SettleInCommand(RoomId: default, [Guid.Empty], today), null }, {
+                        new SettleInCommand(RoomId: default, [Guid.Empty], yesterday),
                         ErrorValidation.ValidationDepartureDatePlanned
                     }
                 };

@@ -1,7 +1,9 @@
 ﻿using FluentAssertions.Execution;
 using gmafffff.starterKit.BusinessLogic;
 using gmafffff.starterKit.Di;
+using gmafffff.starterKit.Domain;
 using gmafffff.starterKit.Domain.Events;
+using gmafffff.starterKit.EntityFrameworkCore;
 using gmafffff.starterKit.Mappers;
 using gmafffff.starterKit.Messaging;
 using gmafffff.starterKit.tests.Di.Fixtures;
@@ -62,7 +64,7 @@ public class RegisterServicesTests {
 
         // Assert
         using var _ = new AssertionScope();
-        provider.Received(6);
+        provider.Received(6).Add(Arg.Any<ServiceDescriptor>());
         provider.Received().Add(Arg.Is<ServiceDescriptor>(descriptor =>
             descriptor.ServiceType == typeof(TestMapperImplementation) &&
             descriptor.ImplementationType == typeof(TestMapperImplementation) &&
@@ -104,7 +106,7 @@ public class RegisterServicesTests {
     }
 
     /// <summary>
-    ///     Регистрирует кладовые и фабрики
+    ///     Регистрирует кладовые
     /// </summary>
     [Fact]
     public void RegisterRepository() {
@@ -115,17 +117,29 @@ public class RegisterServicesTests {
         provider.AddRepositories(typeof(RegisterServicesTests).Assembly);
 
         // Assert
-        provider.Received(2);
-
         provider.Received().Add(Arg.Is<ServiceDescriptor>(descriptor =>
             descriptor.ServiceType == typeof(ITestRepository) &&
             descriptor.ImplementationType == typeof(TestRepository) &&
             descriptor.Lifetime == ServiceLifetime.Scoped));
+    }
 
-        provider.Received().Add(Arg.Is<ServiceDescriptor>(descriptor =>
-            descriptor.ServiceType == typeof(ITestRepositoryFactory) &&
-            descriptor.ImplementationType == typeof(TestRepositoryFactory) &&
-            descriptor.Lifetime == ServiceLifetime.Singleton));
+    /// <summary>
+    ///     Регистрирует фабрики кладовок
+    /// </summary>
+    [Fact]
+    public void RegisterRepositoryFabric() {
+        // Arrange
+        var provider = new ServiceCollection();
+
+        // Act
+        provider.AddRepositories(typeof(RegisterServicesTests).Assembly);
+
+        // Assert
+        provider.Should().Contain(descriptor =>
+            descriptor.ServiceType == typeof(IRepositoryFactory<ITestRepository, TestEntity, int>) &&
+            descriptor.ImplementationType ==
+            typeof(RepositoryFactory<ITestRepository, TestRepository, TestEntity, int>) &&
+            descriptor.Lifetime == ServiceLifetime.Singleton);
     }
 
     /// <summary>
@@ -141,8 +155,6 @@ public class RegisterServicesTests {
         provider.AddDomainEventHandlers(typeof(TestEvent).Assembly);
 
         // Assert
-        provider.Received(1);
-
         provider.Received().Add(Arg.Is<ServiceDescriptor>(descriptor =>
             descriptor.ServiceType.IsGenericType &&
             descriptor.ServiceType.GetGenericTypeDefinition() == typeof(IDomainEventHandler<>) &&
@@ -162,8 +174,6 @@ public class RegisterServicesTests {
         provider.AddBusinessCommandDbHandlers(typeof(TestBusinessCommandDbHandler).Assembly);
 
         // Assert
-        provider.Received(1);
-
         provider.Received().Add(Arg.Is<ServiceDescriptor>(descriptor =>
             descriptor.ServiceType.IsGenericType &&
             descriptor.ServiceType.GetGenericTypeDefinition() == typeof(IBusinessCommandHandler<>) &&
@@ -183,8 +193,6 @@ public class RegisterServicesTests {
         provider.AddQueryHandlers(typeof(TestQueryHandler).Assembly);
 
         // Assert
-        provider.Received(1);
-
         provider.Received().Add(Arg.Is<ServiceDescriptor>(descriptor =>
             descriptor.ServiceType.IsGenericType &&
             descriptor.ServiceType.GetGenericTypeDefinition() == typeof(IQueryHandler<,>) &&
@@ -225,8 +233,6 @@ public class RegisterServicesTests {
         provider.AddTriggerEventToCommandTranslators(typeof(TestQueryHandler).Assembly);
 
         // Assert
-        provider.Received(1);
-
         provider.Received().Add(Arg.Is<ServiceDescriptor>(descriptor =>
             descriptor.ServiceType.IsGenericType &&
             descriptor.ServiceType.GetGenericTypeDefinition() == typeof(ITriggerEventToCommandTranslator<>) &&
@@ -246,8 +252,6 @@ public class RegisterServicesTests {
         provider.AddBusinessActionRunner();
 
         // Assert
-        provider.Received(1);
-
         provider.Received().Add(Arg.Is<ServiceDescriptor>(descriptor =>
             descriptor.ServiceType.IsGenericType &&
             descriptor.ServiceType.GetGenericTypeDefinition() == typeof(IBusinessActionRunner<>) &&

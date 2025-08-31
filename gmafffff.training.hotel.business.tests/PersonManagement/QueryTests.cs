@@ -15,9 +15,15 @@ using Xunit.Abstractions;
 namespace gmafffff.training.hotel.business.tests.PersonManagement;
 
 public partial class PersonManagementTests {
-    [TestSubject(typeof(GetPersonsQueryByDtoHandler))]
-    [TestSubject(typeof(GetPersonsQueryByEntityHandler))]
-    public class Query(ITestOutputHelper output) : TestContext(output) {
+    [TestSubject(typeof(GetPersonsQueryByDtoHandler<>))]
+    [TestSubject(typeof(GetPersonsQueryByEntityHandler<>))]
+    public class Query : TestContext {
+        private readonly QueryHandlerFabric QueryHandlerFabric;
+
+        public Query(ITestOutputHelper output) : base(output) {
+            QueryHandlerFabric = Scope.ServiceProvider.GetRequiredService<QueryHandlerFabric>();
+        }
+
         [Fact]
         public async Task QueryPersons_ByDtoFilter() {
             // Arrange
@@ -30,8 +36,7 @@ public partial class PersonManagementTests {
                 .Select(person => person.Adapt<PersonDto>())
                 .ToArray();
             var query = new GetPersonsQueryByDto<PersonDto>(p => exceptedIds.Contains(p.PersonId));
-            var handler =
-                Scope.ServiceProvider.GetRequiredService<IQueryHandler<GetPersonsQueryByDto<PersonDto>, PersonDto>>();
+            var handler = QueryHandlerFabric.GetQueryHandler(query, default(PersonDto));
 
             // Act
             var result = await handler.RunQueryAsync(query);
@@ -62,8 +67,7 @@ public partial class PersonManagementTests {
 
 
             var query = new GetPersonsQueryByEntity<PersonDto>(new Person<Guid>.FilterByFullName(firstLetters));
-            var handler = Scope.ServiceProvider
-                .GetRequiredService<IQueryHandler<GetPersonsQueryByEntity<PersonDto>, PersonDto>>();
+            var handler = QueryHandlerFabric.GetQueryHandler(query, default(PersonDto));
 
             // Act
             var result = await handler.RunQueryAsync(query);

@@ -1,3 +1,4 @@
+using gmafffff.training.hotel.business.PropertyManagement.Contracts;
 using gmafffff.training.hotel.domain.PropertyManagement.Contracts.Mappers;
 
 namespace gmafffff.training.hotel.infrastructure.mapper.Required;
@@ -7,6 +8,9 @@ public interface IPropertyManagementMapperMapsterDomain :
     IPropertyManagementMapper;
 
 [Mapper]
-public interface
-    IPropertyManagementMapperMapsterBusiness :
-    business.PropertyManagement.Contracts.IPropertyManagementMapper;
+public interface IPropertyManagementMapperMapsterBusinessRoom :
+    IPropertyManagementMapperRoom;
+
+[Mapper]
+public interface IPropertyManagementMapperMapsterBusinessHotelBlock :
+    IPropertyManagementMapperHotelBlock;

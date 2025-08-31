@@ -1,10 +1,13 @@
 ﻿using System.Collections.Immutable;
 using System.Linq.Expressions;
 using gmafffff.starterKit.Domain;
+using Microsoft.EntityFrameworkCore;
 
 namespace gmafffff.starterKit.tests.Di.Fixtures;
 
-public class TestRepository : ITestRepository {
+public record TestRepository(Service Service, DbContext FakeContext) : ITestRepository {
+    public TestRepository() : this(null!, null!) { }
+
     public IImmutableList<TestEntity> Find(IEnumerable<int> ids) {
         throw new NotImplementedException();
     }

@@ -12,13 +12,19 @@ using Xunit.Abstractions;
 namespace gmafffff.training.hotel.business.tests.PropertyManagement;
 
 public partial class PropertyManagementTests {
-    [TestSubject(typeof(GetRoomsQuery))]
-    public class Query(ITestOutputHelper output) : TestContext(output) {
+    [TestSubject(typeof(GetRoomsQuery<>))]
+    public class Query : TestContext {
+        private readonly QueryHandlerFabric QueryHandlerFabric;
+
+        public Query(ITestOutputHelper output) : base(output) {
+            QueryHandlerFabric = Scope.ServiceProvider.GetRequiredService<QueryHandlerFabric>();
+        }
+
         [Fact]
         public async Task CanQueryData() {
             // Arrange
-            var query = new GetRoomsQuery(Room<Guid>.WhereType(RoomType.Standard));
-            var handler = Scope.ServiceProvider.GetRequiredService<IQueryHandler<GetRoomsQuery, RoomDto>>();
+            var query = new GetRoomsQuery<RoomDto>(Room<Guid>.WhereType(RoomType.Standard));
+            var handler = QueryHandlerFabric.GetQueryHandler(query, default(RoomDto));
             var excepted = FakeHotel.Hotel.Rooms
                 .Where(Room<Guid>.WhereType(RoomType.Standard).Compile())
                 .Select(room => room.Adapt<RoomDto>())
