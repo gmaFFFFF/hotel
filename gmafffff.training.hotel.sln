@@ -27,6 +27,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gmafffff.training.hotel.dom
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gmafffff.training.hotel.infrastructure.data.pay", "gmafffff.training.hotel.infrastructure.data.pay\gmafffff.training.hotel.infrastructure.data.pay.csproj", "{7F379346-A24E-46FC-8E45-1EB4F4B5F5D3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gmafffff.training.hotel.application", "gmafffff.training.hotel.application\gmafffff.training.hotel.application.csproj", "{49B3C720-C712-480C-B8E1-AAC21FF543D5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gmafffff.training.hotel.application.tests", "gmafffff.training.hotel.application.tests\gmafffff.training.hotel.application.tests.csproj", "{D15D35EE-9D73-4072-B4BF-265D0D44BA12}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -84,5 +88,13 @@ Global
 		{7F379346-A24E-46FC-8E45-1EB4F4B5F5D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7F379346-A24E-46FC-8E45-1EB4F4B5F5D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7F379346-A24E-46FC-8E45-1EB4F4B5F5D3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{49B3C720-C712-480C-B8E1-AAC21FF543D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{49B3C720-C712-480C-B8E1-AAC21FF543D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49B3C720-C712-480C-B8E1-AAC21FF543D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{49B3C720-C712-480C-B8E1-AAC21FF543D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D15D35EE-9D73-4072-B4BF-265D0D44BA12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D15D35EE-9D73-4072-B4BF-265D0D44BA12}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D15D35EE-9D73-4072-B4BF-265D0D44BA12}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D15D35EE-9D73-4072-B4BF-265D0D44BA12}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -1,4 +1,3 @@
-using gmafffff.training.hotel.business.PersonManagement.Dto;
 using gmafffff.training.hotel.domain.PersonManagement.Dto;
 using gmafffff.training.hotel.domain.PersonManagement.Models;
 using gmafffff.training.hotel.domain.SettlementManagement.Models;
@@ -7,17 +6,6 @@ namespace gmafffff.training.hotel.infrastructure.mapper.MapsterConfig.DomainBusi
 
 public class PersonConfig : StandardMapsterConfig {
     public override void Register(TypeAdapterConfig config) {
-        // PersonDto
-        config.NewConfig<Person<Guid>, PersonDto>()
-            .TwoWays()
-            .Map(member: d => d.PersonId, source: s => s.Id)
-            .Map(member: d => d, source: s => s.FullName)
-            .GenerateMapper(All);
-
-        config.ForType<PersonDto, Person<Guid>>()
-            .Ignore(d => d.History)
-            .GenerateMapper(Instance);
-
         // PersonAddDto
         config.ForType<PersonAddDto, Person<Guid>>()
             .Map(member: d => d.FullName, source: s => s)

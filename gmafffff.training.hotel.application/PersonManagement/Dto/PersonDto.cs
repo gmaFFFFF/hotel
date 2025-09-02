@@ -1,9 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace gmafffff.training.hotel.business.PersonManagement.Dto;
+namespace gmafffff.training.hotel.application.PersonManagement.Dto;
 
 public record PersonDto(
-    [Display(Name = "Ид")] Guid PersonId,
+    [Display(AutoGenerateField = false)] Guid PersonId,
     [Display(Name = "Фамилия")] string SurName,
     [Display(Name = "Имя")] string FirstName,
     [Display(Name = "Отчество")] string? Patronymic

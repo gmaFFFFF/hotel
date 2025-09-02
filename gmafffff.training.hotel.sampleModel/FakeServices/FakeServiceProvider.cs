@@ -15,7 +15,8 @@ using NSubstitute;
 namespace gmafffff.training.hotel.SampleModel.FakeServices;
 
 public class FakeServiceProvider : IDisposable {
-    public readonly ServiceProvider Instance;
+    public readonly ServiceCollection ServiceCollection;
+    public ServiceProvider Instance;
 
     public FakeServiceProvider(Action<string>? logAction = null) {
         var hotelDbFixture = new SqliteHotelDbFixture();
@@ -48,8 +49,6 @@ public class FakeServiceProvider : IDisposable {
             ValidateScopes = true
         });
     }
-
-    private ServiceCollection ServiceCollection { get; }
 
     public void Dispose() {
         Instance.Dispose();

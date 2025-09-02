@@ -1,4 +1,5 @@
-﻿using gmafffff.starterKit.Domain;
+﻿using gmafffff.starterKit.Di;
+using gmafffff.starterKit.Domain;
 using gmafffff.training.hotel.domain.PersonManagement.Contracts.Repositories;
 using gmafffff.training.hotel.domain.PersonManagement.Models;
 using gmafffff.training.hotel.domain.PropertyManagement.Contracts.Repositories;
@@ -32,7 +33,17 @@ public class TestContext : IDisposable {
 
     public TestContext(ITestOutputHelper output) {
         Output = output;
+
         FakeServiceProvider = new FakeServiceProvider(LogAction);
+
+        // Загружаем дополнительные сервисы
+        FakeServiceProvider.ServiceCollection.AddEntityMappersAndConfig(typeof(PersonMapper).Assembly);
+        FakeServiceProvider.Instance = FakeServiceProvider.ServiceCollection.BuildServiceProvider(
+            new ServiceProviderOptions {
+                ValidateOnBuild = true,
+                ValidateScopes = true
+            });
+
         HotelRepoFactory = FakeServiceProvider.Instance
             .GetRequiredService<IRepositoryFactory<IHotelBlocksRepository<int, Guid>, HotelBlock<int, Guid>, int>>();
         PersonRepoFactory = FakeServiceProvider.Instance

@@ -4,7 +4,6 @@ using gmafffff.starterKit.BusinessLogic;
 using gmafffff.starterKit.Messaging.Crud;
 using gmafffff.starterKit.Utils;
 using gmafffff.training.hotel.business.PersonManagement.Commands;
-using gmafffff.training.hotel.business.PersonManagement.Dto;
 using gmafffff.training.hotel.business.PersonManagement.Handlers;
 using gmafffff.training.hotel.business.tests.Fixtures;
 using gmafffff.training.hotel.domain.PropertyManagement.Models;
@@ -36,7 +35,9 @@ public partial class PersonManagementTests {
                     .GetAsync(spec: person => person.FullName.FirstName == command.New.FirstName &&
                                               person.FullName.SurName == command.New.SurName &&
                                               person.FullName.Patronymic == command.New.Patronymic)
-                ).Single().Adapt<PersonDto>();
+                )
+                .Single()
+                .Adapt<PersonDto>(PersonDto.MapperConfig);
 
             // Assert
             using var _ = new AssertionScope();
@@ -59,7 +60,9 @@ public partial class PersonManagementTests {
             // Act
             var result = await runner.Execute(command);
             var updatedPerson = (await PersonRepo.GetAsync(person => person.Id == command.Id)
-                ).Single().Adapt<PersonDto>();
+                )
+                .Single()
+                .Adapt<PersonDto>(PersonDto.MapperConfig);
 
             // Assert
             using var _ = new AssertionScope();
@@ -80,6 +83,7 @@ public partial class PersonManagementTests {
                 .Select(person => person.Id)
                 .Except(suitablePersons)
                 .ToArray();
+
             if (leavingPersons.Length < 2)
                 throw new NotSupportedException("Если не сложилась тестовая ситуация нужно просто перезапустить тест");
 

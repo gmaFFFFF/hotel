@@ -1,6 +1,5 @@
 using FluentAssertions;
 using gmafffff.starterKit.BusinessLogic;
-using gmafffff.training.hotel.business.PropertyManagement.Dto;
 using gmafffff.training.hotel.business.PropertyManagement.Queries;
 using gmafffff.training.hotel.business.tests.Fixtures;
 using gmafffff.training.hotel.domain.PropertyManagement.Models;
@@ -14,20 +13,20 @@ namespace gmafffff.training.hotel.business.tests.PropertyManagement;
 public partial class PropertyManagementTests {
     [TestSubject(typeof(GetRoomsQuery<>))]
     public class Query : TestContext {
-        private readonly QueryHandlerFabric QueryHandlerFabric;
+        private readonly QueryHandlerFabric _queryHandlerFabric;
 
         public Query(ITestOutputHelper output) : base(output) {
-            QueryHandlerFabric = Scope.ServiceProvider.GetRequiredService<QueryHandlerFabric>();
+            _queryHandlerFabric = Scope.ServiceProvider.GetRequiredService<QueryHandlerFabric>();
         }
 
         [Fact]
         public async Task CanQueryData() {
             // Arrange
             var query = new GetRoomsQuery<RoomDto>(Room<Guid>.WhereType(RoomType.Standard));
-            var handler = QueryHandlerFabric.GetQueryHandler(query, default(RoomDto));
+            var handler = _queryHandlerFabric.GetQueryHandler(query, default(RoomDto)!);
             var excepted = FakeHotel.Hotel.Rooms
                 .Where(Room<Guid>.WhereType(RoomType.Standard).Compile())
-                .Select(room => room.Adapt<RoomDto>())
+                .Select(room => room.Adapt<RoomDto>(RoomDto.MapperConfig))
                 .ToArray();
 
             // Act

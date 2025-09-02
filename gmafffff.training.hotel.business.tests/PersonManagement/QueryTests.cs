@@ -1,7 +1,6 @@
 ﻿using FluentAssertions;
 using gmafffff.starterKit.BusinessLogic;
 using gmafffff.starterKit.Utils;
-using gmafffff.training.hotel.business.PersonManagement.Dto;
 using gmafffff.training.hotel.business.PersonManagement.Handlers;
 using gmafffff.training.hotel.business.PersonManagement.Queries;
 using gmafffff.training.hotel.business.tests.Fixtures;
@@ -18,10 +17,10 @@ public partial class PersonManagementTests {
     [TestSubject(typeof(GetPersonsQueryByDtoHandler<>))]
     [TestSubject(typeof(GetPersonsQueryByEntityHandler<>))]
     public class Query : TestContext {
-        private readonly QueryHandlerFabric QueryHandlerFabric;
+        private readonly QueryHandlerFabric _queryHandlerFabric;
 
         public Query(ITestOutputHelper output) : base(output) {
-            QueryHandlerFabric = Scope.ServiceProvider.GetRequiredService<QueryHandlerFabric>();
+            _queryHandlerFabric = Scope.ServiceProvider.GetRequiredService<QueryHandlerFabric>();
         }
 
         [Fact]
@@ -33,10 +32,10 @@ public partial class PersonManagementTests {
                 .ToArray();
             var excepted = FakeHotel.Persons
                 .Where(p => exceptedIds.Contains(p.Id))
-                .Select(person => person.Adapt<PersonDto>())
+                .Select(person => person.Adapt<PersonDto>(PersonDto.MapperConfig))
                 .ToArray();
             var query = new GetPersonsQueryByDto<PersonDto>(p => exceptedIds.Contains(p.PersonId));
-            var handler = QueryHandlerFabric.GetQueryHandler(query, default(PersonDto));
+            var handler = _queryHandlerFabric.GetQueryHandler(query, default(PersonDto)!);
 
             // Act
             var result = await handler.RunQueryAsync(query);
@@ -67,7 +66,7 @@ public partial class PersonManagementTests {
 
 
             var query = new GetPersonsQueryByEntity<PersonDto>(new Person<Guid>.FilterByFullName(firstLetters));
-            var handler = QueryHandlerFabric.GetQueryHandler(query, default(PersonDto));
+            var handler = _queryHandlerFabric.GetQueryHandler(query, default(PersonDto)!);
 
             // Act
             var result = await handler.RunQueryAsync(query);

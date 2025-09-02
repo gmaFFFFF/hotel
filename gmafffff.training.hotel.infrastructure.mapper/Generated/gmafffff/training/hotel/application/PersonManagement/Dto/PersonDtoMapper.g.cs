@@ -1,8 +1,8 @@
 using System;
-using gmafffff.training.hotel.business.PersonManagement.Dto;
+using gmafffff.training.hotel.application.PersonManagement.Dto;
 using gmafffff.training.hotel.domain.PersonManagement.Models;
 
-namespace gmafffff.training.hotel.business.PersonManagement.Dto
+namespace gmafffff.training.hotel.application.PersonManagement.Dto
 {
     public static partial class PersonDtoMapper
     {

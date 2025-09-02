@@ -1,13 +1,13 @@
 using System;
 using System.Linq;
 using System.Linq.Expressions;
-using gmafffff.training.hotel.business.PropertyManagement.Dto;
+using gmafffff.training.hotel.application.PropertyManagement.Dto;
 using gmafffff.training.hotel.domain.PropertyManagement.Models;
 using gmafffff.training.hotel.infrastructure.mapper.Required;
 
 namespace gmafffff.training.hotel.infrastructure.mapper.Required
 {
-    public partial class PropertyManagementMapperMapsterBusinessHotelBlock : IPropertyManagementMapperMapsterBusinessHotelBlock
+    public partial class PropertyManagementMapperMapsterAppHotelBlock : IPropertyManagementMapperMapsterAppHotelBlock
     {
         public Expression<Func<HotelBlock<int, Guid>, HotelDto>> EntityToDto => p1 => new HotelDto(p1.Id, p1.Rooms.Select<Room<Guid>, RoomDto>(p2 => new RoomDto(p2.Id, p2.RoomDetails.Number, p2.RoomDetails.Type, p2.RoomDetails.Capacity) {RoomId = p2.Id}).ToList<RoomDto>())
         {

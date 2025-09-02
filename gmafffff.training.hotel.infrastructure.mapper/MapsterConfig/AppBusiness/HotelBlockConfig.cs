@@ -1,7 +1,7 @@
-﻿using gmafffff.training.hotel.business.PropertyManagement.Dto;
+﻿using gmafffff.training.hotel.application.PropertyManagement.Dto;
 using gmafffff.training.hotel.domain.PropertyManagement.Models;
 
-namespace gmafffff.training.hotel.infrastructure.mapper.MapsterConfig.DomainBusiness;
+namespace gmafffff.training.hotel.infrastructure.mapper.MapsterConfig.AppBusiness;
 
 public class HotelBlockConfig : StandardMapsterConfig {
     public override void Register(TypeAdapterConfig config) {

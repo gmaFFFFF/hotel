@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using gmafffff.training.hotel.business.PropertyManagement.Dto;
+using gmafffff.training.hotel.application.PropertyManagement.Dto;
 using gmafffff.training.hotel.domain.PropertyManagement.Models;
 
-namespace gmafffff.training.hotel.business.PropertyManagement.Dto
+namespace gmafffff.training.hotel.application.PropertyManagement.Dto
 {
     public static partial class HotelDtoMapper
     {

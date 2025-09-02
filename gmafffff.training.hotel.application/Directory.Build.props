@@ -1,0 +1,6 @@
+<Project>
+    <PropertyGroup>
+        <BaseIntermediateOutputPath>$(TEMP)\gmafffff\gmafffff.training.hotel\application\obj\</BaseIntermediateOutputPath>
+        <BaseOutputPath>$(TEMP)\gmafffff\gmafffff.training.hotel\application\bin\</BaseOutputPath>
+    </PropertyGroup>
+</Project>
