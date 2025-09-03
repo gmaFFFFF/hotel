@@ -9,5 +9,5 @@ namespace gmafffff.training.hotel.business.PropertyManagement.Handlers;
 public class GetRoomsQueryHandler<TDto>(
     IRoomRepositoryReadOnly repo,
     IEntityMapperForwardExpression<Room<Guid>, int, TDto> mapper)
-    : ReadDbQueryHandler<GetRoomsQuery<TDto>, Room<Guid>, int, TDto>(repo, mapper)
+    : ReadDbQueryHandler<GetRoomsQuery<TDto>, Room<Guid>, int, IRoomRepositoryReadOnly, TDto>(repo, mapper)
     where TDto : class;

@@ -7,8 +7,8 @@ namespace gmafffff.starterKit.BusinessLogic;
 
 /// <summary>
 ///     Каркас реализации <see cref="IQueryHandler{TQuery, TResult}" /> для запросов к БД.
-///     Если нужно извлечь только сущности одного типа, то рекомендуется использовать 
-///     <see cref="Crud.ReadDbQueryHandler{TQuery, TDto, TEntity, TEntityId}"/>.
+///     Если нужно извлечь сущность, которая имеет свой оперативный склад, то рекомендуется использовать
+///     <see cref="Crud.ReadDbQueryHandler{TQuery, TEntity, TEntityId, TRepo, TDto}"/>.
 /// </summary>
 /// <typeparam name="TQuery">Запрос типа <see cref="Query" /></typeparam>
 /// <typeparam name="TResult">Возвращаемый тип результат</typeparam>

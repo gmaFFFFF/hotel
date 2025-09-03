@@ -17,7 +17,7 @@ namespace gmafffff.training.hotel.business.PersonManagement.Handlers;
 public class GetPersonsQueryByDtoHandler<TDto>(
     IPersonsRepository<Guid> repo,
     IEntityMapperForwardExpression<Person<Guid>, Guid, TDto> mapper) :
-    ReadDbQueryHandler<GetPersonsQueryByDto<TDto>, Person<Guid>, Guid, TDto>(repo, mapper)
+    ReadDbQueryHandler<GetPersonsQueryByDto<TDto>, Person<Guid>, Guid, IPersonsRepository<Guid>, TDto>(repo, mapper)
     where TDto : class;
 
 /// <summary>
@@ -30,5 +30,5 @@ public class GetPersonsQueryByDtoHandler<TDto>(
 public class GetPersonsQueryByEntityHandler<TDto>(
     IPersonsRepository<Guid> repo,
     IEntityMapperForwardExpression<Person<Guid>, Guid, TDto> mapper) :
-    ReadDbQueryHandler<GetPersonsQueryByEntity<TDto>, Person<Guid>, Guid, TDto>(repo, mapper)
+    ReadDbQueryHandler<GetPersonsQueryByEntity<TDto>, Person<Guid>, Guid, IPersonsRepository<Guid>, TDto>(repo, mapper)
     where TDto : class;

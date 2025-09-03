@@ -12,23 +12,25 @@ namespace gmafffff.starterKit.BusinessLogic.Crud;
 ///     для извлечения сущностей из БД без их отслеживания в <see cref="Entity{TId}.DBContext" />.
 /// </summary>
 /// <typeparam name="TQuery">Запрос</typeparam>
-/// <typeparam name="TDto">Тип возвращаемого объекта</typeparam>
 /// <typeparam name="TEntity">Сущность, содержащаяся в базе данных, содержимое которого извлекается</typeparam>
 /// <typeparam name="TEntityId">Тип идентификатора сущности</typeparam>
+/// <typeparam name="TRepo">Тип оперативного склада, используемого для выполнения запросов к БД</typeparam>
+/// <typeparam name="TDto">Спроецированный тип возвращаемого объекта</typeparam>
 /// <remarks>
 ///     К сожалению в DI контейнере Microsoft нельзя осуществить сложную регистрацию открытых обобщённых типов.
 ///     Поэтому для каждого DTO нужно создать отдельный обработчик
 ///     или воспользоваться <see cref="QueryHandlerFabric" />.
 /// </remarks>
-public partial class ReadDbQueryHandler<TQuery, TEntity, TEntityId, TDto>(
-    IRepositoryReadOnly<TEntity, TEntityId> repository,
+public partial class ReadDbQueryHandler<TQuery, TEntity, TEntityId, TRepo, TDto>(
+    TRepo repository,
     IEntityMapperForwardExpression<TEntity, TEntityId, TDto> mapper,
     ILogger<IQueryHandler<TQuery, TDto>>? logger = null)
     : QueryDbHandler<TQuery, TDto>
     where TQuery : Query<TDto>
-    where TDto : class
     where TEntityId : struct, IEquatable<TEntityId>
-    where TEntity : Entity<TEntityId> {
+    where TEntity : Entity<TEntityId>
+    where TRepo : IRepositoryReadOnly<TEntity, TEntityId>
+    where TDto : class {
     /// <summary>
     ///     CRC16 для <see cref="gmafffff.starterKit.BusinessLogic.Crud.ReadDbQueryHandler{TQuery,TEntity,TEntityId,TDto}" />
     /// </summary>
