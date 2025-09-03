@@ -30,7 +30,7 @@ public partial class SettlementManagementTests {
             var runner = Scope.ServiceProvider.GetRequiredService<IBusinessActionRunner<MoveOutCommand>>();
 
             // Act
-            var res = await runner.Execute(command);
+            var res = await runner.ExecuteAsync(command);
 
             // Assert
             res.IsSucc.Should().BeTrue();

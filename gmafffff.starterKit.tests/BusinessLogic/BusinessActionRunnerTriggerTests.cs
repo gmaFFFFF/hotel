@@ -151,7 +151,7 @@ public partial class BusinessActionRunnerTests {
         public async Task ProcessTriggerEvent() {
             // Arrange
             // Act
-            var result = await _runner.Execute(_commands[0]);
+            var result = await _runner.ExecuteAsync(_commands[0]);
 
             // Assert
             using var _ = new AssertionScope();
@@ -179,7 +179,7 @@ public partial class BusinessActionRunnerTests {
                 .Returns(_ => Enumerable.Empty<ITriggerEventToCommandTranslator<MyTrigger>>());
 
             // Act
-            var result = await _runner.Execute(_commands[0]);
+            var result = await _runner.ExecuteAsync(_commands[0]);
 
             // Assert
             result.IsSucc.Should().BeTrue();
@@ -197,7 +197,7 @@ public partial class BusinessActionRunnerTests {
             _cmdToEvents[errorCmd] = _cmdToEvents[_commands[0]];
 
             // Act
-            var result = await _runner.Execute(errorCmd);
+            var result = await _runner.ExecuteAsync(errorCmd);
 
             // Assert
             using var _ = new AssertionScope();
@@ -222,7 +222,7 @@ public partial class BusinessActionRunnerTests {
             _cmdToEvents[_commands[6]] = [_errorTrigger];
 
             // Act
-            var act = async () => await _runner.Execute(_commands[0]);
+            var act = async () => await _runner.ExecuteAsync(_commands[0]);
 
             // Assert
             using var _ = new AssertionScope();
@@ -249,7 +249,7 @@ public partial class BusinessActionRunnerTests {
             _cmdToEvents[cancelCmd] = _cmdToEvents[_commands[0]];
 
             // Act
-            var result = await _runner.Execute(cancelCmd, _cts.Token);
+            var result = await _runner.ExecuteAsync(cancelCmd, _cts.Token);
 
             // Assert
             using var _ = new AssertionScope();

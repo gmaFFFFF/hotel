@@ -11,7 +11,7 @@ using Validot;
 namespace gmafffff.starterKit.BusinessLogic;
 
 /// <summary>
-///     Оболочка пусковика бизнес-действий <see cref="Execute"/>.
+///     Оболочка пусковика бизнес-действий <see cref="ExecuteAsync"/>.
 ///     Проверяет бизнес-команду <see cref="BusinessCommand" />
 ///     на соответствие формальным требованиям <paramref name="validator"/>
 ///     и при условии соблюдения бизнес-правил <paramref name="businessConstraintChecks"/>
@@ -60,7 +60,7 @@ public class BusinessActionRunner<TCommand>(
     /// <summary>
     ///     Выполнить команду
     /// </summary>
-    public virtual async Task<Fin<IList<BusinessEvent>>> Execute(TCommand command,
+    public virtual async Task<Fin<IList<BusinessEvent>>> ExecuteAsync(TCommand command,
         CancellationToken cancel = default) {
         var steps =
             from _1 in Validate(command)
@@ -252,7 +252,7 @@ public class BusinessActionRunner<TCommand>(
             var runner = businessActionRunnerFabric.GetBusinessActionRunner(cmd);
 
             var execute = (BusinessCommand cmd) =>
-                IO.liftAsync(async env => await runner.Execute(cmd, env.Token).ConfigureAwait(false));
+                IO.liftAsync(async env => await runner.ExecuteAsync(cmd, env.Token).ConfigureAwait(false));
             var result = FinT<IO, IList<BusinessEvent>>.LiftIO(execute(cmd));
             return result;
         }

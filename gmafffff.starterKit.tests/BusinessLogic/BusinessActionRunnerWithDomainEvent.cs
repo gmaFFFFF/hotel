@@ -96,7 +96,7 @@ public partial class BusinessActionRunnerTests {
         public async Task ProcessDomainEvent() {
             // Arrange
             // Act
-            var result = await _runner.Execute(_commands[0]);
+            var result = await _runner.ExecuteAsync(_commands[0]);
 
             // Assert
             using var _ = new AssertionScope();
@@ -124,7 +124,7 @@ public partial class BusinessActionRunnerTests {
             _runner = NewRunner(_provider);
 
             // Act
-            var result = await _runner.Execute(_commands[0]);
+            var result = await _runner.ExecuteAsync(_commands[0]);
 
             // Assert
             using var _ = new AssertionScope();

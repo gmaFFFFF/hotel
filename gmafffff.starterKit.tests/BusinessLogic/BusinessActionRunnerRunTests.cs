@@ -124,7 +124,7 @@ public partial class BusinessActionRunnerTests {
             _runner.IncludeFormalValidationError = false;
 
             // Act
-            var result = await _runner.Execute(_notValidCommand);
+            var result = await _runner.ExecuteAsync(_notValidCommand);
 
             // Assert
             result.IsFail.Should().BeTrue();
@@ -141,7 +141,7 @@ public partial class BusinessActionRunnerTests {
             _runner.IncludeFormalValidationError = true;
 
             // Act
-            var result = await _runner.Execute(_notValidCommand);
+            var result = await _runner.ExecuteAsync(_notValidCommand);
 
             // Assert
             result.IsFail.Should().BeTrue();
@@ -163,7 +163,7 @@ public partial class BusinessActionRunnerTests {
             _runner.ContinueCheckBusinessConstraintsAfterFirstError = false;
 
             // Act
-            var result = await _runner.Execute(_validCommand);
+            var result = await _runner.ExecuteAsync(_validCommand);
 
             // Assert
             result.IsFail.Should().BeTrue();
@@ -192,7 +192,7 @@ public partial class BusinessActionRunnerTests {
             _runner.ContinueCheckBusinessConstraintsAfterFirstError = true;
 
             // Act
-            var result = await _runner.Execute(_validCommand);
+            var result = await _runner.ExecuteAsync(_validCommand);
 
             // Assert
             result.IsFail.Should().BeTrue();
@@ -230,7 +230,7 @@ public partial class BusinessActionRunnerTests {
             _runner = NewRunner(_provider);
 
             // Act
-            var result = await _runner.Execute(_validCommand);
+            var result = await _runner.ExecuteAsync(_validCommand);
 
             // Assert
             result.IsSucc.Should().BeTrue();

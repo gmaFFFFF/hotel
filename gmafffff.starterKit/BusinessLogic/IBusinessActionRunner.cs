@@ -16,7 +16,7 @@ public interface IBusinessActionRunner {
     /// <summary>
     ///     Выполнить команду
     /// </summary>
-    Task<Fin<IList<BusinessEvent>>> Execute(BusinessCommand command, CancellationToken cancel = default);
+    Task<Fin<IList<BusinessEvent>>> ExecuteAsync(BusinessCommand command, CancellationToken cancel = default);
 }
 
 /// <summary>
@@ -28,13 +28,13 @@ public interface IBusinessActionRunner {
 /// </summary>
 public interface IBusinessActionRunner<in TCommand> : IBusinessActionRunner
     where TCommand : BusinessCommand {
-    async Task<Fin<IList<BusinessEvent>>> IBusinessActionRunner.Execute(BusinessCommand command,
+    async Task<Fin<IList<BusinessEvent>>> IBusinessActionRunner.ExecuteAsync(BusinessCommand command,
         CancellationToken cancel) {
-        return await Execute((TCommand)command, cancel).ConfigureAwait(false);
+        return await ExecuteAsync((TCommand)command, cancel).ConfigureAwait(false);
     }
 
     /// <summary>
     ///     Выполнить команду
     /// </summary>
-    Task<Fin<IList<BusinessEvent>>> Execute(TCommand command, CancellationToken cancel = default);
+    Task<Fin<IList<BusinessEvent>>> ExecuteAsync(TCommand command, CancellationToken cancel = default);
 }

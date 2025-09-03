@@ -34,7 +34,7 @@ public partial class PropertyManagementTests {
             var runner = Scope.ServiceProvider.GetRequiredService<IBusinessActionRunner<AddRoomCommand>>();
 
             // Act
-            var result = await runner.Execute(command);
+            var result = await runner.ExecuteAsync(command);
 
             // Assert
             result.IsSucc.Should().BeTrue();
@@ -57,7 +57,7 @@ public partial class PropertyManagementTests {
             command = command with { Id = old.Id };
 
             // Act
-            var result = await runner.Execute(command);
+            var result = await runner.ExecuteAsync(command);
             var updatedRoom = (await HotelRepo.GetRoomsAsync(room => room.Id == command.Id)
                 ).Single();
 
@@ -82,7 +82,7 @@ public partial class PropertyManagementTests {
             var runner = Scope.ServiceProvider.GetRequiredService<IBusinessActionRunner<RemoveRoomsCommand>>();
 
             // Act
-            var result = await runner.Execute(command);
+            var result = await runner.ExecuteAsync(command);
 
             // Assert
             using var _ = new AssertionScope();

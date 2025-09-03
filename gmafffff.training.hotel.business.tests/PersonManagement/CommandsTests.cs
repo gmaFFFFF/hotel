@@ -30,7 +30,7 @@ public partial class PersonManagementTests {
             var runner = Scope.ServiceProvider.GetRequiredService<IBusinessActionRunner<AddPersonCommand>>();
 
             // Act
-            var result = await runner.Execute(command);
+            var result = await runner.ExecuteAsync(command);
             var newPerson = (await PersonRepo
                     .GetAsync(spec: person => person.FullName.FirstName == command.New.FirstName &&
                                               person.FullName.SurName == command.New.SurName &&
@@ -58,7 +58,7 @@ public partial class PersonManagementTests {
             command = command with { Id = old.Id };
 
             // Act
-            var result = await runner.Execute(command);
+            var result = await runner.ExecuteAsync(command);
             var updatedPerson = (await PersonRepo.GetAsync(person => person.Id == command.Id)
                 )
                 .Single()
@@ -91,7 +91,7 @@ public partial class PersonManagementTests {
             var runner = Scope.ServiceProvider.GetRequiredService<IBusinessActionRunner<RemovePersonsCommand>>();
 
             // Act
-            var result = await runner.Execute(command);
+            var result = await runner.ExecuteAsync(command);
 
             // Assert
             var removePersonIds = result.IfFail(_ => [])

@@ -33,7 +33,7 @@ public partial class SettlementManagementTests {
             command = command with { RoomId = room.Id, Visitors = visitors, DepartureDatePlanned = null };
 
             // Act
-            var result = await runner.Execute(command);
+            var result = await runner.ExecuteAsync(command);
 
             // Assert
             using var _ = new AssertionScope();
@@ -68,7 +68,7 @@ public partial class SettlementManagementTests {
             command = command with { RoomId = room.Id, Visitors = visitors, DepartureDatePlanned = null };
 
             // Act
-            var result = await runner.Execute(command);
+            var result = await runner.ExecuteAsync(command);
 
             // Assert
             using var _ = new AssertionScope();
@@ -98,7 +98,7 @@ public partial class SettlementManagementTests {
             command = command with { RoomId = room.Id, Visitors = visitors, DepartureDatePlanned = null };
 
             // Act
-            var result = await runner.Execute(command);
+            var result = await runner.ExecuteAsync(command);
 
             // Assert
             result.IsSucc.Should().BeFalse();
@@ -120,8 +120,8 @@ public partial class SettlementManagementTests {
             var runner = Scope.ServiceProvider.GetRequiredService<IBusinessActionRunner<MoveOutCommand>>();
 
             // Act
-            var res1 = await runner.Execute(command1);
-            var res2 = await runner.Execute(command2);
+            var res1 = await runner.ExecuteAsync(command1);
+            var res2 = await runner.ExecuteAsync(command2);
 
             // Assert
             using var _ = new AssertionScope();
