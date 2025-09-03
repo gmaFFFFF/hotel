@@ -10,10 +10,9 @@ public class PersonConfig : StandardMapsterConfig {
             .TwoWays()
             .Map(member: d => d.PersonId, source: s => s.Id)
             .Map(member: d => d, source: s => s.FullName)
-            .GenerateMapper(All);
+            .GenerateMapper(MapType.Projection);
 
         config.ForType<PersonDto, Person<Guid>>()
-            .Ignore(d => d.History)
-            .GenerateMapper(Instance);
+            .Ignore(d => d.History);
     }
 }
