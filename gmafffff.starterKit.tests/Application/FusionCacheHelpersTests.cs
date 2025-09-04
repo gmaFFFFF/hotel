@@ -1,6 +1,7 @@
 ﻿using gmafffff.starterKit.AppError;
 using gmafffff.starterKit.BusinessLogic;
 using gmafffff.starterKit.Messaging;
+using LanguageExt.Common;
 using ZiggyCreatures.Caching.Fusion;
 
 namespace gmafffff.starterKit.tests.Application;
@@ -9,20 +10,21 @@ namespace gmafffff.starterKit.tests.Application;
 public class FusionCacheHelpersTests {
     private static readonly IQueryHandler<Query<TestDto>, TestDto> Handler =
         Substitute.For<IQueryHandler<Query<TestDto>, TestDto>>();
+    private const int baseDuration = 200;
 
     private static readonly FusionCacheEntryOptions EntryOptions = new() {
         // Длительность кэширования
-        Duration = TimeSpan.FromMilliseconds(100),
+        Duration = TimeSpan.FromMilliseconds(baseDuration),
         // Повторно использовать устаревшие записи в кэше при сбое обращения к фабрике
         IsFailSafeEnabled = true,
         // Продление времени жизни устаревших значений
-        FailSafeMaxDuration = TimeSpan.FromMilliseconds(400),
+        FailSafeMaxDuration = TimeSpan.FromMilliseconds(baseDuration * 4),
         // Задержка повторных запросов в БД при сбое запроса
         FailSafeThrottleDuration = TimeSpan.Zero,
         // Время обработки запроса фабрикой, после которого будет выдано резервное значение
-        FactorySoftTimeout = TimeSpan.FromMilliseconds(200),
+        FactorySoftTimeout = TimeSpan.FromMilliseconds(baseDuration * 2),
         // При истечении жесткого тайм-аута будет выдано исключение типа SyntheticTimeoutException
-        FactoryHardTimeout = TimeSpan.FromMilliseconds(400)
+        FactoryHardTimeout = TimeSpan.FromMilliseconds(baseDuration * 4)
     };
 
     private readonly FusionCache _cache;
@@ -122,8 +124,8 @@ public class FusionCacheHelpersTests {
                 factory: FusionCacheHelpers.GetQuerySingleDtoAndCacheFabric(query, Handler));
 
             fact.IsSucc.Should().Be(excepted.IsSucc);
-            fact.IfSucc(result => result.Should().Be(excepted.SuccSpan()[0]));
-            fact.IfFail(error => error.Should().Be(excepted.FailSpan()[0]));
+            fact.IfSucc(result => result.Should().Be(excepted.ThrowIfFail()));
+            fact.IfFail(error => error.Should().Be((Error)excepted));
 
             if (delay != TimeSpan.Zero)
                 await Task.Delay(delay);
@@ -178,7 +180,7 @@ public class FusionCacheHelpersTests {
 
         // Assert
         fact.IsSucc.Should().Be(false);
-        var err = fact.FailSpan()[0];
+        var err = (Error)fact;
         var exc = err.Exception;
         exc.IsSome.Should().Be(true);
         exc.Map(e => e.Should().BeOfType(typeof(InvalidOperationException)));

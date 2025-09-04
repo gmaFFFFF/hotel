@@ -126,7 +126,7 @@ public partial class SettlementManagementTests {
             // Assert
             using var _ = new AssertionScope();
             res1.IsSucc.Should().BeTrue();
-            var report1 = res1.Map(be => be.OfType<MovedOutEvent>().ToArray()).SuccSpan()[0][0].Report;
+            var report1 = res1.Map(be => be.OfType<MovedOutEvent>().ToArray()).ThrowIfFail()[0].Report;
             report1.RoomDetails.Should().Be(rooms[0].RoomDetails);
             report1.Visitors.Should().BeEquivalentTo(rooms[0].Visit.Visitors);
             report1.ArrivalDate.Should().Be(rooms[0].Visit.ArrivalDate);
@@ -134,7 +134,7 @@ public partial class SettlementManagementTests {
             report1.DepartureDate.Should().Be(DateOnly.FromDateTime(DateTime.Today.AddDays(-1)));
 
             res2.IsSucc.Should().BeTrue();
-            res2.Map(be => be.OfType<MovedOutEvent>().ToArray()).SuccSpan()[0][0].Report.DepartureDate.Should()
+            res2.Map(be => be.OfType<MovedOutEvent>().ToArray()).ThrowIfFail()[0].Report.DepartureDate.Should()
                 .Be(DateOnly.FromDateTime(DateTime.Today));
         }
     }

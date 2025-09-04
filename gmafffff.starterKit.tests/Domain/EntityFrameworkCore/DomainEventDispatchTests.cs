@@ -2,6 +2,7 @@ using FluentAssertions.Execution;
 using gmafffff.starterKit.Domain.Events;
 using gmafffff.starterKit.EntityFrameworkCore;
 using gmafffff.starterKit.tests.Domain.EntityFrameworkCore.Fixtures;
+using LanguageExt.Common;
 using NSubstitute.ExceptionExtensions;
 
 namespace gmafffff.starterKit.tests.Domain.EntityFrameworkCore;
@@ -154,7 +155,7 @@ public partial class DomainEventsTests {
             // Assert
             using var _ = new AssertionScope();
             result.IsFail.Should().BeTrue();
-            result.FailSpan()[0].Message.Should().Be(errorMessage);
+            ((Error)result).Message.Should().Be(errorMessage);
             Received.InOrder(async () => {
                 await _handler1.HandleAsync(_event1,
                     Arg.Is<DomainEventDispatcherContext>(c => !c.ProcessedEvents.Any() &&

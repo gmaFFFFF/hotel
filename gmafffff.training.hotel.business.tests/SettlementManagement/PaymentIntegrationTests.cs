@@ -34,7 +34,7 @@ public partial class SettlementManagementTests {
 
             // Assert
             res.IsSucc.Should().BeTrue();
-            var report = res.Map(be => be.OfType<MovedOutEvent>().ToArray()).SuccSpan()[0][0].Report;
+            var report = res.Map(be => be.OfType<MovedOutEvent>().ToArray()).ThrowIfFail()[0].Report;
             var invoice = (await invoiceRepository.GetAsync()).Single();
             invoice.Price.Should().Be(report.Price);
         }

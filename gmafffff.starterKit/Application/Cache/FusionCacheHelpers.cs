@@ -291,12 +291,12 @@ public static partial class FusionCacheHelpers {
 
         // 2. Проверка работоспособности инфраструктуры
         if (loaded.IsFail) {
-            var errors = loaded.FailSpan().ToArray();
-            logger?.QueryFailed(query, Error.Many(errors));
+            var error = (Error)loaded;
+            logger?.QueryFailed(query, error);
 
             // Если произошла какая-то неожиданная ошибка (ошибка инфраструктуры), то можно брать резервное значение
-            if (errors.Any(err => err.IsExceptional))
-                return context.Fail(Error.Many(errors).ToString());
+            if (error.AsIterable().Any(err => err.IsExceptional))
+                return context.Fail(error.ToString());
 
             // Если ошибка ожидаемая, то её нужно передать потребителю, но НЕ кэшировать результат
             context.Options.SetSkipCacheWrite();
@@ -304,11 +304,11 @@ public static partial class FusionCacheHelpers {
         }
 
         // 3. Проверка на ошибку в запросе. Правильный запрос должен вернуть только один объект 
-        var find = loaded.SuccSpan().ToArray().Single();
+        var find = loaded.ThrowIfFail();
         switch (find.Count) {
             case 1:
                 var result = loaded.Map(dtos => dtos.Single());
-                var value = result.SuccSpan()[0];
+                var value = result.ThrowIfFail();
                 var lastModified = getLastModified?.Invoke(value) ?? timestamp;
                 logger?.QuerySuccess(query, value);
 

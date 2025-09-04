@@ -3,6 +3,7 @@ using gmafffff.starterKit.BusinessLogic;
 using gmafffff.starterKit.Domain.Events;
 using gmafffff.starterKit.EntityFrameworkCore;
 using gmafffff.starterKit.tests.BusinessLogic.Fixtures;
+using LanguageExt.Common;
 using Microsoft.Extensions.DependencyInjection;
 using Validot;
 
@@ -129,7 +130,7 @@ public partial class BusinessActionRunnerTests {
             // Assert
             using var _ = new AssertionScope();
             result.IsFail.Should().BeTrue();
-            result.FailSpan()[0].Message.Should().Be(ErrorMessage);
+            ((Error)result).Message.Should().Be(ErrorMessage);
             Received.InOrder(async () => {
                 await _cmdHandler.ExecuteAsync(_commands[0], Arg.Any<CancellationToken>());
                 await _domainEventHandler.HandleAsync((IDomainEvent)_cmd2domainEvents[_commands[0]],

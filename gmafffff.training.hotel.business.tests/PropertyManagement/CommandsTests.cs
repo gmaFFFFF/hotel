@@ -87,7 +87,7 @@ public partial class PropertyManagementTests {
             // Assert
             using var _ = new AssertionScope();
             result.IsSucc.Should().BeTrue();
-            result.SuccSpan()[0]
+            result.ThrowIfFail()
                 .OfType<DeletedBusinessEvent<int>>()
                 .Select(e => new { Id = e.EntityId })
                 .Should().BeEquivalentTo(removeRooms.Select(r => new { r.Id }));

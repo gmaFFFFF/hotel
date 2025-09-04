@@ -156,7 +156,7 @@ public partial class BusinessActionRunnerTests {
             // Assert
             using var _ = new AssertionScope();
             result.IsSucc.Should().BeTrue();
-            result.SuccSpan().ToArray().SelectMany(x => x).Should()
+            result.ThrowIfFail().Should()
                 .BeEquivalentTo(_cmdToEvents.Values.SelectMany(x => x).OfType<EndEventForTrigger>().ToArray());
             Received.InOrder(async () => {
                 await _handler.ExecuteAsync(_commands[0], Arg.Any<CancellationToken>());
@@ -183,7 +183,7 @@ public partial class BusinessActionRunnerTests {
 
             // Assert
             result.IsSucc.Should().BeTrue();
-            result.SuccSpan().ToArray().SelectMany(x => x).Should()
+            result.ThrowIfFail().Should()
                 .Equal(_cmdToEvents[_commands[0]].OfType<EndEventForTrigger>());
         }
 
@@ -202,7 +202,7 @@ public partial class BusinessActionRunnerTests {
             // Assert
             using var _ = new AssertionScope();
             result.IsFail.Should().BeTrue();
-            result.FailSpan()[0].Message.Should().Be(ErrorMessage);
+            ((Error)result).Message.Should().Be(ErrorMessage);
             await _handler.Received().ExecuteAsync(errorCmd, Arg.Any<CancellationToken>());
             await _handler.DidNotReceive().ExecuteAsync(_commands[1], Arg.Any<CancellationToken>());
             await _handler.DidNotReceive().ExecuteAsync(_commands[4], Arg.Any<CancellationToken>());
@@ -254,7 +254,7 @@ public partial class BusinessActionRunnerTests {
             // Assert
             using var _ = new AssertionScope();
             result.IsFail.Should().BeTrue();
-            result.FailSpan()[0].Code.Should().Be(Errors.CancelledCode);
+            ((Error)result).Code.Should().Be(Errors.CancelledCode);
 
             await _handler.Received().ExecuteAsync(cancelCmd, Arg.Any<CancellationToken>());
             await _handler.DidNotReceive().ExecuteAsync(_commands[1], Arg.Any<CancellationToken>());
