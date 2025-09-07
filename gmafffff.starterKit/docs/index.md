@@ -31,3 +31,4 @@
   * [Обработчики команд и запросов](./crud/businessLogic/handlers.md)
   * [События интеграции ограниченных контекстов](./crud/businessLogic/eventTriggers.md)
 * [Конвенции EF Core](./crud/entityFrameworkCore/conventions.md)
+* [Помощник для FusionCache](./crud/fusionCache.md)

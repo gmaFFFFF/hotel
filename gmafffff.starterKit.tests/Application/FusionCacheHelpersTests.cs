@@ -8,9 +8,10 @@ namespace gmafffff.starterKit.tests.Application;
 
 [TestSubject(typeof(FusionCacheHelpers))]
 public class FusionCacheHelpersTests {
+    private const int baseDuration = 200;
+
     private static readonly IQueryHandler<Query<TestDto>, TestDto> Handler =
         Substitute.For<IQueryHandler<Query<TestDto>, TestDto>>();
-    private const int baseDuration = 200;
 
     private static readonly FusionCacheEntryOptions EntryOptions = new() {
         // Длительность кэширования
@@ -39,7 +40,7 @@ public class FusionCacheHelpersTests {
     /// <summary>
     ///     Тестовые данные для тестирования запросов, возвращающих один объект, на реальном кэше
     /// </summary>
-    public static TheoryData<TestQuery, IEnumerable<Fin<TestDto>>, TimeSpan> DataForTestQuerySingleDtoForRealCache {
+    public static TheoryData<TestQuery, IEnumerable<Fin<TestDto>>, TimeSpan> DataForCacheTestOnRealCache {
         get {
             TheoryData<TestQuery, IEnumerable<Fin<TestDto>>, TimeSpan> testData = [];
             var repeatCount = 3;
@@ -115,13 +116,13 @@ public class FusionCacheHelpersTests {
     ///     Кэширует запросы одиночных объектов на реальном кэше
     /// </summary>
     [Theory]
-    [MemberData(nameof(DataForTestQuerySingleDtoForRealCache))]
+    [MemberData(nameof(DataForCacheTestOnRealCache))]
     public async Task
         Cache_QuerySingleDto_OnRealCache(TestQuery query, IEnumerable<Fin<TestDto>> data, TimeSpan delay) {
         foreach (var excepted in data) {
             var fact = await _cache.GetOrSetAsync(
                 query.Id.ToString(),
-                factory: FusionCacheHelpers.GetQuerySingleDtoAndCacheFabric(query, Handler));
+                factory: FusionCacheHelpers.GetHandleQuerySingleResultAndCacheFabric(query, Handler));
 
             fact.IsSucc.Should().Be(excepted.IsSucc);
             fact.IfSucc(result => result.Should().Be(excepted.ThrowIfFail()));
@@ -133,17 +134,44 @@ public class FusionCacheHelpersTests {
     }
 
     /// <summary>
+    ///     Кэширует запросы одиночных объектов на реальном кэше
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(DataForCacheTestOnRealCache))]
+    public async Task Cache_Query_OnRealCache(TestQuery query, IEnumerable<Fin<TestDto>> data, TimeSpan delay) {
+        foreach (var excepted in data) {
+            var fact = await _cache.GetOrSetAsync(
+                query.Id.ToString(),
+                factory: FusionCacheHelpers.GetHandleQueryAndCacheFabric(query, Handler));
+
+            // Чтобы не делать два разных тестовых набора особым образом обрабатываем случай когда нет результата 
+            if (excepted.IsFail && ((Error)excepted).Code == (int)AppErrorCode.DbNotFound) {
+                fact.IsSucc.Should().BeTrue();
+                fact.IfSucc(result => result.Should().BeEmpty());
+            }
+            else {
+                fact.IsSucc.Should().Be(excepted.IsSucc);
+                fact.IfSucc(result => result.Should().ContainSingle(r => r == excepted.ThrowIfFail()));
+                fact.IfFail(error => error.Should().Be((Error)excepted));
+            }
+
+            if (delay != TimeSpan.Zero)
+                await Task.Delay(delay);
+        }
+    }
+
+    /// <summary>
     ///     Кэширует множество объектов на реальном кэше
     /// </summary>
     [Fact]
-    public void Cache_MultipleDto_OnRealCache() {
+    public async Task Cache_MultipleDto_OnRealCache() {
         // Arrange
         const string primaryKeyName = "key";
         const string alterKeyName = "alter";
         TestDto[] values = [new(101), new(102)];
 
         // Act
-        _cache.Set(
+        await _cache.TrySetAsync(
             primaryKeyName,
             primaryKeyGenerator: v => v.Id.ToString(),
             new Dictionary<string, Func<TestDto, string?>> { [alterKeyName] = val => (val.Id * 10).ToString() },
@@ -161,11 +189,12 @@ public class FusionCacheHelpersTests {
     }
 
     /// <summary>
-    ///     Возвращает ошибку, если запрос вернул несколько Dto
+    ///     <see cref="FusionCacheHelpers.GetHandleQuerySingleResultAndCacheFabric{TDto}"/> возвращает ошибку,
+    ///     если запрос вернул несколько Dto
     /// </summary>
     /// <returns></returns>
     [Fact]
-    public async Task Error_WhenMultipleDtoFound() {
+    public async Task GetHandleQuerySingleResultAndCacheFabric_Error_WhenMultipleDtoFound() {
         // Arrange
         var query = new TestQuery(Id: 10, "Возвратит несколько Dto");
         TestDto[] response = [new(101), new(102)];
@@ -176,7 +205,7 @@ public class FusionCacheHelpersTests {
         // Act
         var fact = await _cache.GetOrSetAsync(
             query.Id.ToString(),
-            factory: FusionCacheHelpers.GetQuerySingleDtoAndCacheFabric(query, Handler));
+            factory: FusionCacheHelpers.GetHandleQuerySingleResultAndCacheFabric(query, Handler));
 
         // Assert
         fact.IsSucc.Should().Be(false);
@@ -184,6 +213,29 @@ public class FusionCacheHelpersTests {
         var exc = err.Exception;
         exc.IsSome.Should().Be(true);
         exc.Map(e => e.Should().BeOfType(typeof(InvalidOperationException)));
+    }
+
+    /// <summary>
+    ///     <see cref="FusionCacheHelpers.GetHandleQueryAndCacheFabric{TDto}" /> поддерживает возврат нескольких Dto
+    /// </summary>
+    /// <returns></returns>
+    [Fact]
+    public async Task GetHandleQueryAndCacheFabric_Ok_WhenMultipleDtoFound() {
+        // Arrange
+        var query = new TestQuery(Id: 10, "Возвратит несколько Dto");
+        TestDto[] response = [new(101), new(102)];
+
+        Handler.RunQueryAsync(query, Arg.Any<CancellationToken>())
+            .Returns(Fin<IList<TestDto>>.Succ(response));
+
+        // Act
+        var fact = await _cache.GetOrSetAsync(
+            query.Id.ToString(),
+            factory: FusionCacheHelpers.GetHandleQueryAndCacheFabric(query, Handler));
+
+        // Assert
+        fact.IsSucc.Should().Be(true);
+        fact.IfSucc(result => result.Should().Equal(response));
     }
 
     /// <summary>

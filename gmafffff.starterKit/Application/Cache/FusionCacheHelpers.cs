@@ -18,14 +18,14 @@ public static partial class FusionCacheHelpers {
     public static Func<string, string, string> KeyFormat = (keyName, keyVal) => $"{keyName}:{keyVal}";
 
     /// <summary>
-    ///     Get the value of type <typeparamref name="TValue" /> in the cache for the specified <paramref name="primaryKey" />:
-    ///     if not there, the <paramref name="factory" /> will be called and the returned value saved according to the
-    ///     <paramref name="options" /> provided.
-    ///     Из полученный сущности генерирует альтернативные ключи с помощью функции <see cref="KeyFormat" />(altKeyName,
-    ///     generatorFunc(value)).
-    ///     Альтернативные ключи добавляются в кэш со ссылкой на основной ключ
+    ///     Пробует получить из кэша значение типа <typeparamref name = "TValue" /> по <paramref name = "primaryKey" />.
+    ///     Если <paramref name="primaryKey" /> в кэше нет, то будет вызвана функция <paramref name = "factory"/>,
+    ///     а её результат добавлен в кэше с учетом настроек <paramref name = "options"/>.
+    ///     Затем из полученный сущности с помощью функции <see cref="KeyFormat" />(altKeyName, generatorFunc(value))
+    ///     будут сгенерированы альтернативные ключи и добавлены в кэш со ссылкой на основной ключ
     /// </summary>
     /// <typeparam name="TValue">The type of the value in the cache.</typeparam>
+    /// <param name="this"></param>
     /// <param name="primaryKey">The cache key which identifies the entry in the cache.</param>
     /// <param name="altKeyGenerators">
     ///     Генератор альтернативных ключей. Ключ словаря — название ключа кэша (altKeyName),
@@ -53,22 +53,27 @@ public static partial class FusionCacheHelpers {
         FusionCacheEntryOptions? options = null,
         IEnumerable<string>? tags = null,
         CancellationToken token = default) {
-        var result = await @this.GetOrSetAsync(primaryKey, factory, failSafeDefaultValue, options, tags, token)
-            .ConfigureAwait(false);
-        @this.SetAlterKeysRefToPrimaryKey(primaryKey, altKeyGenerators, result, options, tags, token);
+        var test = await @this.TryGetAsync<TValue>(primaryKey, options, token);
+        if (test.HasValue) return test.Value;
 
-        return result;
+        return await @this.GetOrSetAsync(primaryKey, factory: async (context, cancel) => {
+                    var result = await factory.Invoke(context, cancel).ConfigureAwait(false);
+                    @this.SetAlterKeysRefToPrimaryKey(primaryKey, altKeyGenerators, result, options, tags, cancel);
+                    return result;
+                },
+                failSafeDefaultValue, options, tags, token)
+            .ConfigureAwait(false);
     }
 
     /// <summary>
-    ///     Get the value of type <typeparamref name="TValue" /> in the cache for the specified <paramref name="primaryKey" />:
-    ///     if not there, the <paramref name="defaultValue" /> will be saved according to the <paramref name="options" />
-    ///     provided.
-    ///     Из полученный сущности генерирует альтернативные ключи с помощью функции <see cref="KeyFormat" />(altKeyName,
-    ///     generatorFunc(value)).
-    ///     Альтернативные ключи добавляются в кэш со ссылкой на основной ключ
+    ///     Пробует получить из кэша значение типа <typeparamref name = "TValue" /> по <paramref name = "primaryKey" />.
+    ///     Если <paramref name="primaryKey" /> в кэше нет, то будет использовано <paramref name = "defaultValue"/>,
+    ///     а её результат добавлен в кэше с учетом настроек <paramref name = "options"/>.
+    ///     Затем из полученный сущности с помощью функции <see cref="KeyFormat" />(altKeyName, generatorFunc(value))
+    ///     будут сгенерированы альтернативные ключи и добавлены в кэш со ссылкой на основной ключ
     /// </summary>
     /// <typeparam name="TValue">The type of the value in the cache.</typeparam>
+    /// <param name="this"></param>
     /// <param name="primaryKey">The cache key which identifies the entry in the cache.</param>
     /// <param name="altKeyGenerators">
     ///     Генератор альтернативных ключей. Ключ словаря — название ключа кэша (altKeyName),
@@ -90,21 +95,20 @@ public static partial class FusionCacheHelpers {
         FusionCacheEntryOptions? options = null,
         IEnumerable<string>? tags = null,
         CancellationToken token = default) {
-        var result = await @this.GetOrSetAsync(primaryKey, defaultValue, options, tags, token).ConfigureAwait(false);
-        @this.SetAlterKeysRefToPrimaryKey(primaryKey, altKeyGenerators, result, options, tags, token);
-
-        return result;
+        return await @this.GetOrSetAsync(primaryKey, altKeyGenerators,
+            factory: async (_, _) => await Task.FromResult(defaultValue).ConfigureAwait(false),
+            defaultValue, options, tags, token);
     }
 
     /// <summary>
-    ///     Put the <paramref name="value" /> in the cache for the specified <paramref name="primaryKey" />, optionally tagged
-    ///     with the specified <paramref name="tags" />, with the provided <paramref name="options" />. If a value is already
-    ///     there it will be overwritten.
-    ///     Из полученный сущности генерирует альтернативные ключи с помощью функции <see cref="KeyFormat" />(altKeyName,
-    ///     generatorFunc(value)).
-    ///     Альтернативные ключи добавляются в кэш со ссылкой на основной ключ
+    ///     Помещает <paramref name="value" /> в кэш по <paramref name="primaryKey" />,
+    ///     опционально определяя  <paramref name="tags" />, с учетом настроек <paramref name = "options"/>.
+    ///     Затем из полученный сущности с помощью функции <see cref="KeyFormat" />(altKeyName, generatorFunc(value))
+    ///     будут сгенерированы альтернативные ключи и добавлены в кэш со ссылкой на основной ключ
+    ///     Если значение уже в кэше, то оно будет перезаписано.
     /// </summary>
     /// <typeparam name="TValue">The type of the value in the cache.</typeparam>
+    /// <param name="this"></param>
     /// <param name="primaryKey">The cache key which identifies the entry in the cache.</param>
     /// <param name="altKeyGenerators">
     ///     Генератор альтернативных ключей. Ключ словаря — название ключа кэша (altKeyName),
@@ -132,13 +136,14 @@ public static partial class FusionCacheHelpers {
     }
 
     /// <summary>
-    ///     Put the <paramref name="value" /> in the cache for the specified <paramref name="primaryKey" /> with the provided
-    ///     <paramref name="options" />. If a value is already there it will be overwritten.
-    ///     Из полученный сущности генерирует альтернативные ключи с помощью функции <see cref="KeyFormat" />(altKeyName,
-    ///     generatorFunc(value)).
-    ///     Альтернативные ключи добавляются в кэш со ссылкой на основной ключ
+    ///     Помещает <paramref name="value" /> в кэш по <paramref name="primaryKey" />,
+    ///     опционально определяя  <paramref name="tags" />, с учетом настроек <paramref name = "options"/>.
+    ///     Затем из полученный сущности с помощью функции <see cref="KeyFormat" />(altKeyName, generatorFunc(value))
+    ///     будут сгенерированы альтернативные ключи и добавлены в кэш со ссылкой на основной ключ
+    ///     Если значение уже в кэше, то оно будет перезаписано.
     /// </summary>
     /// <typeparam name="TValue">The type of the value in the cache.</typeparam>
+    /// <param name="this"></param>
     /// <param name="primaryKey">The cache key which identifies the entry in the cache.</param>
     /// <param name="altKeyGenerators">
     ///     Генератор альтернативных ключей. Ключ словаря — название ключа кэша (altKeyName),
@@ -170,6 +175,7 @@ public static partial class FusionCacheHelpers {
     ///     Альтернативные ключи генерируются с помощью функции <see cref="KeyFormat" />(altKeyName, generatorFunc(value))
     /// </summary>
     /// <typeparam name="TValue">The type of the value in the cache.</typeparam>
+    /// <param name="this"></param>
     /// <param name="primaryKey">The cache key which identifies the entry in the cache.</param>
     /// <param name="altKeyGenerators">
     ///     Генератор альтернативных ключей. Ключ словаря — название ключа кэша (altKeyName),
@@ -192,22 +198,25 @@ public static partial class FusionCacheHelpers {
         IEnumerable<string>? tags = null,
         CancellationToken token = default) {
         foreach (var (altKeyName, generator) in altKeyGenerators)
-            if (generator(value) is { } altKey)
-                @this.Set(KeyFormat(altKeyName, altKey), primaryKey, options, tags, token);
+            if (generator(value) is { } altKey) {
+                var key = KeyFormat(altKeyName, altKey);
+                @this.Set(key, primaryKey, options, tags, token);
+            }
     }
 
 
     #region Кэширование множества значений
 
     /// <summary>
-    ///     Помещает в кэш несколько <paramref name="values" />, с предоставленными <paramref name="options" />.
-    ///     Значение основного ключа извлекает из объекта <paramref name="primaryKeyGenerator" />, из альтернативного —
-    ///     <paramref name="altKeyGenerators" />
+    ///     Пробует добавить в кэш несколько <paramref name="values" />, с предоставленными <paramref name="options" />.
+    ///     Значение основного ключа извлекает из объекта <paramref name="primaryKeyGenerator" />, альтернативного —
+    ///     из <paramref name="altKeyGenerators" />
     ///     Ключи форматируются с помощью функции <see cref="KeyFormat" />(keyName, keyValue).
-    ///     Если значение уже добавлено, то оно будет перезаписано.
+    ///     Если значение было ранее добавлено, то сохраняется значение с последним временем изменения.
     ///     Альтернативные ключи добавляются в кэш со ссылкой на основной ключ
     /// </summary>
     /// <typeparam name="TValue">The type of the value in the cache.</typeparam>
+    /// <param name="this"></param>
     /// <param name="primaryKeyName">Название ключа.</param>
     /// <param name="primaryKeyGenerator">Генератор основного ключа.</param>
     /// <param name="altKeyGenerators">
@@ -228,7 +237,7 @@ public static partial class FusionCacheHelpers {
     ///     once, by tag.
     /// </param>
     /// <param name="token">An optional <see cref="CancellationToken" /> to cancel the operation.</param>
-    public static void Set<TValue>(this IFusionCache @this,
+    public static async Task TrySetAsync<TValue>(this IFusionCache @this,
         string primaryKeyName, Func<TValue, string> primaryKeyGenerator,
         Dictionary<string, Func<TValue, string?>> altKeyGenerators,
         ICollection<TValue> values,
@@ -236,18 +245,19 @@ public static partial class FusionCacheHelpers {
         FusionCacheEntryOptions? options = null,
         IEnumerable<string>? tags = null,
         CancellationToken token = default) {
+        var timestamp = DateTimeOffset.UtcNow;
         foreach (var value in values) {
             var primaryKey = KeyFormat(primaryKeyName, primaryKeyGenerator(value));
-            @this.SetAlterKeysRefToPrimaryKey(primaryKey, altKeyGenerators, value, options, tags, token);
-            @this.GetOrSet<TValue>(primaryKey, factory: (context, cancel) => {
-                var lastModified = getLastModified?.Invoke(value) ?? DateTimeOffset.UtcNow;
-                return (context.HasStaleValue, context.HasLastModified) switch {
-                    (true, true) when context.LastModified!.Value >= lastModified
-                        => context.NotModified(),
-                    _ => context.Modified(value, lastModified: lastModified)
-                };
-            }, options, tags, token);
-            @this.Set(primaryKey, value, options, tags, token);
+            await @this.GetOrSetAsync(primaryKey, altKeyGenerators,
+                factory: async (context, _) => {
+                    var lastModified = getLastModified?.Invoke(value) ?? timestamp;
+                    return (context.HasStaleValue, context.HasLastModified) switch {
+                        (true, true) when context.LastModified!.Value >= lastModified
+                            => context.NotModified(),
+                        _ => context.Modified(value, lastModified: lastModified)
+                    };
+                },
+                value, options, tags, token).ConfigureAwait(false);
         }
     }
 
@@ -255,7 +265,7 @@ public static partial class FusionCacheHelpers {
 
     #endregion
 
-    #region Интеграция обработчиков IQueryHandler{TQuery,TResult}
+    #region Интеграция с обработчиками IQueryHandler{TQuery,TResult}
 
     /// <summary>
     ///     Выполняет запрос к БД, предусматривающий возврат единственного элемента, и кэширует его результат
@@ -268,6 +278,7 @@ public static partial class FusionCacheHelpers {
     ///     Функция, определяющая дату модификации элемента.
     ///     По умолчанию <see cref="DateTimeOffset.UtcNow" />
     /// </param>
+    /// <param name="getTags">Функция, возвращающая кэш-теги для результата запроса</param>
     /// <param name="logger">Журнал</param>
     /// <typeparam name="TDto">Тип возвращаемого элемента</typeparam>
     /// <remarks>
@@ -280,10 +291,10 @@ public static partial class FusionCacheHelpers {
     ///     </list>
     /// </remarks>
     /// <returns></returns>
-    internal static async Task<Fin<TDto>> QuerySingleDtoAndCacheFabric<TDto>(
+    internal static async Task<Fin<TDto>> HandleQuerySingleResultAndCacheFabric<TDto>(
         Query<TDto> query, IQueryHandler<Query<TDto>, TDto> handler,
         FusionCacheFactoryExecutionContext<Fin<TDto>> context, CancellationToken cancel = default,
-        Func<TDto, DateTimeOffset>? getLastModified = null,
+        Func<TDto, DateTimeOffset>? getLastModified = null, Func<TDto, string[]>? getTags = null,
         ILogger? logger = null) {
         // 1. Загрузка данных из БД
         var timestamp = DateTimeOffset.UtcNow;
@@ -307,15 +318,16 @@ public static partial class FusionCacheHelpers {
         var find = loaded.ThrowIfFail();
         switch (find.Count) {
             case 1:
-                var result = loaded.Map(dtos => dtos.Single());
-                var value = result.ThrowIfFail();
-                var lastModified = getLastModified?.Invoke(value) ?? timestamp;
+                var value = find.Single();
                 logger?.QuerySuccess(query, value);
+
+                var lastModified = getLastModified?.Invoke(value) ?? timestamp;
+                context.Tags = getTags?.Invoke(value);
 
                 return (context.HasStaleValue, context.HasLastModified) switch {
                     (true, true) when context.LastModified!.Value >= lastModified
                         => context.NotModified(),
-                    _ => context.Modified(result, lastModified: lastModified)
+                    _ => context.Modified(value, lastModified: lastModified)
                 };
 
             case 0:
@@ -332,10 +344,67 @@ public static partial class FusionCacheHelpers {
     }
 
     /// <summary>
+    ///     Выполняет запрос к БД, предусматривающий возврат списка элементов, и кэширует его результат
+    /// </summary>
+    /// <param name="query">Запрос, предусматривающий возврат списка элемента</param>
+    /// <param name="handler">Обработчик запроса</param>
+    /// <param name="context">Контекст выполнения фабрики FusionCache</param>
+    /// <param name="cancel">Токен отмены</param>
+    /// <param name="getLastModified">
+    ///     Функция, определяющая дату модификации элемента.
+    ///     По умолчанию <see cref="DateTimeOffset.UtcNow" />
+    /// </param>
+    /// <param name="getTags">Функция, возвращающая кэш-теги для результата запроса</param>
+    /// <param name="logger">Журнал</param>
+    /// <typeparam name="TDto">Тип возвращаемого элемента</typeparam>
+    /// <remarks>
+    ///     Обработка ошибок:
+    ///     <list type="bullet">
+    ///         <item>Инфраструктурные ошибки (IsExceptional) — дать возможность использовать резервное значение</item>
+    ///         <item>Ожидаемые ошибки (Excepted) — не кэшируются и возвращаются как есть</item>
+    ///     </list>
+    /// </remarks>
+    /// <returns></returns>
+    internal static async Task<Fin<IList<TDto>>> HandleQueryAndCacheFabric<TDto>(
+        Query<TDto> query, IQueryHandler<Query<TDto>, TDto> handler,
+        FusionCacheFactoryExecutionContext<Fin<IList<TDto>>> context, CancellationToken cancel = default,
+        Func<IList<TDto>, DateTimeOffset>? getLastModified = null, Func<IList<TDto>, string[]>? getTags = null,
+        ILogger? logger = null) {
+        // 1. Загрузка данных из БД
+        var timestamp = DateTimeOffset.UtcNow;
+        var loaded = await handler.RunQueryAsync(query, cancel).ConfigureAwait(false);
+
+        // 2. Проверка работоспособности инфраструктуры
+        if (loaded.IsFail) {
+            var error = (Error)loaded;
+            logger?.QueryFailed(query, error);
+
+            // Если произошла какая-то неожиданная ошибка (ошибка инфраструктуры), то можно брать резервное значение
+            if (error.AsIterable().Any(err => err.IsExceptional))
+                return context.Fail(error.ToString());
+
+            // Если ошибка ожидаемая, то её нужно передать потребителю, но НЕ кэшировать результат
+            context.Options.SetSkipCacheWrite();
+            return loaded;
+        }
+
+        var find = loaded.ThrowIfFail();
+
+        logger?.QuerySuccess(query, find);
+        var lastModified = getLastModified?.Invoke(find) ?? timestamp;
+        context.Tags = getTags?.Invoke(find);
+
+        return (context.HasStaleValue, context.HasLastModified) switch {
+            (true, true) when context.LastModified!.Value >= lastModified
+                => context.NotModified(),
+            _ => context.Modified(loaded, lastModified: lastModified)
+        };
+    }
+
+    /// <summary>
     ///     Вспомогательный метод, отключающий кэширование в памяти и распределённом кэше
     /// </summary>
     /// <param name="options"></param>
-    /// <returns></returns>
     private static FusionCacheEntryOptions SetSkipCacheWrite(this FusionCacheEntryOptions options) {
         return options
             .SetSkipDistributedCacheWrite(skip: true, skipBackplaneNotifications: null)
@@ -352,22 +421,55 @@ public static partial class FusionCacheHelpers {
     ///     Функция, определяющая дату модификации элемента.
     ///     По умолчанию <see cref="DateTimeOffset.UtcNow" />
     /// </param>
+    /// <param name="getTags"></param>
     /// <param name="logger">Журнал</param>
     /// <typeparam name="TDto">Тип возвращаемого элемента</typeparam>
     /// <returns></returns>
     public static Func<FusionCacheFactoryExecutionContext<Fin<TDto>>, CancellationToken, Task<Fin<TDto>>>
-        GetQuerySingleDtoAndCacheFabric<TDto>(Query<TDto> query, IQueryHandler<Query<TDto>, TDto> handler,
-            Func<TDto, DateTimeOffset>? getLastModified = null,
+        GetHandleQuerySingleResultAndCacheFabric<TDto>(Query<TDto> query, IQueryHandler<Query<TDto>, TDto> handler,
+            Func<TDto, DateTimeOffset>? getLastModified = null, Func<TDto, string[]>? getTags = null,
             ILogger? logger = null) {
-        Func<Query<TDto>, IQueryHandler<Query<TDto>, TDto>,
-            FusionCacheFactoryExecutionContext<Fin<TDto>>,
-            CancellationToken,
-            Func<TDto, DateTimeOffset>?,
+        Func<
+            Query<TDto>, IQueryHandler<Query<TDto>, TDto>,
+            FusionCacheFactoryExecutionContext<Fin<TDto>>, CancellationToken,
+            Func<TDto, DateTimeOffset>?, Func<TDto, string[]>?,
             ILogger?,
-            Task<Fin<TDto>>> targetFunc = QuerySingleDtoAndCacheFabric<TDto>;
+            Task<Fin<TDto>>
+        > targetFunc = HandleQuerySingleResultAndCacheFabric<TDto>;
 
         var reorderFuncArg = ReorderFuncArg(targetFunc);
-        var partial = par(reorderFuncArg, query, handler, getLastModified, logger);
+        var partial = par(reorderFuncArg, query, handler, getLastModified, getTags, logger);
+
+        return partial;
+    }
+
+    /// <summary>
+    ///     Возвращает функцию, вызываемую методами <see cref="IFusionCache" />, в случае отсутствия значения в кэше,
+    ///     для запросов множества значений с помощью <see cref="IQueryHandler{TQuery,TResult}" />
+    /// </summary>
+    /// <param name="query">Запрос, предусматривающий возврат множества элементов</param>
+    /// <param name="handler">Обработчик запроса</param>
+    /// <param name="getLastModified">
+    ///     Функция, определяющая дату модификации списка элементов.
+    ///     По умолчанию <see cref="DateTimeOffset.UtcNow" />
+    /// </param>
+    /// <param name="getTags">Функция, возвращающая кэш-теги для результата запроса</param>
+    /// <param name="logger">Журнал</param>
+    /// <typeparam name="TDto">Тип возвращаемого элемента</typeparam>
+    /// <returns></returns>
+    public static Func<FusionCacheFactoryExecutionContext<Fin<IList<TDto>>>, CancellationToken, Task<Fin<IList<TDto>>>>
+        GetHandleQueryAndCacheFabric<TDto>(Query<TDto> query, IQueryHandler<Query<TDto>, TDto> handler,
+            Func<IList<TDto>, DateTimeOffset>? getLastModified = null, Func<IList<TDto>, string[]>? getTags = null,
+            ILogger? logger = null) {
+        Func<
+            Query<TDto>, IQueryHandler<Query<TDto>, TDto>,
+            FusionCacheFactoryExecutionContext<Fin<IList<TDto>>>, CancellationToken,
+            Func<IList<TDto>, DateTimeOffset>?, Func<IList<TDto>, string[]>?,
+            ILogger?,
+            Task<Fin<IList<TDto>>>> targetFunc = HandleQueryAndCacheFabric<TDto>;
+
+        var reorderFuncArg = ReorderFuncArg(targetFunc);
+        var partial = par(reorderFuncArg, query, handler, getLastModified, getTags, logger);
 
         return partial;
     }
@@ -376,9 +478,9 @@ public static partial class FusionCacheHelpers {
     ///     Изменяет порядок аргументов функции
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static Func<T1, T2, T5, T6, T3, T4, TResult> ReorderFuncArg<T1, T2, T3, T4, T5, T6, TResult>(
-        Func<T1, T2, T3, T4, T5, T6, TResult> func) {
-        return (a, b, e, f, c, d) => func(a, b, c, d, e, f);
+    private static Func<T1, T2, T5, T6, T7, T3, T4, TResult> ReorderFuncArg<T1, T2, T3, T4, T5, T6, T7, TResult>(
+        Func<T1, T2, T3, T4, T5, T6, T7, TResult> func) {
+        return (a, b, e, f, g, c, d) => func(a, b, c, d, e, f, g);
     }
 
     #endregion
