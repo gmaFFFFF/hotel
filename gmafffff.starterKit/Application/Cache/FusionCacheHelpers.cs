@@ -281,6 +281,7 @@ public static partial class FusionCacheHelpers {
     /// <param name="getTags">Функция, возвращающая кэш-теги для результата запроса</param>
     /// <param name="logger">Журнал</param>
     /// <typeparam name="TDto">Тип возвращаемого элемента</typeparam>
+    /// <typeparam name="TQuery">Тип запроса</typeparam>
     /// <remarks>
     ///     Обработка ошибок:
     ///     <list type="bullet">
@@ -291,11 +292,12 @@ public static partial class FusionCacheHelpers {
     ///     </list>
     /// </remarks>
     /// <returns></returns>
-    internal static async Task<Fin<TDto>> HandleQuerySingleResultAndCacheFabric<TDto>(
-        Query<TDto> query, IQueryHandler<Query<TDto>, TDto> handler,
+    internal static async Task<Fin<TDto>> HandleQuerySingleResultAndCacheFabric<TQuery, TDto>(
+        TQuery query, IQueryHandler<TQuery, TDto> handler,
         FusionCacheFactoryExecutionContext<Fin<TDto>> context, CancellationToken cancel = default,
         Func<TDto, DateTimeOffset>? getLastModified = null, Func<TDto, string[]>? getTags = null,
-        ILogger? logger = null) {
+        ILogger? logger = null)
+        where TQuery : Query<TDto> {
         // 1. Загрузка данных из БД
         var timestamp = DateTimeOffset.UtcNow;
         var loaded = await handler.RunQueryAsync(query, cancel).ConfigureAwait(false);
@@ -357,6 +359,7 @@ public static partial class FusionCacheHelpers {
     /// <param name="getTags">Функция, возвращающая кэш-теги для результата запроса</param>
     /// <param name="logger">Журнал</param>
     /// <typeparam name="TDto">Тип возвращаемого элемента</typeparam>
+    /// <typeparam name="TQuery">Тип запроса</typeparam>
     /// <remarks>
     ///     Обработка ошибок:
     ///     <list type="bullet">
@@ -365,11 +368,12 @@ public static partial class FusionCacheHelpers {
     ///     </list>
     /// </remarks>
     /// <returns></returns>
-    internal static async Task<Fin<IList<TDto>>> HandleQueryAndCacheFabric<TDto>(
-        Query<TDto> query, IQueryHandler<Query<TDto>, TDto> handler,
+    internal static async Task<Fin<IList<TDto>>> HandleQueryAndCacheFabric<TQuery, TDto>(
+        TQuery query, IQueryHandler<TQuery, TDto> handler,
         FusionCacheFactoryExecutionContext<Fin<IList<TDto>>> context, CancellationToken cancel = default,
         Func<IList<TDto>, DateTimeOffset>? getLastModified = null, Func<IList<TDto>, string[]>? getTags = null,
-        ILogger? logger = null) {
+        ILogger? logger = null)
+        where TQuery : Query<TDto> {
         // 1. Загрузка данных из БД
         var timestamp = DateTimeOffset.UtcNow;
         var loaded = await handler.RunQueryAsync(query, cancel).ConfigureAwait(false);
@@ -424,18 +428,19 @@ public static partial class FusionCacheHelpers {
     /// <param name="getTags"></param>
     /// <param name="logger">Журнал</param>
     /// <typeparam name="TDto">Тип возвращаемого элемента</typeparam>
+    /// <typeparam name="TQuery">Тип запроса</typeparam>
     /// <returns></returns>
     public static Func<FusionCacheFactoryExecutionContext<Fin<TDto>>, CancellationToken, Task<Fin<TDto>>>
-        GetHandleQuerySingleResultAndCacheFabric<TDto>(Query<TDto> query, IQueryHandler<Query<TDto>, TDto> handler,
+        GetHandleQuerySingleResultAndCacheFabric<TQuery, TDto>(TQuery query, IQueryHandler<TQuery, TDto> handler,
             Func<TDto, DateTimeOffset>? getLastModified = null, Func<TDto, string[]>? getTags = null,
-            ILogger? logger = null) {
-        Func<
-            Query<TDto>, IQueryHandler<Query<TDto>, TDto>,
+            ILogger? logger = null)
+        where TQuery : Query<TDto> {
+        Func<TQuery, IQueryHandler<TQuery, TDto>,
             FusionCacheFactoryExecutionContext<Fin<TDto>>, CancellationToken,
             Func<TDto, DateTimeOffset>?, Func<TDto, string[]>?,
             ILogger?,
             Task<Fin<TDto>>
-        > targetFunc = HandleQuerySingleResultAndCacheFabric<TDto>;
+        > targetFunc = HandleQuerySingleResultAndCacheFabric<TQuery, TDto>;
 
         var reorderFuncArg = ReorderFuncArg(targetFunc);
         var partial = par(reorderFuncArg, query, handler, getLastModified, getTags, logger);
@@ -456,17 +461,18 @@ public static partial class FusionCacheHelpers {
     /// <param name="getTags">Функция, возвращающая кэш-теги для результата запроса</param>
     /// <param name="logger">Журнал</param>
     /// <typeparam name="TDto">Тип возвращаемого элемента</typeparam>
+    /// <typeparam name="TQuery">Тип запроса</typeparam>
     /// <returns></returns>
     public static Func<FusionCacheFactoryExecutionContext<Fin<IList<TDto>>>, CancellationToken, Task<Fin<IList<TDto>>>>
-        GetHandleQueryAndCacheFabric<TDto>(Query<TDto> query, IQueryHandler<Query<TDto>, TDto> handler,
+        GetHandleQueryAndCacheFabric<TQuery, TDto>(TQuery query, IQueryHandler<TQuery, TDto> handler,
             Func<IList<TDto>, DateTimeOffset>? getLastModified = null, Func<IList<TDto>, string[]>? getTags = null,
-            ILogger? logger = null) {
-        Func<
-            Query<TDto>, IQueryHandler<Query<TDto>, TDto>,
+            ILogger? logger = null)
+        where TQuery : Query<TDto> {
+        Func<TQuery, IQueryHandler<TQuery, TDto>,
             FusionCacheFactoryExecutionContext<Fin<IList<TDto>>>, CancellationToken,
             Func<IList<TDto>, DateTimeOffset>?, Func<IList<TDto>, string[]>?,
             ILogger?,
-            Task<Fin<IList<TDto>>>> targetFunc = HandleQueryAndCacheFabric<TDto>;
+            Task<Fin<IList<TDto>>>> targetFunc = HandleQueryAndCacheFabric<TQuery, TDto>;
 
         var reorderFuncArg = ReorderFuncArg(targetFunc);
         var partial = par(reorderFuncArg, query, handler, getLastModified, getTags, logger);
