@@ -37,7 +37,7 @@ public partial class BusinessActionRunnerTests {
 
         public BusinessActionRunnerTrigger() {
             // Обработчик событий домена
-            _domainEventProcessor = new DomainEventProcessor(new DomainEventHandlerFabric(_provider));
+            _domainEventProcessor = new DomainEventProcessor(new DomainEventHandlerFactory(_provider));
 
             // Контейнер служб
             _provider.GetService(typeof(IBusinessActionRunner<CommandWithTrigger>))
@@ -136,9 +136,9 @@ public partial class BusinessActionRunnerTests {
         private static BusinessActionRunner<CommandWithTrigger> NewRunner(IServiceProvider provider) {
             return new BusinessActionRunner<CommandWithTrigger>(
                 provider.GetRequiredService<IBusinessCommandHandler<CommandWithTrigger>>(),
-                new BusinessActionRunnerFabric(provider),
+                new BusinessActionRunnerFactory(provider),
                 provider.GetServices<IBusinessConstraintCheck<CommandWithTrigger>>(),
-                new TriggerEventToCommandTranslatorFabric(provider),
+                new TriggerEventToCommandTranslatorFactory(provider),
                 provider.GetService<IValidator<CommandWithTrigger>>(),
                 logger: null
             );

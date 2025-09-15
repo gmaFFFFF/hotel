@@ -23,15 +23,15 @@ namespace gmafffff.starterKit.BusinessLogic;
 /// <param name="validator">Форматно-логический контроль (формальная проверка) бизнес-команды</param>
 /// <param name="businessConstraintChecks">Бизнес-ограничения, ограничивающие запуск бизнес-команд</param>
 /// <param name="businessCommandHandler">Обработчик бизнес-команды</param>
-/// <param name="businessActionRunnerFabric">Фабрика пусковиков бизнес-действий</param>
-/// <param name="triggerEventToCommandTranslatorFabric">Фабрика преобразователей триггеров в бизнес-команды</param>
+/// <param name="businessActionRunnerFactory">Фабрика пусковиков бизнес-действий</param>
+/// <param name="triggerEventToCommandTranslatorFactory">Фабрика преобразователей триггеров в бизнес-команды</param>
 /// <param name="logger">Журнал</param>
 /// <typeparam name="TCommand">Тип бизнес-команды</typeparam>
 public class BusinessActionRunner<TCommand>(
     IBusinessCommandHandler<TCommand> businessCommandHandler,
-    BusinessActionRunnerFabric businessActionRunnerFabric,
+    BusinessActionRunnerFactory businessActionRunnerFactory,
     IEnumerable<IBusinessConstraintCheck<TCommand>> businessConstraintChecks,
-    TriggerEventToCommandTranslatorFabric triggerEventToCommandTranslatorFabric,
+    TriggerEventToCommandTranslatorFactory triggerEventToCommandTranslatorFactory,
     IValidator<TCommand>? validator = null,
     ILogger<BusinessActionRunner<TCommand>>? logger = null)
     : IBusinessActionRunner<TCommand>
@@ -238,7 +238,7 @@ public class BusinessActionRunner<TCommand>(
         return runCommands;
 
         Iterable<ITriggerEventToCommandTranslator> FindTriggerToCommandsTranslators(TriggerEvent trigger) {
-            var translators = triggerEventToCommandTranslatorFabric
+            var translators = triggerEventToCommandTranslatorFactory
                 .GetTranslators(trigger)
                 .AsIterable();
 
@@ -249,7 +249,7 @@ public class BusinessActionRunner<TCommand>(
         }
 
         FinT<IO, IList<BusinessEvent>> RunCommand(BusinessCommand cmd) {
-            var runner = businessActionRunnerFabric.GetBusinessActionRunner(cmd);
+            var runner = businessActionRunnerFactory.GetBusinessActionRunner(cmd);
 
             var execute = (BusinessCommand cmd) =>
                 IO.liftAsync(async env => await runner.ExecuteAsync(cmd, env.Token).ConfigureAwait(false));

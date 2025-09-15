@@ -17,10 +17,10 @@ public partial class PersonManagementTests {
     [TestSubject(typeof(GetPersonsQueryByDtoHandler<>))]
     [TestSubject(typeof(GetPersonsQueryByEntityHandler<>))]
     public class Query : TestContext {
-        private readonly QueryHandlerFabric _queryHandlerFabric;
+        private readonly QueryHandlerFactory _queryHandlerFactory;
 
         public Query(ITestOutputHelper output) : base(output) {
-            _queryHandlerFabric = Scope.ServiceProvider.GetRequiredService<QueryHandlerFabric>();
+            _queryHandlerFactory = Scope.ServiceProvider.GetRequiredService<QueryHandlerFactory>();
         }
 
         [Fact]
@@ -35,7 +35,7 @@ public partial class PersonManagementTests {
                 .Select(person => person.Adapt<PersonDto>(PersonDto.MapperConfig))
                 .ToArray();
             var query = new GetPersonsQueryByDto<PersonDto>(p => exceptedIds.Contains(p.PersonId));
-            var handler = _queryHandlerFabric.GetQueryHandler(query, default(PersonDto)!);
+            var handler = _queryHandlerFactory.GetQueryHandler(query, default(PersonDto)!);
 
             // Act
             var result = await handler.RunQueryAsync(query);
@@ -66,7 +66,7 @@ public partial class PersonManagementTests {
 
 
             var query = new GetPersonsQueryByEntity<PersonDto>(new Person<Guid>.FilterByFullName(firstLetters));
-            var handler = _queryHandlerFabric.GetQueryHandler(query, default(PersonDto)!);
+            var handler = _queryHandlerFactory.GetQueryHandler(query, default(PersonDto)!);
 
             // Act
             var result = await handler.RunQueryAsync(query);

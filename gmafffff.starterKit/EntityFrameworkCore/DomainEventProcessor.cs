@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 namespace gmafffff.starterKit.EntityFrameworkCore;
 
 public class DomainEventProcessor(
-    DomainEventHandlerFabric domainEventHandlerFabric,
+    DomainEventHandlerFactory domainEventHandlerFactory,
     ILogger<DomainEventProcessor>? logger = null) : IDomainEventSink, IDomainEventDispatcher {
     /// <summary>
     ///     Журнал
@@ -44,10 +44,10 @@ public class DomainEventProcessor(
     private record HandleState(
         IReadOnlyList<IDomainEvent> Events,
         int UnhandledEventIndex,
-        DomainEventHandlerFabric DomainEventHandlerFabric);
+        DomainEventHandlerFactory DomainEventHandlerFactory);
 
     public async Task<Fin<Unit>> DispatchAsync(CancellationToken cancel = default) {
-        HandleState initialState = new(Events, _unhandledEventIndex, domainEventHandlerFabric);
+        HandleState initialState = new(Events, _unhandledEventIndex, domainEventHandlerFactory);
         var steps = await HandleEventsRecursive(_logger)
             .Run(initialState).As()
             .Run().As()
@@ -99,7 +99,7 @@ public class DomainEventProcessor(
         static StateT<HandleState, FinT<IO>, Iterable<IDomainEventHandler>>
             FindDomainEventHandlers(IDomainEvent @event) {
             return from state in StateT.get<FinT<IO>, HandleState>()
-                select state.DomainEventHandlerFabric
+                select state.DomainEventHandlerFactory
                     .GetDomainEventHandlers(@event)
                     .AsIterable();
         }

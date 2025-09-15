@@ -122,7 +122,7 @@ public class FusionCacheHelpersTests {
         foreach (var excepted in data) {
             var fact = await _cache.GetOrSetAsync(
                 query.Id.ToString(),
-                factory: FusionCacheHelpers.GetHandleQuerySingleResultAndCacheFabric(query, Handler));
+                factory: FusionCacheHelpers.GetHandleQuerySingleResultAndCacheFactory(query, Handler));
 
             fact.IsSucc.Should().Be(excepted.IsSucc);
             fact.IfSucc(result => result.Should().Be(excepted.ThrowIfFail()));
@@ -142,7 +142,7 @@ public class FusionCacheHelpersTests {
         foreach (var excepted in data) {
             var fact = await _cache.GetOrSetAsync(
                 query.Id.ToString(),
-                factory: FusionCacheHelpers.GetHandleQueryAndCacheFabric(query, Handler));
+                factory: FusionCacheHelpers.GetHandleQueryAndCacheFactory(query, Handler));
 
             // Чтобы не делать два разных тестовых набора особым образом обрабатываем случай когда нет результата 
             if (excepted.IsFail && ((Error)excepted).Code == (int)AppErrorCode.DbNotFound) {
@@ -189,12 +189,12 @@ public class FusionCacheHelpersTests {
     }
 
     /// <summary>
-    ///     <see cref="FusionCacheHelpers.GetHandleQuerySingleResultAndCacheFabric{TDto}"/> возвращает ошибку,
+    ///     <see cref="FusionCacheHelpers.GetHandleQuerySingleResultAndCacheFactory{TDto}"/> возвращает ошибку,
     ///     если запрос вернул несколько Dto
     /// </summary>
     /// <returns></returns>
     [Fact]
-    public async Task GetHandleQuerySingleResultAndCacheFabric_Error_WhenMultipleDtoFound() {
+    public async Task GetHandleQuerySingleResultAndCacheFactory_Error_WhenMultipleDtoFound() {
         // Arrange
         var query = new TestQuery(Id: 10, "Возвратит несколько Dto");
         TestDto[] response = [new(101), new(102)];
@@ -205,7 +205,7 @@ public class FusionCacheHelpersTests {
         // Act
         var fact = await _cache.GetOrSetAsync(
             query.Id.ToString(),
-            factory: FusionCacheHelpers.GetHandleQuerySingleResultAndCacheFabric(query, Handler));
+            factory: FusionCacheHelpers.GetHandleQuerySingleResultAndCacheFactory(query, Handler));
 
         // Assert
         fact.IsSucc.Should().Be(false);
@@ -216,11 +216,11 @@ public class FusionCacheHelpersTests {
     }
 
     /// <summary>
-    ///     <see cref="FusionCacheHelpers.GetHandleQueryAndCacheFabric{TDto}" /> поддерживает возврат нескольких Dto
+    ///     <see cref="FusionCacheHelpers.GetHandleQueryAndCacheFactory{TDto}" /> поддерживает возврат нескольких Dto
     /// </summary>
     /// <returns></returns>
     [Fact]
-    public async Task GetHandleQueryAndCacheFabric_Ok_WhenMultipleDtoFound() {
+    public async Task GetHandleQueryAndCacheFactory_Ok_WhenMultipleDtoFound() {
         // Arrange
         var query = new TestQuery(Id: 10, "Возвратит несколько Dto");
         TestDto[] response = [new(101), new(102)];
@@ -231,7 +231,7 @@ public class FusionCacheHelpersTests {
         // Act
         var fact = await _cache.GetOrSetAsync(
             query.Id.ToString(),
-            factory: FusionCacheHelpers.GetHandleQueryAndCacheFabric(query, Handler));
+            factory: FusionCacheHelpers.GetHandleQueryAndCacheFactory(query, Handler));
 
         // Assert
         fact.IsSucc.Should().Be(true);

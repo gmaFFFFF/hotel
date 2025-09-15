@@ -10,13 +10,13 @@
 
 Предоставляются два метода, создающие фабрику значений для кэша
 
-* `GetHandleQueryAndCacheFabric` — для запросов `gmafffff.starterKit.Messaging.Query`, возвращающих 0..n значений;
-* `GetHandleQuerySingleResultAndCacheFabric` — для запросов `gmafffff.starterKit.Messaging.Query`,
+* `GetHandleQueryAndCacheFactory` — для запросов `gmafffff.starterKit.Messaging.Query`, возвращающих 0..n значений;
+* `GetHandleQuerySingleResultAndCacheFactory` — для запросов `gmafffff.starterKit.Messaging.Query`,
   возвращающих строго 1 значение;
 
 ### Использование
 
-Передайте результат вызова методов в качества аргумента `fabric` соответствующих методов `IFusionCache`
+Передайте результат вызова методов в качества аргумента `factory` соответствующих методов `IFusionCache`
 
 ## Дополнительные перегрузки методов основных методов `IFusionCache`
 

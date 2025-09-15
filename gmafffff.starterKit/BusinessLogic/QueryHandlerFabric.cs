@@ -12,7 +12,7 @@ namespace gmafffff.starterKit.BusinessLogic;
 ///     Поэтому для каждого TResult, возвращаемого <see cref="IQueryHandler{TQuery,TResult}" />,
 ///     нужно создать отдельный обработчик или воспользоваться этой фабрикой.
 /// </summary>
-public record QueryHandlerFabric(IServiceProvider ServiceProvider) {
+public record QueryHandlerFactory(IServiceProvider ServiceProvider) {
     /// <summary>
     ///     Словарь, где ключом является тип запроса <see cref="Query{T}" />,
     ///     а значением универсальный тип его обработчика <see cref="IQueryHandler{TQuery,TResult}" />

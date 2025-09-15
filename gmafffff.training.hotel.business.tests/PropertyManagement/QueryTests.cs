@@ -13,17 +13,17 @@ namespace gmafffff.training.hotel.business.tests.PropertyManagement;
 public partial class PropertyManagementTests {
     [TestSubject(typeof(GetRoomsQuery<>))]
     public class Query : TestContext {
-        private readonly QueryHandlerFabric _queryHandlerFabric;
+        private readonly QueryHandlerFactory _queryHandlerFactory;
 
         public Query(ITestOutputHelper output) : base(output) {
-            _queryHandlerFabric = Scope.ServiceProvider.GetRequiredService<QueryHandlerFabric>();
+            _queryHandlerFactory = Scope.ServiceProvider.GetRequiredService<QueryHandlerFactory>();
         }
 
         [Fact]
         public async Task CanQueryData() {
             // Arrange
             var query = new GetRoomsQuery<RoomDto>(Room<Guid>.WhereType(RoomType.Standard));
-            var handler = _queryHandlerFabric.GetQueryHandler(query, default(RoomDto)!);
+            var handler = _queryHandlerFactory.GetQueryHandler(query, default(RoomDto)!);
             var excepted = FakeHotel.Hotel.Rooms
                 .Where(Room<Guid>.WhereType(RoomType.Standard).Compile())
                 .Select(room => room.Adapt<RoomDto>(RoomDto.MapperConfig))

@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace gmafffff.starterKit.BusinessLogic;
 
-public record TriggerEventToCommandTranslatorFabric(IServiceProvider ServiceProvider) {
+public record TriggerEventToCommandTranslatorFactory(IServiceProvider ServiceProvider) {
     public virtual IEnumerable<ITriggerEventToCommandTranslator> GetTranslators(TriggerEvent trigger) {
         var translatorType = typeof(ITriggerEventToCommandTranslator<>).MakeGenericType(trigger.GetType());
         return ServiceProvider

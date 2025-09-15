@@ -39,7 +39,7 @@ public partial class BusinessActionRunnerTests {
                 .ToDictionary();
 
             // Обработчик событий домена
-            var domainEventProcessor = new DomainEventProcessor(new DomainEventHandlerFabric(_provider));
+            var domainEventProcessor = new DomainEventProcessor(new DomainEventHandlerFactory(_provider));
             _domainEventHandler.HandleAsync(Arg.Any<IDomainEvent>(),
                     Arg.Any<DomainEventDispatcherContext>(),
                     Arg.Any<CancellationToken>())
@@ -68,9 +68,9 @@ public partial class BusinessActionRunnerTests {
             _provider.GetService(typeof(IBusinessActionRunner<CommandWithTrigger>))
                 .Returns(_ => new BusinessActionRunner<CommandWithTrigger>(
                     _cmdHandler,
-                    new BusinessActionRunnerFabric(_provider),
+                    new BusinessActionRunnerFactory(_provider),
                     [],
-                    new TriggerEventToCommandTranslatorFabric(_provider),
+                    new TriggerEventToCommandTranslatorFactory(_provider),
                     validator: null,
                     logger: null
                 ));
@@ -82,9 +82,9 @@ public partial class BusinessActionRunnerTests {
         private static BusinessActionRunner<CommandWithTrigger> NewRunner(IServiceProvider provider) {
             return new BusinessActionRunner<CommandWithTrigger>(
                 provider.GetRequiredService<IBusinessCommandHandler<CommandWithTrigger>>(),
-                new BusinessActionRunnerFabric(provider),
+                new BusinessActionRunnerFactory(provider),
                 provider.GetServices<IBusinessConstraintCheck<CommandWithTrigger>>(),
-                new TriggerEventToCommandTranslatorFabric(provider),
+                new TriggerEventToCommandTranslatorFactory(provider),
                 provider.GetService<IValidator<CommandWithTrigger>>(),
                 logger: null
             );

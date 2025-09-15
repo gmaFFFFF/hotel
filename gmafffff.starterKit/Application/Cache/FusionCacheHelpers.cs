@@ -292,7 +292,7 @@ public static partial class FusionCacheHelpers {
     ///     </list>
     /// </remarks>
     /// <returns></returns>
-    internal static async Task<Fin<TDto>> HandleQuerySingleResultAndCacheFabric<TQuery, TDto>(
+    internal static async Task<Fin<TDto>> HandleQuerySingleResultAndCacheFactory<TQuery, TDto>(
         TQuery query, IQueryHandler<TQuery, TDto> handler,
         FusionCacheFactoryExecutionContext<Fin<TDto>> context, CancellationToken cancel = default,
         Func<TDto, DateTimeOffset>? getLastModified = null, Func<TDto, string[]>? getTags = null,
@@ -368,7 +368,7 @@ public static partial class FusionCacheHelpers {
     ///     </list>
     /// </remarks>
     /// <returns></returns>
-    internal static async Task<Fin<IList<TDto>>> HandleQueryAndCacheFabric<TQuery, TDto>(
+    internal static async Task<Fin<IList<TDto>>> HandleQueryAndCacheFactory<TQuery, TDto>(
         TQuery query, IQueryHandler<TQuery, TDto> handler,
         FusionCacheFactoryExecutionContext<Fin<IList<TDto>>> context, CancellationToken cancel = default,
         Func<IList<TDto>, DateTimeOffset>? getLastModified = null, Func<IList<TDto>, string[]>? getTags = null,
@@ -431,7 +431,7 @@ public static partial class FusionCacheHelpers {
     /// <typeparam name="TQuery">Тип запроса</typeparam>
     /// <returns></returns>
     public static Func<FusionCacheFactoryExecutionContext<Fin<TDto>>, CancellationToken, Task<Fin<TDto>>>
-        GetHandleQuerySingleResultAndCacheFabric<TQuery, TDto>(TQuery query, IQueryHandler<TQuery, TDto> handler,
+        GetHandleQuerySingleResultAndCacheFactory<TQuery, TDto>(TQuery query, IQueryHandler<TQuery, TDto> handler,
             Func<TDto, DateTimeOffset>? getLastModified = null, Func<TDto, string[]>? getTags = null,
             ILogger? logger = null)
         where TQuery : Query<TDto> {
@@ -440,7 +440,7 @@ public static partial class FusionCacheHelpers {
             Func<TDto, DateTimeOffset>?, Func<TDto, string[]>?,
             ILogger?,
             Task<Fin<TDto>>
-        > targetFunc = HandleQuerySingleResultAndCacheFabric<TQuery, TDto>;
+        > targetFunc = HandleQuerySingleResultAndCacheFactory<TQuery, TDto>;
 
         var reorderFuncArg = ReorderFuncArg(targetFunc);
         var partial = par(reorderFuncArg, query, handler, getLastModified, getTags, logger);
@@ -464,7 +464,7 @@ public static partial class FusionCacheHelpers {
     /// <typeparam name="TQuery">Тип запроса</typeparam>
     /// <returns></returns>
     public static Func<FusionCacheFactoryExecutionContext<Fin<IList<TDto>>>, CancellationToken, Task<Fin<IList<TDto>>>>
-        GetHandleQueryAndCacheFabric<TQuery, TDto>(TQuery query, IQueryHandler<TQuery, TDto> handler,
+        GetHandleQueryAndCacheFactory<TQuery, TDto>(TQuery query, IQueryHandler<TQuery, TDto> handler,
             Func<IList<TDto>, DateTimeOffset>? getLastModified = null, Func<IList<TDto>, string[]>? getTags = null,
             ILogger? logger = null)
         where TQuery : Query<TDto> {
@@ -472,7 +472,7 @@ public static partial class FusionCacheHelpers {
             FusionCacheFactoryExecutionContext<Fin<IList<TDto>>>, CancellationToken,
             Func<IList<TDto>, DateTimeOffset>?, Func<IList<TDto>, string[]>?,
             ILogger?,
-            Task<Fin<IList<TDto>>>> targetFunc = HandleQueryAndCacheFabric<TQuery, TDto>;
+            Task<Fin<IList<TDto>>>> targetFunc = HandleQueryAndCacheFactory<TQuery, TDto>;
 
         var reorderFuncArg = ReorderFuncArg(targetFunc);
         var partial = par(reorderFuncArg, query, handler, getLastModified, getTags, logger);

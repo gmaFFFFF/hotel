@@ -127,7 +127,7 @@ public class RegisterServicesTests {
     ///     Регистрирует фабрики кладовок
     /// </summary>
     [Fact]
-    public void RegisterRepositoryFabric() {
+    public void RegisterRepositoryFactory() {
         // Arrange
         var provider = new ServiceCollection();
 
@@ -201,7 +201,7 @@ public class RegisterServicesTests {
     }
 
     /// <summary>
-    ///     Добавляет универсальные обработчики запросов к <see cref="QueryHandlerFabric" />
+    ///     Добавляет универсальные обработчики запросов к <see cref="QueryHandlerFactory" />
     /// </summary>
     [Fact]
     public void RegisterGenericQueryHandler() {
@@ -213,10 +213,10 @@ public class RegisterServicesTests {
 
         // Assert
         using var _ = new AssertionScope();
-        QueryHandlerFabric.GenericHandlers.Should().HaveCount(2);
-        QueryHandlerFabric.GenericHandlers.Should().ContainKey(typeof(TestGenericReadDbQueryDto<>))
+        QueryHandlerFactory.GenericHandlers.Should().HaveCount(2);
+        QueryHandlerFactory.GenericHandlers.Should().ContainKey(typeof(TestGenericReadDbQueryDto<>))
             .WhoseValue.Should().Be(typeof(TestGenericReadDbQueryDtoHandler<>));
-        QueryHandlerFabric.GenericHandlers.Should().ContainKey(typeof(TestGenericReadDbQueryEnt<>))
+        QueryHandlerFactory.GenericHandlers.Should().ContainKey(typeof(TestGenericReadDbQueryEnt<>))
             .WhoseValue.Should().Be(typeof(TestGenericReadDbQueryEntHandler<>));
     }
 

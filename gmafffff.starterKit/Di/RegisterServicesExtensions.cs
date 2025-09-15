@@ -173,7 +173,7 @@ public static class RegisterServicesExtensions {
     /// <returns></returns>
     public static IServiceCollection AddDomainEventHandlers(this IServiceCollection @this,
         params Assembly[] assemblies) {
-        @this.TryAddScoped<DomainEventHandlerFabric>();
+        @this.TryAddScoped<DomainEventHandlerFactory>();
         return @this.Scan(scan => {
             var selector = assemblies.Length == 0
                 ? scan.FromApplicationDependencies()
@@ -305,7 +305,7 @@ public static class RegisterServicesExtensions {
     /// <param name="this"></param>
     /// <returns></returns>
     internal static IServiceCollection AddBusinessActionRunner(this IServiceCollection @this) {
-        @this.TryAddScoped<BusinessActionRunnerFabric>();
+        @this.TryAddScoped<BusinessActionRunnerFactory>();
         @this.TryAddTransient(typeof(IBusinessActionRunner<>), typeof(BusinessActionRunner<>));
         return @this;
     }
@@ -374,7 +374,7 @@ public static class RegisterServicesExtensions {
     }
 
     /// <summary>
-    ///     Регистрирует в фабрике <see cref="QueryHandlerFabric" /> универсальные обработчики запросов,
+    ///     Регистрирует в фабрике <see cref="QueryHandlerFactory" /> универсальные обработчики запросов,
     ///     реализующие интерфейс <see cref="IQueryHandler{TQuery,TResult}" />
     /// </summary>
     /// <param name="this">Описание служб</param>
@@ -382,7 +382,7 @@ public static class RegisterServicesExtensions {
     /// <returns></returns>
     internal static IServiceCollection AddGenericQueryHandlers(this IServiceCollection @this,
         params Assembly[] assemblies) {
-        @this.TryAddScoped<QueryHandlerFabric>();
+        @this.TryAddScoped<QueryHandlerFactory>();
 
         var assembliesToScan = assemblies.Length > 0
             ? assemblies
@@ -390,7 +390,7 @@ public static class RegisterServicesExtensions {
 
         var _ = assembliesToScan
             .SelectMany(asm => asm.ExportedTypes)
-            .Select(QueryHandlerFabric.TryAddGenericQueryHandler)
+            .Select(QueryHandlerFactory.TryAddGenericQueryHandler)
             .ToList();
 
 
@@ -406,7 +406,7 @@ public static class RegisterServicesExtensions {
     /// <returns></returns>
     internal static IServiceCollection AddTriggerEventToCommandTranslators(this IServiceCollection @this,
         params Assembly[] assemblies) {
-        @this.TryAddScoped<TriggerEventToCommandTranslatorFabric>();
+        @this.TryAddScoped<TriggerEventToCommandTranslatorFactory>();
 
         return @this.Scan(scan => {
             var selector = assemblies.Length == 0

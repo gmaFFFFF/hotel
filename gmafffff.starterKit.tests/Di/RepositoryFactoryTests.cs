@@ -28,12 +28,12 @@ public class RepositoryFactoryTests {
     }
 
     [Fact]
-    public void Fabric_Create_Repository() {
+    public void Factory_Create_Repository() {
         // Arrange
-        var fabric = new RepositoryFactory<ITestRepository, TestRepository, TestEntity, int>(_provider);
+        var factory = new RepositoryFactory<ITestRepository, TestRepository, TestEntity, int>(_provider);
 
         // Act
-        var repo = fabric.CreateTransient();
+        var repo = factory.CreateTransient();
 
         // Assert
         using var _ = new AssertionScope();

@@ -13,7 +13,7 @@ public partial class DomainEventsTests {
         private readonly IServiceProvider _provider = Substitute.For<IServiceProvider>();
 
         public DomainEventEmit() {
-            _eventSink = new DomainEventProcessor(new DomainEventHandlerFabric(_provider));
+            _eventSink = new DomainEventProcessor(new DomainEventHandlerFactory(_provider));
             _entity = new SimpleEntity(id: 1, "My test prop");
             ((IDomainEventEmitter)_entity).SetDomainEventSink(_eventSink);
         }

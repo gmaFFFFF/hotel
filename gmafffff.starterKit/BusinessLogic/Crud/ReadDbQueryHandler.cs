@@ -19,7 +19,7 @@ namespace gmafffff.starterKit.BusinessLogic.Crud;
 /// <remarks>
 ///     К сожалению в DI контейнере Microsoft нельзя осуществить сложную регистрацию открытых обобщённых типов.
 ///     Поэтому для каждого DTO нужно создать отдельный обработчик
-///     или воспользоваться <see cref="QueryHandlerFabric" />.
+///     или воспользоваться <see cref="QueryHandlerFactory" />.
 /// </remarks>
 public partial class ReadDbQueryHandler<TQuery, TEntity, TEntityId, TRepo, TDto>(
     TRepo repository,

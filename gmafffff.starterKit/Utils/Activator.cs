@@ -41,8 +41,8 @@ public static class Activator<T> {
         // Если лямбды нет, то пробуем опередить конкурентов и создать её
         if (Factories.TryAdd(keyImmutable, value: null))
             Task.Run(() => {
-                var fabric = MakeExpression().Compile();
-                Factories.TryUpdate(keyImmutable, fabric, comparisonValue: null);
+                var factory = MakeExpression().Compile();
+                Factories.TryUpdate(keyImmutable, factory, comparisonValue: null);
             });
 
         // Так как лямбды пока ещё нет, то используем Activator.CreateInstance
@@ -104,8 +104,8 @@ public static class Activator<T> {
         // Если лямбды нет, то пробуем опередить другие потоки и создать её
         if (Factories.TryAdd(keyImmutable, value: null))
             Task.Run(() => {
-                var fabric = MakeExpression().Compile();
-                Factories.TryUpdate(keyImmutable, fabric, comparisonValue: null);
+                var factory = MakeExpression().Compile();
+                Factories.TryUpdate(keyImmutable, factory, comparisonValue: null);
             });
 
         // Так как лямбды нет, то используем Activator.CreateInstance
@@ -170,8 +170,8 @@ public static class Activator<T> {
         // Если лямбды нет, то пробуем опередить другие потоки и создать её
         if (Factories.TryAdd(keyImmutable, value: null))
             Task.Run(() => {
-                var fabric = MakeExpression().Compile();
-                Factories.TryUpdate(keyImmutable, fabric, comparisonValue: null);
+                var factory = MakeExpression().Compile();
+                Factories.TryUpdate(keyImmutable, factory, comparisonValue: null);
             });
 
         // Так как лямбды нет, то используем Activator.CreateInstance

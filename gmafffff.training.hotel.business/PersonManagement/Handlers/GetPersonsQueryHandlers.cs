@@ -12,7 +12,7 @@ namespace gmafffff.training.hotel.business.PersonManagement.Handlers;
 /// </summary>
 /// <remarks>
 ///     К сожалению в DI контейнере Microsoft нельзя осуществить сложную регистрацию открытых обобщённых типов.
-///     Поэтому для получения типизированного обработчика нужно использовать фабрику <see cref="QueryHandlerFabric" />.
+///     Поэтому для получения типизированного обработчика нужно использовать фабрику <see cref="QueryHandlerFactory" />.
 /// </remarks>
 public class GetPersonsQueryByDtoHandler<TDto>(
     IPersonsRepository<Guid> repo,
@@ -25,7 +25,7 @@ public class GetPersonsQueryByDtoHandler<TDto>(
 /// </summary>
 /// <remarks>
 ///     К сожалению в DI контейнере Microsoft нельзя осуществить сложную регистрацию открытых обобщённых типов.
-///     Поэтому для получения типизированного обработчика нужно использовать фабрику <see cref="QueryHandlerFabric" />.
+///     Поэтому для получения типизированного обработчика нужно использовать фабрику <see cref="QueryHandlerFactory" />.
 /// </remarks>
 public class GetPersonsQueryByEntityHandler<TDto>(
     IPersonsRepository<Guid> repo,
